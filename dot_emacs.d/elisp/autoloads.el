@@ -258,6 +258,10 @@
 ;; 	   (string-match "^xterm\\|^screen" (getenv "TERM")))
 ;;   (xterm-title-mode 1))
 
+;; 
+(require 'wdired)
+(define-key dired-mode-map "r" 'wdired-change-to-wdired-mode)
+
 ;; 自動保存
 (when (load-p "auto-save-buffers")
   (setq auto-save-buffers-regexp "^/[^:]+/")
