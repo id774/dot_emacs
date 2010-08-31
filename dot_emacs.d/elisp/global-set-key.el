@@ -28,6 +28,17 @@
 (define-key global-map "\C-x\C-y" 'auto-complete-mode)
 (define-key global-map "\C-x\ y" 'auto-complete-mode)
 
+;; タブ幅を微調整
+(defun my-increase-tab-width ()
+    (interactive)
+      (setq tab-width (+ tab-width 1)))
+(defun my-decrease-tab-width ()
+    (interactive)
+      (when (< 1 tab-width)
+            (setq tab-width (- tab-width 1 ))))
+(define-key global-map "\C-c\C-c\ -" 'my-decrease-tab-width)
+(define-key global-map "\C-c\C-c\ +" 'my-increase-tab-width)
+
 ;; ウィンドウが1つしかない場合は縦に分割する関数
 (defun split-one-window-p ()
   (if (one-window-p)
