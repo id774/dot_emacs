@@ -30,7 +30,7 @@ subdirectory under load-path.")
           (expand-file-name "~/.emacs.d/elisp/3rd-party/ecb")
           (expand-file-name "~/.emacs.d/elisp/3rd-party/nxhtml")
           (expand-file-name "~/.emacs.d/elisp/3rd-party/rhtml")
-          (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari"))))
+          (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari")))))
         (setq my-load-path
           (list "/usr/local/share/emacs/site-lisp"
 	        (expand-file-name "~/.emacs.d/elisp")
@@ -39,7 +39,7 @@ subdirectory under load-path.")
 	        (expand-file-name "~/.emacs.d/elisp/3rd-party/ecb")
 	        (expand-file-name "~/.emacs.d/elisp/3rd-party/nxhtml")
 	        (expand-file-name "~/.emacs.d/elisp/3rd-party/rhtml")
-	        (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari")))
+	        (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari")))))
       (setq my-load-path
         (list "/usr/local/share/emacs/site-lisp"
         (expand-file-name "~/.emacs.d/elisp")
@@ -48,7 +48,7 @@ subdirectory under load-path.")
         (expand-file-name "~/.emacs.d/elisp/3rd-party/ecb")
         (expand-file-name "~/.emacs.d/elisp/3rd-party/nxhtml")
         (expand-file-name "~/.emacs.d/elisp/3rd-party/rhtml")
-        (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari"))))))
+        (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari")))
 (setq load-path (append my-load-path default-load-path))
 
 ;; custom
