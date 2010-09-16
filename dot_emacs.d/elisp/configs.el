@@ -18,7 +18,7 @@
 (menu-bar-mode -1)
 
 ;; ホイールマウス使う?
-(mouse-wheel-mode 1)
+;;(mouse-wheel-mode 1)
 
 ;; xtermとかgnome-terminalとか。
 (xterm-mouse-mode -1)
