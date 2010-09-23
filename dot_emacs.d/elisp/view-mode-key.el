@@ -2,6 +2,13 @@
 ;; http://d.hatena.ne.jp/yaotti/20081104/1225809687
 ;; http://gist.github.com/22143
 
+(require 'viewer)
+(viewer-stay-in-setup)
+(define-overriding-view-mode-map c-mode
+  ("RET" . gtags-find-tag-from-here))
+(define-overriding-view-mode-map emacs-lisp-mode
+  ("RET" . find-function-at-point))
+
 (setq view-read-only t)
 (defvar pager-keybind
       `( ;; vi-like
