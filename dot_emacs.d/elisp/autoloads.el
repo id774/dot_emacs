@@ -293,6 +293,13 @@
   (setq tramp-verbose 3)
 )
 
+;; Redo+
+(require 'redo+)
+(global-set-key (kbd "C-^") 'redo)
+(setq undo-no-redo t)
+(setq undo-limit 600000)
+(setq undo-strong-limit 900000)
+
 ;; 矩形選択
 (cua-mode t)
 (setq cua-enable-cua-keys nil) ;; 変なキーバインド禁止

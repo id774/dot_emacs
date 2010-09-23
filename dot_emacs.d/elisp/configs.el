@@ -203,11 +203,6 @@
       'fullboth)))
 (global-set-key [(meta return)] 'toggle-fullscreen)
 
-;; Redo! (need byte-compile redo.el)
-(when (require 'redo nil t)
-  (define-key ctl-x-map (if window-system "U" "r") 'redo)
-  (define-key global-map [?\C-.] 'redo))
-
 ;; ∆©Ã¿≤Ω
 (add-to-list 'default-frame-alist '(alpha . (80 50)))
 
