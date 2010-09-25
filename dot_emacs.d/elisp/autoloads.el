@@ -343,6 +343,11 @@
 (setq key-chord-two-keys-delay 0.04)
 (key-chord-mode 1)
 
+;; マイナーモード衝突問題回避
+(require 'minor-mode-hack)
+;;(lower-minor-mode-map-alist 'ruby-electric-mode)
+;;(raise-minor-mode-map-alist 'anthy-minor-mode)
+
 ;; UNIX系設定
 (load-p "unix-defaults")
 
