@@ -296,6 +296,13 @@
   (setq tramp-verbose 3)
 )
 
+;; Redo+
+(require 'redo+)
+(global-set-key (kbd "C-^") 'redo)
+(setq undo-no-redo t)
+(setq undo-limit 600000)
+(setq undo-strong-limit 900000)
+
 ;; 矩形選択
 (cua-mode t)
 (setq cua-enable-cua-keys nil) ;; 変なキーバインド禁止
@@ -338,6 +345,11 @@
 (require 'key-chord)
 (setq key-chord-two-keys-delay 0.04)
 (key-chord-mode 1)
+
+;; Customize minor-mode key priority
+(require 'minor-mode-hack)
+;;(lower-minor-mode-map-alist 'ruby-electric-mode)
+;;(raise-minor-mode-map-alist 'anthy-minor-mode)
 
 ;; UNIX系設定
 (load-p "unix-defaults")
