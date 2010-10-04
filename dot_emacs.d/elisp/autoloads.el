@@ -258,12 +258,16 @@
 ;; 	   (string-match "^xterm\\|^screen" (getenv "TERM")))
 ;;   (xterm-title-mode 1))
 
-;; 
+;; wdired
 (require 'wdired)
 (define-key dired-mode-map "r" 'wdired-change-to-wdired-mode)
 
-(require 'zlc)
-(setq zlc-select-completion-immediately t)
+;; zsh like completion
+(cond
+  ((>= emacs-major-version '23)
+    (progn
+      (require 'zlc)
+      (setq zlc-select-completion-immediately t))))
 
 ;; 自動保存
 (when (load-p "auto-save-buffers")
