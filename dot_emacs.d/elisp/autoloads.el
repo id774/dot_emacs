@@ -132,6 +132,19 @@
   (setq auto-mode-alist
     (cons '("\.as\'" . actionscript-mode) auto-mode-alist)))
 
+;; bat-mode
+(setq auto-mode-alist
+       (append 
+         (list (cons "\\.[bB][aA][tT]$" 'bat-mode))
+         (list (cons "\\.[cC][mM][dD]$" 'bat-mode))
+         ;; For DOS init files
+         (list (cons "CONFIG\\."   'bat-mode))
+         (list (cons "AUTOEXEC\\." 'bat-mode))
+         auto-mode-alist))
+
+(autoload 'bat-mode "bat-mode"
+      "DOS and Windows BAT files" t)
+
 ;; sense-region.el : \C-spc で region<->rectabgle をトグル。便利。
 (when (autoload-p 'sense-region-on "sense-region" "sense-region" 'interactive)
   (sense-region-on))
