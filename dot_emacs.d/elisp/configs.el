@@ -188,7 +188,16 @@
 ;; 行数表示(C-x t で切替)
     (cond
       ((>= emacs-major-version '23)
-        (linum-mode)))))
+        (linum-mode)
+      )
+      ((< emacs-major-version '23)
+        (require 'wb-line-number)
+        (wb-line-number-enable)
+        (custom-set-faces
+         '(wb-line-number-face ((t (:foreground "LightGrey"))))
+         '(wb-line-number-scroll-bar-face
+           ((t (:foreground "white" :background "LightBlue2")))))
+      ))))
 
 ;; 画面端で折り返す
 (setq truncate-partial-width-windows nil)

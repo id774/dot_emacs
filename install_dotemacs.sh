@@ -94,6 +94,8 @@ byte_compile_all() {
     $EMACS --batch --eval '(byte-compile-file "auto-complete.el")'
     $EMACS --batch --eval '(byte-compile-file "key-chord.el")'
     $EMACS --batch --eval '(byte-compile-file "anything.el")'
+    $EMACS --batch --eval '(byte-compile-file "bat-mode.el")'
+    $EMACS --batch --eval '(byte-compile-file "wb-line-number.el")'
     $EMACS --batch --eval '(byte-compile-file "twitter1-mode.el")'
     $EMACS --batch --eval '(byte-compile-file "twitter2-mode.el")'
     $EMACS --batch --eval '(byte-compile-file "twitter3-mode.el")'

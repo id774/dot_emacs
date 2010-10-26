@@ -22,7 +22,9 @@
 ;; C-x t で行数表示/非表示
 (cond
   ((>= emacs-major-version '23)
-    (define-key global-map "\C-x\ t" 'linum-mode)))
+    (define-key global-map "\C-x\ t" 'linum-mode))
+  ((< emacs-major-version '23)
+    (define-key global-map "\C-x\ t" 'wb-line-number-toggle)))
 
 ;; C-x C-y または C-x y で auto-complete-mode の有効/無効を切り替える
 (define-key global-map "\C-x\C-y" 'auto-complete-mode)
