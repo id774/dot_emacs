@@ -192,7 +192,6 @@
       )
       ((< emacs-major-version '23)
         (require 'wb-line-number)
-        (wb-line-number-enable)
         (custom-set-faces
          '(wb-line-number-face ((t (:foreground "LightGrey"))))
          '(wb-line-number-scroll-bar-face
