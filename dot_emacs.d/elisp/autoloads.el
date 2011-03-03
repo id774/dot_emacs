@@ -10,6 +10,10 @@
 (require 'auto-complete)
 (global-auto-complete-mode t)
 
+;; git.el
+(require 'git)
+(require 'git-blame)
+
 ;; timidity-mode : TiMidity++ emacs front-end
 (when (autoload-p 'timidity "timidity" "TiMidity++" 'interactive))
 
@@ -270,6 +274,18 @@
 ;; 	   (not window-system))
 ;; 	   (string-match "^xterm\\|^screen" (getenv "TERM")))
 ;;   (xterm-title-mode 1))
+
+;; popwin-el
+(if (require 'popwin nil t)
+    (progn
+        (setq display-buffer-function 'popwin:display-buffer)
+        (setq popwin:popup-window-height 0.4)
+        (setq anything-samewindow nil)
+        (push '("*anything*" :height 20) popwin:special-display-config)
+        (push '(dired-mode :position top) popwin:special-display-config)
+        (push '("\\*[Vv][Cc]" :regexp t :position top) popwin:special-display-config)
+        (push '("\\*git-" :regexp t :position top) popwin:special-display-config)
+))
 
 ;; wdired
 (require 'wdired)
