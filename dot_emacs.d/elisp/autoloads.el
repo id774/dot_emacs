@@ -93,26 +93,6 @@
 ;; jsp
 (load "autostart")
 
-;; jde
-(defun dynamic-load-jde ()
-  (interactive)
-  (autoload 'jde-mode "jde" "Java Development Environment for Emacs." t)
-  (setq semantic-load-turn-useful-things-on t)
-  ;; cedet
-  (load "cedet")
-  (global-ede-mode t)
-  (semantic-load-enable-code-helpers)
-  (global-srecode-minor-mode 1)
-  ;; ecb
-  (require 'ecb)
-  ;; elisp for jdee
-  (load-p "jde-config")
-  (jde-mode))
-
-(setq auto-mode-alist
-      (cons '("\\.java$" . dynamic-load-jde)
-	    auto-mode-alist))
-
 ;; gtags-mode : global ÊØÍø¡£
 (when (autoload-p 'gtags-mode "gtags" "GNU GLOBAL" 'interactive)
   (setq gtags-mode-hook

@@ -5,6 +5,8 @@
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+#  v1.7 3/18,2011
+#       Remove CEDET.
 #  v1.6 10/4,2010
 #       Refactoring.
 #  v1.5 8/9,2010
@@ -124,21 +126,13 @@ byte_compile_all() {
     $EMACS --batch --eval '(byte-compile-file "twitter-key.el")'
     $EMACS --batch --eval '(byte-compile-file "unix-defaults.el")'
     $EMACS --batch --eval '(byte-compile-file "utils.el")'
-    $EMACS --batch --eval '(byte-compile-file "view-mode-key.el")'
-}
-
-byte_compile_cedet() {
-    cd $TARGET/elisp/3rd-party/cedet
-    make EMACS=$EMACS
-}
-
-byte_compile_jde() {
-    $EMACS --batch -Q -f batch-byte-compile $TARGET/elisp/3rd-party/jde/lisp/*.el
 }
 
 network_connection() {
     setup_rhtml
+    ln -s $HOME/local/github/rhtml $TARGET/elisp/3rd-party
     setup_rinari
+    ln -s $HOME/local/github/rinari $TARGET/elisp/3rd-party
 }
 
 setup_environment() {
@@ -164,12 +158,8 @@ install_dotemacs() {
     setup_dotemacs
     gen_twitter_els
     ping -c 1 -i 3 google.com > /dev/null 2>&1 && network_connection
-    ln -s $HOME/local/github/rinari $TARGET/elisp/3rd-party
-    ln -s $HOME/local/github/rhtml $TARGET/elisp/3rd-party
     emacs_private_settings
     byte_compile_all
-    byte_compile_jde
-    #byte_compile_cedet
 }
 
 GITHUB=$HOME/local/github
