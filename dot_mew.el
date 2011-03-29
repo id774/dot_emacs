@@ -6,6 +6,12 @@
 (setq mew-auto-get nil)
 ;; POP サーバーからメールを削除する/しない
 (setq mew-pop-delete nil)
+;; パスワードキャッシュ
+(setq mew-use-cached-passwd t)
+;; メール定期受信
+(setq mew-use-biff t)
+(setq mew-use-biff-bell nil)
+(setq mew-pop-biff-interval 5)
 ;; メールサーバー設定
 (setq mew-ssl-verify-level 0)
 (setq mew-config-alist '(
