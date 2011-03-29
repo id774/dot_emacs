@@ -113,7 +113,7 @@ byte_compile_all() {
     $EMACS --batch --eval '(byte-compile-file "twitter5-mode.el")'
     $EMACS --batch --eval '(byte-compile-file "twitter6-mode.el")'
     cd ~/.emacs.d/elisp
-    $EMACS --batch --eval '(byte-compile-file "mew-configs.el")'
+    $EMACS --batch --eval '(byte-compile-file "mew-settings.el")'
     $EMACS --batch --eval '(byte-compile-file "custom.el")'
     $EMACS --batch --eval '(byte-compile-file "delete-empty-file.el")'
     $EMACS --batch --eval '(byte-compile-file "emacs-w3m.el")'

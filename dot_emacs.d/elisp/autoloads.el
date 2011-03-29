@@ -4,7 +4,7 @@
 (load "utils")
 
 ;; Mew
-(load-p "mew-configs")
+(load-p "mew-settings")
 
 ;; Textモードをデフォルトに
 (setq default-major-mode 'text-mode)
