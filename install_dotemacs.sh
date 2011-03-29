@@ -5,6 +5,8 @@
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+#  v1.8 3/29,2011
+#       Add mew.
 #  v1.7 3/18,2011
 #       Remove CEDET.
 #  v1.6 10/4,2010
@@ -28,6 +30,9 @@ setup_dotemacs() {
     test -f $HOME/.emacs && rm -f $HOME/.emacs
 
     cp $OPTIONS $DOT_EMACS/dot_emacs $HOME/.emacs
+    cp $OPTIONS $DOT_EMACS/dot_mew.el $HOME/.mew.el
+    chmod 600 $HOME/.mew.el
+    vim $HOME/.mew.el
     test -d $TARGET || mkdir -p $TARGET
     cp $OPTIONS $DOT_EMACS/dot_emacs.d/* $TARGET/
 }
@@ -109,6 +114,7 @@ byte_compile_all() {
     $EMACS --batch --eval '(byte-compile-file "twitter5-mode.el")'
     $EMACS --batch --eval '(byte-compile-file "twitter6-mode.el")'
     cd ~/.emacs.d/elisp
+    $EMACS --batch --eval '(byte-compile-file "mew-configs.el")'
     $EMACS --batch --eval '(byte-compile-file "custom.el")'
     $EMACS --batch --eval '(byte-compile-file "delete-empty-file.el")'
     $EMACS --batch --eval '(byte-compile-file "emacs-w3m.el")'
