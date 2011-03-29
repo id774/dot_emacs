@@ -5,16 +5,17 @@
 ;; 起動時にメール取得しない
 (setq mew-auto-get nil)
 ;; POP サーバーからメールを削除する/しない
-(setq mew-pop-delete nil)
+(setq mew-pop-delete t)
 ;; パスワードキャッシュ
 (setq mew-use-cached-passwd t)
+(setq mew-use-master-passwd t)
 ;; メール定期受信
 (setq mew-use-biff t)
 (setq mew-use-biff-bell nil)
 (setq mew-pop-biff-interval 5)
 ;; メールサーバー設定
 (setq mew-ssl-cert-directory "/etc/ssl/certs")
-(setq mew-ssl-verify-level 2)
+(setq mew-ssl-verify-level 0)
 (setq mew-config-alist '(
    ("default"
    ("pop-ssl"        . t)
