@@ -13,7 +13,8 @@
 (setq mew-use-biff-bell nil)
 (setq mew-pop-biff-interval 5)
 ;; メールサーバー設定
-(setq mew-ssl-verify-level 0)
+(setq mew-ssl-cert-directory "/etc/ssl/certs")
+(setq mew-ssl-verify-level 2)
 (setq mew-config-alist '(
    ("default"
    ("pop-ssl"        . t)
