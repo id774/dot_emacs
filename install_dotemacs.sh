@@ -28,11 +28,9 @@
 setup_dotemacs() {
     test -d $TARGET && rm -rf $TARGET/
     test -f $HOME/.emacs && rm -f $HOME/.emacs
-
     cp $OPTIONS $DOT_EMACS/dot_emacs $HOME/.emacs
     cp $OPTIONS $DOT_EMACS/dot_mew.el $HOME/.mew.el
     chmod 600 $HOME/.mew.el
-    vim $HOME/.mew.el
     test -d $TARGET || mkdir -p $TARGET
     cp $OPTIONS $DOT_EMACS/dot_emacs.d/* $TARGET/
 }
@@ -87,6 +85,7 @@ emacs_private_settings() {
     if [ -f $HOME/etc/config.local/local.el ]; then
         cp $OPTIONS $HOME/etc/config.local/*.el $TARGET/elisp/
     fi
+    vim $HOME/.mew.el
     vim $TARGET/elisp/proxy.el $TARGET/elisp/emacs-w3m.el $TARGET/elisp/unix-defaults.el $TARGET/elisp/local.el
 }
 
