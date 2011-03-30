@@ -82,11 +82,18 @@ emacs_private_settings() {
     fi
     chmod 600 $TARGET/elisp/twitter*-account.el*
 
+    if [ -f $HOME/etc/config.local/dot_mew_el ]; then
+        cp $HOME/etc/config.local/dot_mew_el $HOME/.mew.el
+    fi
     if [ -f $HOME/etc/config.local/local.el ]; then
         cp $OPTIONS $HOME/etc/config.local/*.el $TARGET/elisp/
     fi
-    vim $HOME/.mew.el
-    vim $TARGET/elisp/proxy.el $TARGET/elisp/emacs-w3m.el $TARGET/elisp/unix-defaults.el $TARGET/elisp/local.el
+    vim \
+      $HOME/.mew.el \
+      $TARGET/elisp/proxy.el \
+      $TARGET/elisp/emacs-w3m.el \
+      $TARGET/elisp/unix-defaults.el \
+      $TARGET/elisp/local.el
 }
 
 byte_compile_all() {
