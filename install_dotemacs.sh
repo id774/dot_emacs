@@ -30,7 +30,6 @@ setup_dotemacs() {
     test -f $HOME/.emacs && rm -f $HOME/.emacs
     cp $OPTIONS $DOT_EMACS/dot_emacs $HOME/.emacs
     cp $OPTIONS $DOT_EMACS/dot_mew.el $HOME/.mew.el
-    chmod 600 $HOME/.mew.el
     test -d $TARGET || mkdir -p $TARGET
     cp $OPTIONS $DOT_EMACS/dot_emacs.d/* $TARGET/
 }
@@ -82,9 +81,14 @@ emacs_private_settings() {
     fi
     chmod 600 $TARGET/elisp/twitter*-account.el*
 
+    if [ -f $PRIVATE/dot_files/dot_mew.el ]; then
+        cp $PRIVATE/dot_files/dot_mew.el $HOME/.mew.el
+    fi
     if [ -f $HOME/etc/config.local/dot_mew_el ]; then
         cp $HOME/etc/config.local/dot_mew_el $HOME/.mew.el
     fi
+    chmod 600 $HOME/.mew.el
+
     if [ -f $HOME/etc/config.local/local.el ]; then
         cp $OPTIONS $HOME/etc/config.local/*.el $TARGET/elisp/
     fi
@@ -148,6 +152,8 @@ network_connection() {
 }
 
 setup_environment() {
+    SCRIPTS=$HOME/scripts
+    PRIVATE=$HOME/private/scripts
     TARGET=$HOME/.emacs.d
 
     case $OSTYPE in
