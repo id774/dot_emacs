@@ -17,6 +17,7 @@
       'mew-draft-send-message
       'mew-draft-kill
       'mew-send-hook))
+(define-key global-map "\C-c\C-c\ m" 'mew)
 
 
 ;; Local Variables:
