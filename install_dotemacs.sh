@@ -135,9 +135,15 @@ slink_elisp() {
     fi
     test -d $HOME/.emacs.d/anything || mkdir $HOME/.emacs.d/anything
     test -d $HOME/.emacs.d/backups || mkdir $HOME/.emacs.d/backups
-    test -d $HOME/.emacs.d/tramp-auto-save || mkdir $HOME/.emacs.d/tramp-auto-save
     test -d $HOME/.emacs.d/tmp || mkdir $HOME/.emacs.d/tmp
+    test -d $HOME/.emacs.d/tramp-auto-save || mkdir $HOME/.emacs.d/tramp-auto-save
     test -d $HOME/.emacs.d/auto-save-list || mkdir $HOME/.emacs.d/auto-save-list
+    sudo chmod 750 $HOME/.emacs.d
+    sudo chmod 750 $HOME/.emacs.d/anything
+    sudo chmod 750 $HOME/.emacs.d/backups
+    sudo chmod 750 $HOME/.emacs.d/tmp
+    sudo chmod 750 $HOME/.emacs.d/tramp-auto-save
+    sudo chmod 750 $HOME/.emacs.d/auto-save-list
 }
 
 network_connection() {
