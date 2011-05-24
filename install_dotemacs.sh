@@ -2,9 +2,14 @@
 #
 ########################################################################
 # Install dot_emacs
+#  $1 = emacs's binary path
+#  $2 = installation target
+#  $3 = nosudo
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+#  v1.9 5/24,2011
+#       Selectable installation target.
 #  v1.8 3/29,2011
 #       Add mew.
 #  v1.7 3/18,2011
@@ -26,38 +31,22 @@
 ########################################################################
 
 setup_dotemacs() {
-    test -d $TARGET && rm -rf $TARGET/
+    test -d $TARGET && $SUDO rm -rf $TARGET/
     test -f $HOME/.emacs && rm -f $HOME/.emacs
+    test -d $HOME/.emacs.d && rm -rf $HOME/.emacs.d
     cp $OPTIONS $DOT_EMACS/dot_emacs $HOME/.emacs
     cp $OPTIONS $DOT_EMACS/dot_mew.el $HOME/.mew.el
-    test -d $TARGET || mkdir -p $TARGET
-    cp $OPTIONS $DOT_EMACS/dot_emacs.d/* $TARGET/
-}
-
-gen_twitter_el() {
-    cd $TARGET/elisp/3rd-party
-    sed s/twitter1/twitter$1/g twitter1-mode.el |\
-    sed s/24\)/$2\)/g |\
-    sed s/103\)/$3\)/g > twitter$1-mode.el
-    cd $TARGET/elisp
-    cp twitter1-account.el twitter$1-account.el
-}
-
-gen_twitter_els() {
-    gen_twitter_el 2 23 102
-    gen_twitter_el 3 22 101
-    gen_twitter_el 4 21  98
-    gen_twitter_el 5 19  96
-    gen_twitter_el 6 18  94
+    test -d $TARGET || $SUDO mkdir -p $TARGET/
+    $SUDO cp $OPTIONS $DOT_EMACS/dot_emacs.d/elisp $TARGET/
 }
 
 setup_rhtml() {
     if [ -d $GITHUB/rhtml ]; then
         cd $GITHUB/rhtml
-        git pull
+        $SUDO git pull
     else
         cd $GITHUB
-        git clone git://github.com/eschulte/rhtml.git
+        $SUDO git clone git://github.com/eschulte/rhtml.git
         cd $GITHUB/rhtml
     fi
 }
@@ -65,22 +54,17 @@ setup_rhtml() {
 setup_rinari() {
     if [ -d $GITHUB/rinari ]; then
         cd $GITHUB/rinari
-        git pull
+        $SUDO git pull
     else
         cd $GITHUB
-        git clone git://github.com/eschulte/rinari.git
+        $SUDO git clone git://github.com/eschulte/rinari.git
         cd $GITHUB/rinari
     fi
-    git submodule init
-    git submodule update
+    $SUDO git submodule init
+    $SUDO git submodule update
 }
 
 emacs_private_settings() {
-    if [ -f $PRIVATE/etc/twitter1-account.el ]; then
-        cp $OPTIONS $PRIVATE/etc/twitter*-account.el $TARGET/elisp/
-    fi
-    chmod 600 $TARGET/elisp/twitter*-account.el*
-
     if [ -f $PRIVATE/dot_files/dot_mew.el ]; then
         cp $PRIVATE/dot_files/dot_mew.el $HOME/.mew.el
     fi
@@ -90,9 +74,9 @@ emacs_private_settings() {
     chmod 600 $HOME/.mew.el
 
     if [ -f $HOME/etc/config.local/local.el ]; then
-        cp $OPTIONS $HOME/etc/config.local/*.el $TARGET/elisp/
+        $SUDO cp $OPTIONS $HOME/etc/config.local/*.el $TARGET/elisp/
     fi
-    vim \
+    $SUDO vim \
       $HOME/.mew.el \
       $TARGET/elisp/proxy.el \
       $TARGET/elisp/emacs-w3m.el \
@@ -101,86 +85,109 @@ emacs_private_settings() {
 }
 
 byte_compile_all() {
-    cd ~/.emacs.d/elisp/3rd-party
-    $EMACS --batch --eval '(byte-compile-file "js2.el")'
-    $EMACS --batch --eval '(byte-compile-file "redo+.el")'
-    $EMACS --batch --eval '(byte-compile-file "viewer.el")'
-    $EMACS --batch --eval '(byte-compile-file "ruby-block.el")'
-    $EMACS --batch --eval '(byte-compile-file "jaspace.el")'
-    $EMACS --batch --eval '(byte-compile-file "actionscript-mode.el")'
-    $EMACS --batch --eval '(byte-compile-file "fuzzy.el")'
-    $EMACS --batch --eval '(byte-compile-file "popup.el")'
-    $EMACS --batch --eval '(byte-compile-file "key-chord.el")'
-    $EMACS --batch --eval '(byte-compile-file "anything.el")'
-    $EMACS --batch --eval '(byte-compile-file "bat-mode.el")'
-    $EMACS --batch --eval '(byte-compile-file "git.el")'
-    $EMACS --batch --eval '(byte-compile-file "git-blame.el")'
-    $EMACS --batch --eval '(byte-compile-file "popwin.el")'
-    $EMACS --batch --eval '(byte-compile-file "wb-line-number.el")'
-    $EMACS --batch --eval '(byte-compile-file "twitter1-mode.el")'
-    $EMACS --batch --eval '(byte-compile-file "twitter2-mode.el")'
-    $EMACS --batch --eval '(byte-compile-file "twitter3-mode.el")'
-    $EMACS --batch --eval '(byte-compile-file "twitter4-mode.el")'
-    $EMACS --batch --eval '(byte-compile-file "twitter5-mode.el")'
-    $EMACS --batch --eval '(byte-compile-file "twitter6-mode.el")'
-    cd ~/.emacs.d/elisp
-    $EMACS --batch --eval '(byte-compile-file "mew-settings.el")'
-    $EMACS --batch --eval '(byte-compile-file "custom.el")'
-    $EMACS --batch --eval '(byte-compile-file "delete-empty-file.el")'
-    $EMACS --batch --eval '(byte-compile-file "emacs-w3m.el")'
-    $EMACS --batch --eval '(byte-compile-file "global-set-key.el")'
-    $EMACS --batch --eval '(byte-compile-file "jde-config.el")'
-    $EMACS --batch --eval '(byte-compile-file "key-chord-define-global.el")'
-    $EMACS --batch --eval '(byte-compile-file "kill-all-buffers.el")'
-    $EMACS --batch --eval '(byte-compile-file "minor-mode-hack.el")'
-    $EMACS --batch --eval '(byte-compile-file "new-file-p.el")'
-    $EMACS --batch --eval '(byte-compile-file "persistent-scratch.el")'
-    $EMACS --batch --eval '(byte-compile-file "physical-line.el")'
-    $EMACS --batch --eval '(byte-compile-file "proxy.el")'
-    $EMACS --batch --eval '(byte-compile-file "startup.el")'
-    $EMACS --batch --eval '(byte-compile-file "tab4.el")'
-    $EMACS --batch --eval '(byte-compile-file "twitter-key.el")'
-    $EMACS --batch --eval '(byte-compile-file "unix-defaults.el")'
-    $EMACS --batch --eval '(byte-compile-file "utils.el")'
+    cd $TARGET/elisp/3rd-party
+    $SUDO $EMACS --batch --eval '(byte-compile-file "js2.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "redo+.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "viewer.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "ruby-block.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "jaspace.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "actionscript-mode.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "fuzzy.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "popup.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "key-chord.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "anything.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "bat-mode.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "git.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "git-blame.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "popwin.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "wb-line-number.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter1-mode.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter2-mode.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter3-mode.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter4-mode.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter5-mode.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter6-mode.el")'
+    cd $TARGET/elisp
+    $SUDO $EMACS --batch --eval '(byte-compile-file "mew-settings.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "custom.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "delete-empty-file.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "emacs-w3m.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "global-set-key.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "jde-config.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "key-chord-define-global.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "kill-all-buffers.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "minor-mode-hack.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "new-file-p.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "persistent-scratch.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "physical-line.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "proxy.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "startup.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "tab4.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter-key.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "unix-defaults.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "utils.el")'
+}
+
+slink_elisp() {
+    test -d $HOME/.emacs.d || mkdir $HOME/.emacs.d
+    if [ "$TARGET" != "$HOME/.emacs.d" ]; then
+        ln -s $TARGET/elisp $HOME/.emacs.d/elisp
+    fi
+    test -d $HOME/.emacs.d/anything || mkdir $HOME/.emacs.d/anything
+    test -d $HOME/.emacs.d/backups || mkdir $HOME/.emacs.d/backups
+    test -d $HOME/.emacs.d/tramp-auto-save || mkdir $HOME/.emacs.d/tramp-auto-save
+    test -d $HOME/.emacs.d/tmp || mkdir $HOME/.emacs.d/tmp
+    test -d $HOME/.emacs.d/auto-save-list || mkdir $HOME/.emacs.d/auto-save-list
 }
 
 network_connection() {
     setup_rhtml
-    ln -s $HOME/local/github/rhtml $TARGET/elisp/3rd-party
     setup_rinari
-    ln -s $HOME/local/github/rinari $TARGET/elisp/3rd-party
 }
 
 setup_environment() {
     SCRIPTS=$HOME/scripts
     PRIVATE=$HOME/private/scripts
-    TARGET=$HOME/.emacs.d
 
     case $OSTYPE in
       *darwin*)
         OPTIONS=-Rv
+        OWNER=root:wheel
         test -n "$1" || EMACS=/usr/bin/emacs
         ;;
       *)
         OPTIONS=-Rvd
+        OWNER=root:root
         test -n "$1" || EMACS=emacs
         ;;
     esac
 
     test -n "$1" && EMACS=$1
+
+    TARGET=$HOME/.emacs.d
+    test -n "$2" && export TARGET=$2
+    test -n "$2" || export TARGET=/etc/emacs.d
+    #test -n "$2" || export TARGET=$HOME/.emacs.d
+
+    test -n "$3" || SUDO=sudo
+    test -n "$3" && SUDO=
+    GITHUB=$TARGET/elisp/3rd-party
+    DOT_EMACS=$HOME/dot_emacs
+}
+
+set_permission() {
+    $SUDO chown -R $OWNER $TARGET
 }
 
 install_dotemacs() {
     cd
     setup_environment $*
     setup_dotemacs
-    gen_twitter_els
     ping -c 1 -i 3 google.com > /dev/null 2>&1 && network_connection
     emacs_private_settings
     byte_compile_all
+    slink_elisp
+    test -n "$3" || set_permission
 }
 
-GITHUB=$HOME/local/github
-DOT_EMACS=$GITHUB/dot_emacs
-test -d $DOT_EMACS || exit 1
 install_dotemacs $*
