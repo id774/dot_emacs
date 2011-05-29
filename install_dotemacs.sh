@@ -79,8 +79,8 @@ emacs_private_settings() {
     $SUDO vim \
       $HOME/.mew.el \
       $TARGET/elisp/proxy.el \
+      $TARGET/elisp/faces.el \
       $TARGET/elisp/emacs-w3m.el \
-      $TARGET/elisp/unix-defaults.el \
       $TARGET/elisp/local.el
 }
 
@@ -112,6 +112,7 @@ byte_compile_all() {
     $SUDO $EMACS --batch --eval '(byte-compile-file "custom.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "delete-empty-file.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "emacs-w3m.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "faces.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "global-set-key.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "jde-config.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "key-chord-define-global.el")'
@@ -124,7 +125,6 @@ byte_compile_all() {
     $SUDO $EMACS --batch --eval '(byte-compile-file "startup.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "tab4.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "twitter-key.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "unix-defaults.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "utils.el")'
 }
 

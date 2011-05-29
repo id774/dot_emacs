@@ -368,7 +368,7 @@
 ;;(raise-minor-mode-map-alist 'anthy-minor-mode)
 
 ;; UNIX系設定
-(load-p "unix-defaults")
+(load-p "faces")
 
 ;; 依存関係があるのでこいつは一番最後に。
 (load-p "configs")
