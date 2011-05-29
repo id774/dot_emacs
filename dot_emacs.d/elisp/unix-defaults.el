@@ -97,23 +97,16 @@
               ;; (set-input-method "MacOSX")
               (setq ns-command-modifier (quote meta))
               (setq ns-alternate-modifier (quote super))
-              (setq my-font "-*-*-medium-r-normal--10-*-*-*-*-*-fontset-hiramaru")
-              (setq fixed-width-use-QuickDraw-for-ascii t)
-              (setq mac-allow-anti-aliasing t)
-              (set-default-font my-font)
-              (add-to-list 'default-frame-alist `(font . ,my-font))
-              (set-fontset-font
-                (frame-parameter nil 'font)
-                'japanese-jisx0208
-                '("Hiragino Maru Gothic Pro" . "iso10646-1"))
-              (setq face-font-rescale-alist
-                '(("^-apple-hiragino.*" . 1.2)
-                (".*osaka-bold.*" . 1.2)
-                (".*osaka-medium.*" . 1.2)
-                (".*courier-bold-.*-mac-roman" . 1.0)
-                (".*monaco cy-bold-.*-mac-cyrillic" . 0.9)
-                (".*monaco-bold-.*-mac-roman" . 0.9)
-                ("-cdac$" . 1.3)))))))
+              (if window-system (progn
+                 (create-fontset-from-fontset-spec
+                 (concat
+                  "-*-fixed-medium-r-normal-*-14-*-*-*-*-*-fontset-osaka16,"
+                  "japanese-jisx0208:-apple-osaka-medium-r-normal--16-160-75-75-m-160-jisx0208.1983-sjis,"
+                  "ascii:-apple-monaco-medium-r-normal-*-14-*-*-*-*-*-mac-roman"))
+                 (set-default-font "fontset-osaka16")
+                 (setq default-frame-alist (append '((font . "fontset-osaka16"))))
+              ))
+          ))))
       )
 ;; フレーム設定
     (setq default-frame-alist
