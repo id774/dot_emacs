@@ -88,12 +88,6 @@
               ))
           ((>= emacs-major-version '23)
             (progn
-              (setq default-frame-alist ; 13inch MacBook Pro に最適化
-                    (append (list '(top . 0) ; 起動時の表示位置（上から）
-                                  '(left . 0) ; 起動時の表示位置（左から）
-                                  '(width . 210) ; 起動時のサイズ（幅）
-                                  '(height . 60) ; 起動時のサイズ（縦）
-                                  )))
               ;; (set-input-method "MacOSX")
               (setq ns-command-modifier (quote meta))
               (setq ns-alternate-modifier (quote super))
@@ -104,7 +98,14 @@
                   "japanese-jisx0208:-apple-osaka-medium-r-normal--16-160-75-75-m-160-jisx0208.1983-sjis,"
                   "ascii:-apple-monaco-medium-r-normal-*-14-*-*-*-*-*-mac-roman"))
                  (set-default-font "fontset-osaka16")
-                 (setq default-frame-alist (append '((font . "fontset-osaka16"))))
+                 (setq default-frame-alist 
+                   (append 
+                     '((font . "fontset-osaka16"))
+                       (list '(top . 0) ; 起動時の表示位置（上から）
+                             '(left . 0) ; 起動時の表示位置（左から）
+                             '(width . 210) ; 起動時のサイズ（幅）
+                             '(height . 60) ; 起動時のサイズ（縦）
+                 )))
               ))
           ))))
       )
