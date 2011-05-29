@@ -68,7 +68,6 @@
                             '(height . 40) ; 起動時のサイズ（縦）
                             )))
         (set-default-font "Bitstream Vera Sans Mono-8")
-        ;;(set-default-font "DejaVu Sans Mono-8") ;; Ubuntu Lucid
         (set-fontset-font (frame-parameter nil 'font)
                           'japanese-jisx0208
                           '("VL ゴシック" . "unicode-bmp"))
@@ -88,26 +87,56 @@
               ))
           ((>= emacs-major-version '23)
             (progn
+              (setq default-frame-alist ; 13inch MacBook Pro に最適化
+                    (append (list '(top . 0) ; 起動時の表示位置（上から）
+                                  '(left . 0) ; 起動時の表示位置（左から）
+                                  '(width . 120) ; 起動時のサイズ（幅）
+                                  '(height . 40) ; 起動時のサイズ（縦）
+                                  )))
               ;; (set-input-method "MacOSX")
+              (setq fixed-width-use-QuickDraw-for-ascii t)
+              (setq mac-allow-anti-aliasing t)
+              (set-face-attribute 'default nil
+                                  :family "monaco"
+                                  :height 140)
+              (set-fontset-font
+               (frame-parameter nil 'font)
+               'japanese-jisx0208
+               '("Hiragino Maru Gothic Pro" . "iso10646-1"))
+              (set-fontset-font
+               (frame-parameter nil 'font)
+               'japanese-jisx0212
+               '("Hiragino Maru Gothic Pro" . "iso10646-1"))
+              ;;; Unicode フォント
+              (set-fontset-font
+               (frame-parameter nil 'font)
+               'mule-unicode-0100-24ff
+               '("monaco" . "iso10646-1"))
+             ;;; キリル，ギリシア文字設定
+             ;;; 注意： この設定だけでは古代ギリシア文字、コプト文字は表示できない
+             ;;; http://socrates.berkeley.edu/~pinax/greekkeys/NAUdownload.html が必要
+             ;;; キリル文字
+              (set-fontset-font
+               (frame-parameter nil 'font)
+               'cyrillic-iso8859-5
+               '("monaco" . "iso10646-1"))
+             ;;; ギリシア文字
+              (set-fontset-font
+               (frame-parameter nil 'font)
+               'greek-iso8859-7
+               '("monaco" . "iso10646-1"))
+              (setq face-font-rescale-alist
+                    '(("^-apple-hiragino.*" . 1.2)
+                      (".*osaka-bold.*" . 1.2)
+                      (".*osaka-medium.*" . 1.2)
+                      (".*courier-bold-.*-mac-roman" . 1.0)
+                      (".*monaco cy-bold-.*-mac-cyrillic" . 0.9)
+                      (".*monaco-bold-.*-mac-roman" . 0.9)
+                      ("-cdac$" . 1.3)))
               (setq ns-command-modifier (quote meta))
               (setq ns-alternate-modifier (quote super))
-              (if window-system (progn
-                 (create-fontset-from-fontset-spec
-                 (concat
-                  "-*-fixed-medium-r-normal-*-14-*-*-*-*-*-fontset-osaka16,"
-                  "japanese-jisx0208:-apple-osaka-medium-r-normal--16-160-75-75-m-160-jisx0208.1983-sjis,"
-                  "ascii:-apple-monaco-medium-r-normal-*-14-*-*-*-*-*-mac-roman"))
-                 (set-default-font "fontset-osaka16")
-                 (setq default-frame-alist 
-                   (append 
-                     '((font . "fontset-osaka16"))
-                       (list '(top . 0) ; 起動時の表示位置（上から）
-                             '(left . 0) ; 起動時の表示位置（左から）
-                             '(width . 210) ; 起動時のサイズ（幅）
-                             '(height . 60) ; 起動時のサイズ（縦）
-                 )))
-              ))
-          ))))
+          ))
+        ))
       )
 ;; フレーム設定
     (setq default-frame-alist
