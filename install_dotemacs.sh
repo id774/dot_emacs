@@ -189,7 +189,7 @@ install_dotemacs() {
     cd
     setup_environment $*
     setup_dotemacs
-    ping -c 1 -i 3 google.com > /dev/null 2>&1 && network_connection
+    ping -c 1 id774.net > /dev/null 2>&1 && network_connection
     emacs_private_settings
     byte_compile_all
     slink_elisp
