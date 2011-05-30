@@ -91,8 +91,8 @@
               (setq default-frame-alist ; 13inch MacBook Pro に最適化
                     (append (list '(top . 0) ; 起動時の表示位置（上から）
                                   '(left . 0) ; 起動時の表示位置（左から）
-                                  '(width . 120) ; 起動時のサイズ（幅）
-                                  '(height . 40) ; 起動時のサイズ（縦）
+                                  '(width . 160) ; 起動時のサイズ（幅）
+                                  '(height . 45) ; 起動時のサイズ（縦）
                                   )))
               ;; (set-input-method "MacOSX")
               (setq fixed-width-use-QuickDraw-for-ascii t)
