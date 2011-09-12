@@ -119,6 +119,11 @@
   (setq auto-mode-alist
     (cons '("\.as\'" . actionscript-mode) auto-mode-alist)))
 
+;; scss-mode
+(autoload 'scss-mode "scss-mode")
+(setq scss-compile-at-save nil)
+(add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode))
+
 ;; bat-mode
 (setq auto-mode-alist
        (append 
