@@ -100,6 +100,7 @@ byte_compile_all() {
     $SUDO $EMACS --batch --eval '(byte-compile-file "git.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "git-blame.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "popwin.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "scss-mode.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "wb-line-number.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "twitter1-mode.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "twitter2-mode.el")'
@@ -107,6 +108,7 @@ byte_compile_all() {
     $SUDO $EMACS --batch --eval '(byte-compile-file "twitter4-mode.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "twitter5-mode.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "twitter6-mode.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "zencoding-mode.el")'
     cd $TARGET/elisp
     $SUDO $EMACS --batch --eval '(byte-compile-file "mew-settings.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "custom.el")'
