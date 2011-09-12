@@ -30,6 +30,10 @@
 (define-key global-map "\C-x\C-y" 'auto-complete-mode)
 (define-key global-map "\C-x\ y" 'auto-complete-mode)
 
+;; C-x C-z または C-x z で zencoding-mode の有効/無効を切り替える
+(define-key global-map "\C-x\C-z" 'zencoding-mode)
+(define-key global-map "\C-x\ z" 'zencoding-mode)
+
 ;; タブ幅を微調整
 (defun my-increase-tab-width ()
     (interactive)
