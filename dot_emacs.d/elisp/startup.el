@@ -21,6 +21,7 @@ subdirectory under load-path.")
       (list "/usr/local/share/emacs/site-lisp"
 	    (expand-file-name "~/.emacs.d/elisp")
 	    (expand-file-name "~/.emacs.d/elisp/3rd-party")
+	    (expand-file-name "~/.emacs.d/elisp/3rd-party/ruby-mode")
 	    ;; (expand-file-name "~/.emacs.d/elisp/3rd-party/nxhtml")
 	    (expand-file-name "~/.emacs.d/elisp/3rd-party/rhtml")
 	    (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari")))

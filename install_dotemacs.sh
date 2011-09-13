@@ -85,6 +85,14 @@ emacs_private_settings() {
 }
 
 byte_compile_all() {
+    cd $TARGET/elisp/3rd-party/ruby-mode
+    $SUDO $EMACS --batch --eval '(byte-compile-file "inf-ruby.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "ruby-mode.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "rdoc-mode.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "ruby-style.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "ruby-electric.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "rubydb2x.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "rubydb3x.el")'
     cd $TARGET/elisp/3rd-party
     $SUDO $EMACS --batch --eval '(byte-compile-file "js2.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "redo+.el")'
