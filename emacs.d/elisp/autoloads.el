@@ -10,12 +10,12 @@
 (setq default-major-mode 'text-mode)
 
 ;; オートコンプリート
-(require 'auto-complete)
-(global-auto-complete-mode t)
+(when (load-p "auto-complete")
+  (global-auto-complete-mode t))
 
 ;; git.el
-(require 'git)
-(require 'git-blame)
+(load-p "git")
+(load-p "git-blame")
 
 ;; timidity-mode : TiMidity++ emacs front-end
 (when (autoload-p 'timidity "timidity" "TiMidity++" 'interactive))
@@ -84,17 +84,17 @@
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indent))
 
 ;; Rinari
-(require 'rinari)
+(load-p "rinari")
 
 ;; rhtml-mode
-(require 'rhtml-mode)
-(setq auto-mode-alist (cons '("\\.erb$" . rhtml-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.rhtml$" . rhtml-mode) auto-mode-alist))
-(add-hook 'rhtml-mode-hook
-  (lambda () (rinari-launch)))
+(when (load-p "rhtml-mode")
+  (setq auto-mode-alist (cons '("\\.erb$" . rhtml-mode) auto-mode-alist))
+  (setq auto-mode-alist (cons '("\\.rhtml$" . rhtml-mode) auto-mode-alist))
+  (add-hook 'rhtml-mode-hook
+    (lambda () (rinari-launch))))
 
 ;; jsp
-;;(load "autostart")
+;;(load-p "autostart")
 
 ;; gtags-mode : global 便利。
 (when (autoload-p 'gtags-mode "gtags" "GNU GLOBAL" 'interactive)
@@ -108,11 +108,11 @@
   (defun-add-hook 'c-mode-common-hook (gtags-mode 1)))
 
 ;; js2-mode
-(autoload 'js2-mode "js2" nil t)
-(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-(add-hook 'js2-mode-hook
-          '(lambda ()
-             (setq js2-basic-offset 4)))
+(when (autoload-p 'js2-mode "js2" "js2" 'interactive)
+  (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+  (add-hook 'js2-mode-hook
+            '(lambda ()
+               (setq js2-basic-offset 4))))
 
 ;; actionscript-mode
 (when (require 'actionscript-mode nil t)
@@ -120,16 +120,16 @@
     (cons '("\.as\'" . actionscript-mode) auto-mode-alist)))
 
 ;; Zen Coding Mode
-(require 'zencoding-mode)
-(add-hook 'sgml-mode-hook 'zencoding-mode)
-(add-hook 'html-mode-hook 'zencoding-mode)
-(add-hook 'text-mode-hook 'zencoding-mode)
-(define-key zencoding-mode-keymap "\C-i" 'zencoding-expand-line)
+(when (load-p "zencoding-mode")
+  (add-hook 'sgml-mode-hook 'zencoding-mode)
+  (add-hook 'html-mode-hook 'zencoding-mode)
+  (add-hook 'text-mode-hook 'zencoding-mode)
+  (define-key zencoding-mode-keymap "\C-i" 'zencoding-expand-line))
 
 ;; scss-mode
-(autoload 'scss-mode "scss-mode")
-(setq scss-compile-at-save nil)
-(add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode))
+(when (autoload-p 'scss-mode "scss-mode" "scss-mode" 'interactive)
+  (setq scss-compile-at-save nil)
+  (add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode)))
 
 ;; bat-mode
 (setq auto-mode-alist
@@ -141,7 +141,7 @@
          (list (cons "AUTOEXEC\\." 'bat-mode))
          auto-mode-alist))
 
-(autoload 'bat-mode "bat-mode"
+(autoload-p 'bat-mode "bat-mode"
       "DOS and Windows BAT files" t)
 
 ;; sense-region.el : \C-spc で region<->rectabgle をトグル。便利。
@@ -283,8 +283,8 @@
 ))
 
 ;; wdired
-(require 'wdired)
-(define-key dired-mode-map "r" 'wdired-change-to-wdired-mode)
+(when (load-p "wdired")
+  (define-key dired-mode-map "r" 'wdired-change-to-wdired-mode))
 
 ;; zsh like completion
 (cond
@@ -315,7 +315,6 @@
   (defun-add-hook 'change-log-mode-hook (setq mode-name "CL")))
 
 ;; TRAMP
-(require 'tramp)
 (when (load-p "tramp")
   (setq tramp-shell-prompt-pattern "^.*[#$%>] *")
   (setq tramp-debug-buffer t)
@@ -325,11 +324,11 @@
 )
 
 ;; Redo+
-(require 'redo+)
-(global-set-key (kbd "C-^") 'redo)
-(setq undo-no-redo t)
-(setq undo-limit 600000)
-(setq undo-strong-limit 900000)
+(when (load-p "redo+")
+  (global-set-key (kbd "C-^") 'redo)
+  (setq undo-no-redo t)
+  (setq undo-limit 600000)
+  (setq undo-strong-limit 900000))
 
 ;; 矩形選択
 (cua-mode t)
@@ -345,37 +344,37 @@
 (load-p "tab4")
 
 ;; タブ, 全角スペース、改行直前の半角スペースを表示する
-(load-p "jaspace-mode")
-;;(setq jaspace-alternate-jaspace-string "□")
-(setq jaspace-alternate-eol-string "$\n")
-(setq jaspace-highlight-tabs t)
+(when (load-p "jaspace-mode")
+  ;;(setq jaspace-alternate-jaspace-string "□")
+  (setq jaspace-alternate-eol-string "$\n")
+  (setq jaspace-highlight-tabs t))
 
 ;; 新しいファイルを作る前に確認
 ;(load-p "new-file-p")
 
-;; emacs21で*scratch*を消してしまって悲しい思いをした人向け
+;; *scratch 再生成
 (load-p "persistent-scratch")
 
 ;; Anything.el
-(require 'anything-config)
-(setq anything-sources (list anything-c-source-buffers
-                             anything-c-source-bookmarks
-                             anything-c-source-recentf
-                             anything-c-source-file-name-history
-                             anything-c-source-locate))
-(define-key anything-map (kbd "C-p") 'anything-previous-line)
-(define-key anything-map (kbd "C-n") 'anything-next-line)
-(define-key anything-map (kbd "C-v") 'anything-next-source)
-(define-key anything-map (kbd "M-v") 'anything-previous-source)
+(when (load-p "anything-config")
+  (setq anything-sources (list anything-c-source-buffers
+                               anything-c-source-bookmarks
+                               anything-c-source-recentf
+                               anything-c-source-file-name-history
+                               anything-c-source-locate))
+  (define-key anything-map (kbd "C-p") 'anything-previous-line)
+  (define-key anything-map (kbd "C-n") 'anything-next-line)
+  (define-key anything-map (kbd "C-v") 'anything-next-source)
+  (define-key anything-map (kbd "M-v") 'anything-previous-source))
 
 ;; key-chord.el 複数キー同時押しをサポート
 ;; http://www.emacswiki.org/cgi-bin/wiki/download/key-chord.el
-(require 'key-chord)
-(setq key-chord-two-keys-delay 0.04)
-(key-chord-mode 1)
+(when (load-p "key-chord")
+  (setq key-chord-two-keys-delay 0.04)
+  (key-chord-mode 1))
 
 ;; Customize minor-mode key priority
-(require 'minor-mode-hack)
+(load-p "minor-mode-hack")
 ;;(lower-minor-mode-map-alist 'ruby-electric-mode)
 ;;(raise-minor-mode-map-alist 'anthy-minor-mode)
 
