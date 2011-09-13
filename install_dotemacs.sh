@@ -8,6 +8,8 @@
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+# v1.10 9/13,2011
+#       Ruby Mode, and rename directory name.
 #  v1.9 5/24,2011
 #       Selectable installation target.
 #  v1.8 3/29,2011
@@ -37,7 +39,7 @@ setup_dotemacs() {
     cp $OPTIONS $DOT_EMACS/dot_emacs $HOME/.emacs
     cp $OPTIONS $DOT_EMACS/dot_mew.el $HOME/.mew.el
     test -d $TARGET || $SUDO mkdir -p $TARGET/
-    $SUDO cp $OPTIONS $DOT_EMACS/dot_emacs.d/elisp $TARGET/
+    $SUDO cp $OPTIONS $DOT_EMACS/emacs.d/elisp $TARGET/
 }
 
 setup_rhtml() {
