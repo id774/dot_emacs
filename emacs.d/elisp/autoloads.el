@@ -94,7 +94,7 @@
     (lambda () (rinari-launch))))
 
 ;; jsp
-;;(load-p "autostart")
+(load-p "autostart")
 
 ;; gtags-mode : global ÊØÍø¡£
 (when (autoload-p 'gtags-mode "gtags" "GNU GLOBAL" 'interactive)
