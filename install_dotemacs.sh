@@ -156,6 +156,7 @@ slink_elisp() {
     sudo chmod 750 $HOME/.emacs.d/tmp
     sudo chmod 750 $HOME/.emacs.d/tramp-auto-save
     sudo chmod 750 $HOME/.emacs.d/auto-save-list
+    touch $HOME/.emacs.d/anything/anything-c-adaptive-history
 }
 
 network_connection() {
