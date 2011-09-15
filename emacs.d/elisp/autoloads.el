@@ -131,6 +131,11 @@
   (setq scss-compile-at-save nil)
   (add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode)))
 
+;; coffee-mode
+(when (load-p "coffee-mode")
+  (add-to-list 'auto-mode-alist '("\\.coffee\\'" . coffee-mode))
+  (add-to-list 'auto-mode-alist '("Cakefile" . coffee-mode)))
+
 ;; bat-mode
 (setq auto-mode-alist
        (append 

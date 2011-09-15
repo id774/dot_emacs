@@ -196,6 +196,7 @@ setup_environment() {
 
 set_permission() {
     $SUDO chown -R $OWNER $TARGET
+    $SUDO chown $USER $TARGET/elisp/3rd-party/nxhtml/etc/schema/xhtml-loader.rnc
 }
 
 install_dotemacs() {
