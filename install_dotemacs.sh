@@ -78,7 +78,7 @@ emacs_private_settings() {
     if [ -f $HOME/etc/config.local/local.el ]; then
         $SUDO cp $OPTIONS $HOME/etc/config.local/*.el $TARGET/elisp/
     fi
-    $SUDO vim \
+    $sudo vi \
       $HOME/.mew.el \
       $TARGET/elisp/proxy.el \
       $TARGET/elisp/faces.el \
