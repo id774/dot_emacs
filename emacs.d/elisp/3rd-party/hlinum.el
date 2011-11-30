@@ -36,7 +36,7 @@
 
 (defface linum-highlight-face
     '((t (:inherit default :foreground "black"
-          :background "gray")))
+          :background "red")))
   "Face for highlighting current line"
   :group 'linum)
 
