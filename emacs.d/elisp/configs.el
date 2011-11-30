@@ -189,6 +189,8 @@
     (cond
       ((>= emacs-major-version '23)
         (linum-mode)
+        (custom-set-variables
+          '(global-linum-mode t))
       )
       ((< emacs-major-version '23)
         (require 'wb-line-number)
