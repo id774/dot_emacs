@@ -19,6 +19,7 @@ It is used as a default value of target path to search file or
 subdirectory under load-path.")
 (setq my-load-path
       (list "/usr/local/share/emacs/site-lisp"
+	    (expand-file-name "~/.emacs.d/auto-install")
 	    (expand-file-name "~/.emacs.d/elisp")
 	    (expand-file-name "~/.emacs.d/elisp/3rd-party")
 	    (expand-file-name "~/.emacs.d/elisp/3rd-party/ruby-mode")

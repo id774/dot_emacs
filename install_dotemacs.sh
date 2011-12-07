@@ -145,12 +145,17 @@ slink_elisp() {
     if [ "$TARGET" != "$HOME/.emacs.d" ]; then
         ln -s $TARGET/elisp $HOME/.emacs.d/elisp
     fi
+    test -d $HOME/.emacs.d/auto-install || mkdir $HOME/.emacs.d/auto-install
     test -d $HOME/.emacs.d/anything || mkdir $HOME/.emacs.d/anything
     test -d $HOME/.emacs.d/backups || mkdir $HOME/.emacs.d/backups
     test -d $HOME/.emacs.d/tmp || mkdir $HOME/.emacs.d/tmp
     test -d $HOME/.emacs.d/tramp-auto-save || mkdir $HOME/.emacs.d/tramp-auto-save
     test -d $HOME/.emacs.d/auto-save-list || mkdir $HOME/.emacs.d/auto-save-list
     sudo chmod 750 $HOME/.emacs.d
+    sudo chmod 750 $HOME/.emacs.d/auto-install
+    cp $DOT_EMACS/emacs.d/auto-install/auto-install.el $HOME/.emacs.d/auto-install/
+    cd $HOME/.emacs.d/auto-install
+    $SUDO $EMACS --batch --eval '(byte-compile-file "auto-install.el")'
     sudo chmod 750 $HOME/.emacs.d/anything
     sudo chmod 750 $HOME/.emacs.d/backups
     sudo chmod 750 $HOME/.emacs.d/tmp
