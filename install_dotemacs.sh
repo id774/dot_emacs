@@ -87,53 +87,63 @@ emacs_private_settings() {
       $TARGET/elisp/emacs-w3m.el
 }
 
+emacs_batch_byte_compile() {
+    while [ $# -gt 0 ]
+    do
+        $SUDO $EMACS --batch -Q -f batch-byte-compile $1
+        shift
+    done 
+}
+
 byte_compile_all() {
     cd $TARGET/elisp/3rd-party/ruby-mode
-    $SUDO $EMACS --batch --eval '(byte-compile-file "inf-ruby.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "ruby-mode.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "rdoc-mode.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "ruby-style.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "ruby-electric.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "rubydb2x.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "rubydb3x.el")'
+    emacs_batch_byte_compile \
+      inf-ruby.el \
+      ruby-mode.el \
+      rdoc-mode.el \
+      ruby-style.el \
+      ruby-electric.el \
+      rubydb2x.el \
+      rubydb3x.el
     cd $TARGET/elisp/3rd-party
-    $SUDO $EMACS --batch --eval '(byte-compile-file "js2.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "redo+.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "viewer.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "ruby-block.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "jaspace.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "auto-async-byte-compile.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "actionscript-mode.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "fuzzy.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "popup.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "key-chord.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "anything.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "bat-mode.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "git.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "git-blame.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "open-junk-file.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "paredit.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "popwin.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "scss-mode.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "wb-line-number.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "zencoding-mode.el")'
+    emacs_batch_byte_compile \
+      js2.el \
+      redo+.el \
+      viewer.el \
+      ruby-block.el \
+      jaspace.el \
+      auto-async-byte-compile.el \
+      actionscript-mode.el \
+      fuzzy.el \
+      popup.el \
+      key-chord.el \
+      anything.el \
+      bat-mode.el \
+      git.el \
+      git-blame.el \
+      minor-mode-hack.el \
+      open-junk-file.el \
+      paredit.el \
+      popwin.el \
+      scss-mode.el \
+      wb-line-number.el \
+      zencoding-mode.el
     cd $TARGET/elisp
-    $SUDO $EMACS --batch --eval '(byte-compile-file "init.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "mew-settings.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "delete-empty-file.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "emacs-w3m.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "faces.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "global-set-key.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "jde-config.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "key-chord-define-global.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "kill-all-buffers.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "minor-mode-hack.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "new-file-p.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "persistent-scratch.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "physical-line.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "proxy.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "tab4.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "utils.el")'
+    emacs_batch_byte_compile \
+      init.el \
+      mew-settings.el \
+      delete-empty-file.el \
+      emacs-w3m.el \
+      faces.el \
+      global-set-key.el \
+      key-chord-define-global.el \
+      kill-all-buffers.el \
+      new-file-p.el \
+      persistent-scratch.el \
+      physical-line.el \
+      proxy.el \
+      tab4.el \
+      utils.el
 }
 
 slink_elisp() {
@@ -152,8 +162,8 @@ slink_elisp() {
     cp $DOT_EMACS/emacs.d/site-lisp/loader.el $HOME/.emacs.d/site-lisp/
     cp $DOT_EMACS/emacs.d/site-lisp/auto-install.el $HOME/.emacs.d/site-lisp/
     cd $HOME/.emacs.d/site-lisp
-    $EMACS --batch --eval '(byte-compile-file "loader.el")'
-    $EMACS --batch --eval '(byte-compile-file "auto-install.el")'
+    $EMACS --batch -Q -f batch-byte-compile loader.el
+    $EMACS --batch -Q -f batch-byte-compile auto-install.el
     sudo chmod 750 $HOME/.emacs.d/anything
     sudo chmod 750 $HOME/.emacs.d/backups
     sudo chmod 750 $HOME/.emacs.d/tmp
@@ -211,6 +221,7 @@ install_dotemacs() {
     byte_compile_all
     slink_elisp
     test -n "$3" || set_permission
+    sudo emacs
 }
 
 install_dotemacs $*
