@@ -64,10 +64,10 @@
 
 ;; M-x woman
 (setq woman-manpath '("/usr/local/man"
-		      "/usr/share/man"
-		      "/usr/local/share/man"
-		      "/sw/man"
-		      "/usr/share/man/ja_JP.ujis"))
+                      "/usr/share/man"
+                      "/usr/local/share/man"
+                      "/sw/man"
+                      "/usr/share/man/ja_JP.ujis"))
 (setq woman-cache-filename (expand-file-name "~/.emacs.d/woman-cache"))
 
 ;; バックアップごときでinodeが変わるのが許せない
@@ -143,6 +143,17 @@
 ;; 行間
 ;; (setq-default line-spacing 0)
 
+;; eldoc
+(add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+(add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
+(add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)
+(setq eldoc-idle-delay 0.2)
+(setq eldoc-minor-mode-string "")
+
+;; paren-mode
+(show-paren-mode 1)
+(find-function-setup-keys)
+
 ;; Anthy
 ;; (set-input-method "japanese-anthy")
 ;; (set-input-method "japanese-prime")
@@ -151,11 +162,11 @@
 
 ;; Ruby default style
 (c-add-style "ruby"
-	     '("bsd"
-	       (c-offsets-alist
-		(case-label . 2)
-		(label . 2)
-		(statement-case-intro . 2))))
+   '("bsd"
+    (c-offsets-alist
+    (case-label . 2)
+    (label . 2)
+    (statement-case-intro . 2))))
 
 ;; でも本当は stroustrup が好き。
 (defun-add-hook 'c-mode-common-hook
@@ -291,9 +302,6 @@
     )
   )
 )
-
-;; ローカル設定
-(load-p "local")
 
 ;; Local Variables:
 ;; mode : emacs-lisp

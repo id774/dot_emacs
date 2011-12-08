@@ -8,6 +8,8 @@
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+# v1.11 12/8,2011
+#       Add auto-install.
 # v1.10 9/13,2011
 #       Ruby Mode, and rename directory name.
 #  v1.9 5/24,2011
@@ -75,15 +77,14 @@ emacs_private_settings() {
     fi
     chmod 600 $HOME/.mew.el
 
-    if [ -f $HOME/etc/config.local/local.el ]; then
+    if [ -f $HOME/etc/config.local/proxy.el ]; then
         $SUDO cp $OPTIONS $HOME/etc/config.local/*.el $TARGET/elisp/
     fi
-    $sudo vi \
+    $SUDO vi \
       $HOME/.mew.el \
       $TARGET/elisp/proxy.el \
       $TARGET/elisp/faces.el \
-      $TARGET/elisp/emacs-w3m.el \
-      $TARGET/elisp/local.el
+      $TARGET/elisp/emacs-w3m.el
 }
 
 byte_compile_all() {
@@ -101,6 +102,7 @@ byte_compile_all() {
     $SUDO $EMACS --batch --eval '(byte-compile-file "viewer.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "ruby-block.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "jaspace.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "auto-async-byte-compile.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "actionscript-mode.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "fuzzy.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "popup.el")'
@@ -109,19 +111,15 @@ byte_compile_all() {
     $SUDO $EMACS --batch --eval '(byte-compile-file "bat-mode.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "git.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "git-blame.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "open-junk-file.el")'
+    $SUDO $EMACS --batch --eval '(byte-compile-file "paredit.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "popwin.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "scss-mode.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "wb-line-number.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter1-mode.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter2-mode.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter3-mode.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter4-mode.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter5-mode.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter6-mode.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "zencoding-mode.el")'
     cd $TARGET/elisp
+    $SUDO $EMACS --batch --eval '(byte-compile-file "init.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "mew-settings.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "custom.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "delete-empty-file.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "emacs-w3m.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "faces.el")'
@@ -134,9 +132,7 @@ byte_compile_all() {
     $SUDO $EMACS --batch --eval '(byte-compile-file "persistent-scratch.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "physical-line.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "proxy.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "startup.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "tab4.el")'
-    $SUDO $EMACS --batch --eval '(byte-compile-file "twitter-key.el")'
     $SUDO $EMACS --batch --eval '(byte-compile-file "utils.el")'
 }
 
@@ -145,17 +141,19 @@ slink_elisp() {
     if [ "$TARGET" != "$HOME/.emacs.d" ]; then
         ln -s $TARGET/elisp $HOME/.emacs.d/elisp
     fi
-    test -d $HOME/.emacs.d/auto-install || mkdir $HOME/.emacs.d/auto-install
+    test -d $HOME/.emacs.d/site-lisp || mkdir $HOME/.emacs.d/site-lisp
     test -d $HOME/.emacs.d/anything || mkdir $HOME/.emacs.d/anything
     test -d $HOME/.emacs.d/backups || mkdir $HOME/.emacs.d/backups
     test -d $HOME/.emacs.d/tmp || mkdir $HOME/.emacs.d/tmp
     test -d $HOME/.emacs.d/tramp-auto-save || mkdir $HOME/.emacs.d/tramp-auto-save
     test -d $HOME/.emacs.d/auto-save-list || mkdir $HOME/.emacs.d/auto-save-list
     sudo chmod 750 $HOME/.emacs.d
-    sudo chmod 750 $HOME/.emacs.d/auto-install
-    cp $DOT_EMACS/emacs.d/auto-install/auto-install.el $HOME/.emacs.d/auto-install/
-    cd $HOME/.emacs.d/auto-install
-    $SUDO $EMACS --batch --eval '(byte-compile-file "auto-install.el")'
+    sudo chmod 750 $HOME/.emacs.d/site-lisp
+    cp $DOT_EMACS/emacs.d/site-lisp/loader.el $HOME/.emacs.d/site-lisp/
+    cp $DOT_EMACS/emacs.d/site-lisp/auto-install.el $HOME/.emacs.d/site-lisp/
+    cd $HOME/.emacs.d/site-lisp
+    $EMACS --batch --eval '(byte-compile-file "loader.el")'
+    $EMACS --batch --eval '(byte-compile-file "auto-install.el")'
     sudo chmod 750 $HOME/.emacs.d/anything
     sudo chmod 750 $HOME/.emacs.d/backups
     sudo chmod 750 $HOME/.emacs.d/tmp

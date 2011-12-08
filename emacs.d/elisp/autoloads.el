@@ -1,27 +1,36 @@
 ;; autoloads.el
-;; 外部ファイルをロードしてconfigs.elを最後に呼ぶ
+;; 外部ファイルをロードして configs.el を最後に呼ぶ
 
 (load "utils")
-
-;; auto-install
-(load-p "auto-install")
-(auto-install-update-emacswiki-package-name t)
-(auto-install-compatibility-setup)
-(setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
 ;; Mew
 (load-p "mew-settings")
 
-;; Textモードをデフォルトに
+;; Text モードをデフォルトに
 (setq default-major-mode 'text-mode)
 
 ;; オートコンプリート
-(require 'auto-complete)
-(global-auto-complete-mode t)
+(when (load-p "auto-complete")
+  (global-auto-complete-mode t))
 
 ;; git.el
-(require 'git)
-(require 'git-blame)
+(load-p "git")
+(load-p "git-blame")
+
+;; open-junk-file
+(load-p "open-junk-file")
+
+;; paredit
+(when (load-p "paredit")
+  (add-hook 'emacs-lisp-mode-hook 'enable-paredit-mode)
+  (add-hook 'lisp-interaction-mode-hook 'enable-paredit-mode)
+  (add-hook 'lisp-mode-hook 'enable-paredit-mode)
+  (add-hook 'ielm-mode-hook 'enable-paredit-mode))
+
+;; auto-async-byte-compile
+(when (load-p "auto-async-byte-compile")
+  (setq auto-async-byte-compile-exclude-files-regexp "/junk/")
+  (add-hook 'emacs-lisp-mode-hook 'enable-auto-async-byte-compile-mode))
 
 ;; timidity-mode : TiMidity++ emacs front-end
 (when (autoload-p 'timidity "timidity" "TiMidity++" 'interactive))
@@ -75,55 +84,72 @@
 ;; haskell-mode
 (when (autoload-p 'haskell-mode "haskell-site-file" "Haskell" 'interactive)
   (setq auto-mode-alist
-	(append '(("\\.hs$" . haskell-mode)
-		  ("\\.hi$" . haskell-mode)
-		  ("\\.gs$" . haskell-mode)
-		  ("\\.lhs$" . haskell-mode)
-		  ("\\.lgs$" . haskell-mode))
-		auto-mode-alist))
+  (append '(("\\.hs$" . haskell-mode)
+      ("\\.hi$" . haskell-mode)
+      ("\\.gs$" . haskell-mode)
+      ("\\.lhs$" . haskell-mode)
+      ("\\.lgs$" . haskell-mode))
+    auto-mode-alist))
   (setq interpreter-mode-alist
-      (append '(("ruby" . ruby-mode)
-		("hugs" . haskell-mode)
-		("php"	. php-mode))
-	      interpreter-mode-alist))
+    (append '(("ruby" . ruby-mode)
+    ("hugs" . haskell-mode)
+    ("php"  . php-mode))
+    interpreter-mode-alist))
   (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indent))
 
 ;; Rinari
-(require 'rinari)
+(load-p "rinari")
 
 ;; rhtml-mode
-(require 'rhtml-mode)
-(setq auto-mode-alist (cons '("\\.erb$" . rhtml-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.rhtml$" . rhtml-mode) auto-mode-alist))
-(add-hook 'rhtml-mode-hook
-  (lambda () (rinari-launch)))
+(when (load-p "rhtml-mode")
+  (setq auto-mode-alist (cons '("\\.erb$" . rhtml-mode) auto-mode-alist))
+  (setq auto-mode-alist (cons '("\\.rhtml$" . rhtml-mode) auto-mode-alist))
+  (add-hook 'rhtml-mode-hook
+    (lambda () (rinari-launch))))
 
 ;; jsp
-;;(load "autostart")
+(load-p "autostart")
 
 ;; gtags-mode : global 便利。
 (when (autoload-p 'gtags-mode "gtags" "GNU GLOBAL" 'interactive)
   (setq gtags-mode-hook
-	(function (lambda ()
-		    (local-set-key "\M-f" 'gtags-find-tag)    ; override etags
-		    (local-set-key "\M-r" 'gtags-find-rtag)   ; reverse tag
-		    (local-set-key "\M-s" 'gtags-find-symbol) ; find
-		    (local-set-key "\C-t" 'gtags-pop-stack)))); pop
+  (function (lambda ()
+    (local-set-key "\M-f" 'gtags-find-tag)    ; override etags
+    (local-set-key "\M-r" 'gtags-find-rtag)   ; reverse tag
+    (local-set-key "\M-s" 'gtags-find-symbol) ; find
+    (local-set-key "\C-t" 'gtags-pop-stack)))); pop
   ;; C-mode のときは常に gtags 使用。
   (defun-add-hook 'c-mode-common-hook (gtags-mode 1)))
 
 ;; js2-mode
-(autoload 'js2-mode "js2" nil t)
-(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-(add-hook 'js2-mode-hook
-          '(lambda ()
-             (setq js2-basic-offset 4)))
+(when (autoload-p 'js2-mode "js2" "js2" 'interactive)
+  (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+  (add-hook 'js2-mode-hook
+            '(lambda ()
+               (setq js2-basic-offset 4))))
 
 ;; actionscript-mode
 (when (require 'actionscript-mode nil t)
   (setq auto-mode-alist
     (cons '("\.as\'" . actionscript-mode) auto-mode-alist)))
+
+;; Zen Coding Mode
+(when (load-p "zencoding-mode")
+  (add-hook 'sgml-mode-hook 'zencoding-mode)
+  (add-hook 'html-mode-hook 'zencoding-mode)
+  (add-hook 'text-mode-hook 'zencoding-mode)
+  (define-key zencoding-mode-keymap "\C-i" 'zencoding-expand-line))
+
+;; scss-mode
+(when (autoload-p 'scss-mode "scss-mode" "scss-mode" 'interactive)
+  (setq scss-compile-at-save nil)
+  (add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode)))
+
+;; coffee-mode
+(when (load-p "coffee-mode")
+  (add-to-list 'auto-mode-alist '("\\.coffee\\'" . coffee-mode))
+  (add-to-list 'auto-mode-alist '("Cakefile" . coffee-mode)))
 
 ;; bat-mode
 (setq auto-mode-alist
@@ -135,7 +161,7 @@
          (list (cons "AUTOEXEC\\." 'bat-mode))
          auto-mode-alist))
 
-(autoload 'bat-mode "bat-mode"
+(autoload-p 'bat-mode "bat-mode"
       "DOS and Windows BAT files" t)
 
 ;; sense-region.el : \C-spc で region<->rectabgle をトグル。便利。
@@ -151,26 +177,26 @@
   (setq riece-user-list-buffer-mode t)
   (setq riece-layout "spiral")
   (setq riece-addons
-	'(;;riece-alias
-	  riece-biff
-	  riece-button
-	  riece-ctcp
-	  riece-ctlseq
-	  riece-foolproof
-	  riece-guess
-	  riece-highlight
-	  riece-history
-	  riece-icon
-	  riece-ignore
-	  riece-keepalive
-	  riece-keyword
-	  riece-menu
-	  riece-shrink-buffer
-	  riece-toolbar
-	  riece-unread
-	  riece-url
-	  riece-xface
-	  riece-yank))
+  '(;;riece-alias
+    riece-biff
+    riece-button
+    riece-ctcp
+    riece-ctlseq
+    riece-foolproof
+    riece-guess
+    riece-highlight
+    riece-history
+    riece-icon
+    riece-ignore
+    riece-keepalive
+    riece-keyword
+    riece-menu
+    riece-shrink-buffer
+    riece-toolbar
+    riece-unread
+    riece-url
+    riece-xface
+    riece-yank))
   (setq riece-max-buffer-size 8192)
   (setq riece-gather-channel-modes t)
   (setq riece-buffer-dispose-function nil);;'kill-buffer)
@@ -178,29 +204,29 @@
   (setq riece-default-coding-system 'utf-8)
   (setq riece-ctlseq-hide-controls t);; t or nil
   (setq riece-ctlseq-colors
-	'("white" "black" "DarkBlue" "DarkGreen"
-	  "red" "maroon" "purple" "orange"
-	  "yellow" "green" "DarkCyan" "cyan"
-	  "blue" "magenta" "gray" "DimGray")))
+  '("white" "black" "DarkBlue" "DarkGreen"
+    "red" "maroon" "purple" "orange"
+    "yellow" "green" "DarkCyan" "cyan"
+    "blue" "magenta" "gray" "DimGray")))
 ;;   (setq riece-server "ircnet"
-;; 	riece-server-alist '(("ircnet" :host "irc.tokyo.wide.ad.jp")
-;; 			     ("freenode" :host "chat.freenode.net"))
-;; 	riece-startup-server-list '("ircnet")
-;; 	riece-startup-channel-list '("#nadoka:*.jp ircnet"
-;; 				     "#rrr:*.jp ircnet"))
+;;   riece-server-alist '(("ircnet" :host "irc.tokyo.wide.ad.jp")
+;;            ("freenode" :host "chat.freenode.net"))
+;;   riece-startup-server-list '("ircnet")
+;;   riece-startup-channel-list '("#nadoka:*.jp ircnet"
+;;              "#rrr:*.jp ircnet"))
 ;;   (add-hook 'riece-keyword-notify-functions
-;; 	    (lambda (keyword message)
-;; 	      (write-region
-;; 	       (riece-format-message message t)
-;; 	       nil "/dev/shm/riece.touch" 0)))
+;;       (lambda (keyword message)
+;;         (write-region
+;;          (riece-format-message message t)
+;;          nil "/dev/shm/riece.touch" 0)))
 ;;  (add-hook 'riece-after-switch-to-channel-functions
-;; 	   (lambda (last)
-;; 	     (call-process "rm" nil nil nil "/dev/shm/riece.touch")))
+;;      (lambda (last)
+;;        (call-process "rm" nil nil nil "/dev/shm/riece.touch")))
 ;;  (add-hook 'riece-keyword-notify-functions
-;; 	   (lambda (keyword message)
-;; 	     (let ((ring-bell-function nil)
-;; 		   (visible-bell t))
-;; 	       (ding)))))
+;;      (lambda (keyword message)
+;;        (let ((ring-bell-function nil)
+;;        (visible-bell t))
+;;          (ding)))))
 
 (load-p "italk")
 
@@ -208,7 +234,7 @@
   (setq navi2ch-list-bbstable-url "http://menu.2ch.net/bbsmenu.html")
   (setq navi2ch-article-auto-range nil)
   (setq navi2ch-mona-enable t)
-  ;; startup.elのProxy情報を参照
+  ;; init.el のプロキシ情報を参照
   (if global-proxy-use
     (defvar navi2ch-net-http-proxy (concat global-proxy-server ":" (number-to-string global-proxy-port)))
     (defvar navi2ch-net-http-proxy-userid global-proxy-user)
@@ -232,36 +258,35 @@
 ;; 物理行移動
 (load-p "physical-line")
 
-;; なんでもタブでやるac-mdoe
+;; なんでもタブでやる ac-mdoe
 ;; (when (load-p "ac-mode")
 ;;  (setq ac-mode-exception '(dired-mode hex-mode ruby-mode))
 ;;  (add-hook 'find-file-hooks 'ac-mode-without-exception))
 
-;; splitしまくると移動めどいよね
 (when (load-p "windmove")
   (windmove-default-keybindings)
   (setq windmove-wrap-around t))
 
-;; screenとemacs -nwを混ぜるとこいつが強烈にほしくなる
+;; screen と emacs -nw を混ぜるとこいつが強烈にほしくなる
 (when (and (not window-system)
-	   (string-match "^xterm\\|^screen" (getenv "TERM"))
-	   (load-p "term/xterm"))
+     (string-match "^xterm\\|^screen" (getenv "TERM"))
+     (load-p "term/xterm"))
   (defun-add-hook 'post-command-hook
     "update terminal hard status."
     (let ((buf (current-buffer)))
       (unless (eq buf hardstatus-update-last-visited)
-	(send-string-to-terminal
-	 (concat "\e]0;"
-		 (encode-coding-string
-		  (format-mode-line frame-title-format 0)
-		  'utf-8 t)
-		 "\a"))
-	(setq hardstatus-update-last-visited buf))))
+  (send-string-to-terminal
+   (concat "\e]0;"
+     (encode-coding-string
+      (format-mode-line frame-title-format 0)
+      'utf-8 t)
+     "\a"))
+  (setq hardstatus-update-last-visited buf))))
   (setq hardstatus-update-last-visited nil))
 ;; (when (and (load-p "xterm-frobs")
-;; 	   (load-p "xterm-title")
-;; 	   (not window-system))
-;; 	   (string-match "^xterm\\|^screen" (getenv "TERM")))
+;;      (load-p "xterm-title")
+;;      (not window-system))
+;;      (string-match "^xterm\\|^screen" (getenv "TERM")))
 ;;   (xterm-title-mode 1))
 
 ;; popwin-el
@@ -301,15 +326,14 @@
   ;; (diminish 'gtags-mode "G")
   (diminish 'abbrev-mode "Abbr")
   ;; (diminish 'ac-mode "[tab]")
-  (diminish 'font-lock-mode "");動いていて当たり前
-  ;; ついでだからmajor modeも書き換えちゃえ
+  (diminish 'font-lock-mode ""); 動いていて当たり前
+  ;; ついでだから major mode も書き換えちゃえ
   (defun-add-hook 'lisp-interaction-mode-hook (setq mode-name "Lisp"))
   (defun-add-hook 'emacs-lisp-mode-hook (setq mode-name "elisp"))
   (defun-add-hook 'texinfo-mode-hook (setq mode-name "texi"))
   (defun-add-hook 'change-log-mode-hook (setq mode-name "CL")))
 
 ;; TRAMP
-(require 'tramp)
 (when (load-p "tramp")
   (setq tramp-shell-prompt-pattern "^.*[#$%>] *")
   (setq tramp-debug-buffer t)
@@ -319,23 +343,23 @@
 )
 
 ;; Redo+
-(require 'redo+)
-(global-set-key (kbd "C-^") 'redo)
-(setq undo-no-redo t)
-(setq undo-limit 600000)
-(setq undo-strong-limit 900000)
+(when (load-p "redo+")
+  (global-set-key (kbd "C-^") 'redo)
+  (setq undo-no-redo t)
+  (setq undo-limit 600000)
+  (setq undo-strong-limit 900000))
 
 ;; 矩形選択
 (cua-mode t)
 (setq cua-enable-cua-keys nil) ;; 変なキーバインド禁止
 
-;; 開いているすべてのバッファをkillする
+;; 開いているすべてのバッファを kill する
 (load-p "kill-all-buffers")
 
 ;; ファイルの内容が無ければ、ファイルとバッファを消す
 (load-p "delete-empty-file")
 
-;; 4タブ
+;; タブを 4 に
 (load-p "tab4")
 
 ;; タブ, 全角スペース、改行直前の半角スペースを表示する
@@ -350,37 +374,40 @@
 ;; 新しいファイルを作る前に確認
 ;(load-p "new-file-p")
 
-;; emacs21で*scratch*を消してしまって悲しい思いをした人向け
+;; scratch バッファを消しても再生成する
 (load-p "persistent-scratch")
 
 ;; Anything.el
-(require 'anything-config)
-(setq anything-sources (list anything-c-source-buffers
-                             anything-c-source-bookmarks
-                             anything-c-source-recentf
-                             anything-c-source-file-name-history
-                             anything-c-source-locate))
-(define-key anything-map (kbd "C-p") 'anything-previous-line)
-(define-key anything-map (kbd "C-n") 'anything-next-line)
-(define-key anything-map (kbd "C-v") 'anything-next-source)
-(define-key anything-map (kbd "M-v") 'anything-previous-source)
+(when (load-p "anything-config")
+  (setq anything-sources (list anything-c-source-buffers
+                               anything-c-source-bookmarks
+                               anything-c-source-recentf
+                               anything-c-source-file-name-history
+                               anything-c-source-locate))
+  (define-key anything-map (kbd "C-p") 'anything-previous-line)
+  (define-key anything-map (kbd "C-n") 'anything-next-line)
+  (define-key anything-map (kbd "C-v") 'anything-next-source)
+  (define-key anything-map (kbd "M-v") 'anything-previous-source))
 
 ;; key-chord.el 複数キー同時押しをサポート
 ;; http://www.emacswiki.org/cgi-bin/wiki/download/key-chord.el
-(require 'key-chord)
-(setq key-chord-two-keys-delay 0.04)
-(key-chord-mode 1)
+(when (load-p "key-chord")
+  (setq key-chord-two-keys-delay 0.04)
+  (key-chord-mode 1))
 
 ;; Customize minor-mode key priority
-(require 'minor-mode-hack)
+(load-p "minor-mode-hack")
 ;;(lower-minor-mode-map-alist 'ruby-electric-mode)
 ;;(raise-minor-mode-map-alist 'anthy-minor-mode)
 
-;; UNIX系設定
+;; 表示設定をロードする
 (load-p "faces")
 
-;; 依存関係があるのでこいつは一番最後に。
+;; 環境設定をロードする (最後に)
 (load-p "configs")
+
+;; ~/.emacs.d/site-lisp をすべてロードする (configs のさらに後)
+(load-p "loader")
 
 ;; Local Variables:
 ;; mode : emacs-lisp
