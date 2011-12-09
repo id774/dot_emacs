@@ -369,7 +369,9 @@
 (setq jaspace-highlight-tabs t)
 
 ;; hlinum-mode
-(load-p "hlinum")
+(cond
+  ((>= emacs-major-version '23)
+    (load-p "hlinum")))
 
 ;; 新しいファイルを作る前に確認
 ;(load-p "new-file-p")
