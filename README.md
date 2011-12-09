@@ -35,6 +35,16 @@ After 11.09, releases will be numbered with the follow format:
 This naming convention is to mimic the Ubuntu.
 
 
+Environment
+-----------
+
+This dot emacs is supported on the following platforms.
+
++ Emacs on Debian or Ubuntu stable package.
++ Builded Emacs 23.3 on RHEL or clone.
++ Emacs 23.3 for Mac OS X ( http://emacsformacosx.com/ )
+
+
 Authors
 -------
 
