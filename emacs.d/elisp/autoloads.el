@@ -109,7 +109,9 @@
     (lambda () (rinari-launch))))
 
 ;; jsp
-(load-p "autostart")
+(cond
+  ((>= emacs-major-version '23)
+    (load-p "autostart")))
 
 ;; gtags-mode : global ÊØÍø¡£
 (when (autoload-p 'gtags-mode "gtags" "GNU GLOBAL" 'interactive)
