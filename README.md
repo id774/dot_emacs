@@ -43,6 +43,7 @@ This dot emacs is supported on the following platforms.
 + Emacs on Debian or Ubuntu stable package.
 + Builded Emacs 23.3 on RHEL or clone.
 + Emacs 23.3 for Mac OS X ( http://emacsformacosx.com/ )
++ Meadow based on Emacs 22.3.1 on Windows 7 (Partially support).
 
 
 Authors

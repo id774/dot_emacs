@@ -39,13 +39,13 @@
   ;; ruby-electric.el
   (require 'ruby-electric)
   (add-hook 'ruby-mode-hook '(lambda () (ruby-electric-mode t)))
- 
+
   ;; rubydbnx.el
   (autoload 'rubydb "rubydb2x"
   "run rubydb on program file in buffer *gud-file*.
   the directory containing file becomes the initial working directory
   and source-file directory for your debugger." t)
- 
+
   ;; ruby-block.el
   (require 'ruby-block)
   (ruby-block-mode t)
