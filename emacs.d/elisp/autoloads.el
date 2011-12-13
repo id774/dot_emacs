@@ -148,6 +148,14 @@
   (setq scss-compile-at-save nil)
   (add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode)))
 
+;; haml-mode
+(when (autoload-p 'haml-mode "haml-mode" "haml-mode" 'interactive)
+  (add-to-list 'auto-mode-alist '("\\.haml\\'" . haml-mode))
+  (add-hook 'haml-mode-hook
+    '(lambda ()
+      (setq indent-tabs-mode nil)
+    )))
+
 ;; coffee-mode
 (when (load-p "coffee-mode")
   (add-to-list 'auto-mode-alist '("\\.coffee\\'" . coffee-mode))

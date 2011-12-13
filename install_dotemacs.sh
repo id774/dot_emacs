@@ -125,6 +125,7 @@ byte_compile_all() {
       open-junk-file.el \
       paredit.el \
       popwin.el \
+      haml-mode.el \
       scss-mode.el \
       wb-line-number.el \
       zencoding-mode.el
