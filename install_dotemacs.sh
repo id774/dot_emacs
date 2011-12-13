@@ -125,8 +125,9 @@ byte_compile_all() {
       open-junk-file.el \
       paredit.el \
       popwin.el \
-      haml-mode.el \
       scss-mode.el \
+      haml-mode.el \
+      sass-mode.el \
       wb-line-number.el \
       zencoding-mode.el
     cd $TARGET/elisp

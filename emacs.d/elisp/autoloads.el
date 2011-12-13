@@ -156,6 +156,11 @@
       (setq indent-tabs-mode nil)
     )))
 
+;; sass-mode
+(when (autoload-p 'sass-mode "sass-mode" "sass-mode" 'interactive)
+  (setq sass-compile-at-save nil)
+  (add-to-list 'auto-mode-alist '("\\.sass\\'" . sass-mode)))
+
 ;; coffee-mode
 (when (load-p "coffee-mode")
   (add-to-list 'auto-mode-alist '("\\.coffee\\'" . coffee-mode))
