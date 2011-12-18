@@ -223,7 +223,7 @@ install_dotemacs() {
     byte_compile_all
     slink_elisp
     test -n "$3" || set_permission
-    sudo emacs
+    sudo emacs -nw
 }
 
 install_dotemacs $*
