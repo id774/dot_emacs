@@ -348,6 +348,12 @@
   (defun-add-hook 'texinfo-mode-hook (setq mode-name "texi"))
   (defun-add-hook 'change-log-mode-hook (setq mode-name "CL")))
 
+;; shadow.el
+(when (load-p "shadow")
+  (add-hook 'find-file-hooks 'shadow-on-find-file)
+  (add-hook 'shadow-find-unshadow-hook
+    (lambda () (auto-revert-mode 1))))
+
 ;; TRAMP
 (when (load-p "tramp")
   (setq tramp-shell-prompt-pattern "^.*[#$%>] *")

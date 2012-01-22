@@ -109,6 +109,7 @@ byte_compile_all() {
     emacs_batch_byte_compile \
       js2.el \
       redo+.el \
+      shadow.el \
       viewer.el \
       ruby-block.el \
       jaspace.el \
