@@ -8,6 +8,8 @@
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+# v1.12 2/6,2012
+#       Improvement permission for the problem of first start.
 # v1.11 12/8,2011
 #       Add auto-install.
 # v1.10 9/13,2011
@@ -213,6 +215,7 @@ setup_environment() {
 set_permission() {
     $SUDO chown -R $OWNER $TARGET
     $SUDO chown $USER $TARGET/elisp/3rd-party/nxhtml/etc/schema/xhtml-loader.rnc
+    $SUDO chown -R $USER $TARGET/elisp/3rd-party/ruby-mode/
 }
 
 install_dotemacs() {
@@ -224,7 +227,6 @@ install_dotemacs() {
     byte_compile_all
     slink_elisp
     test -n "$3" || set_permission
-    sudo emacs -nw
 }
 
 install_dotemacs $*
