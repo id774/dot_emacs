@@ -8,6 +8,8 @@
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+# v1.13 2/12,2012
+#       Change default install target to /usr/local/etc/emacs.d.
 # v1.12 2/6,2012
 #       Improvement permission for the problem of first start.
 # v1.11 12/8,2011
@@ -203,7 +205,8 @@ setup_environment() {
 
     TARGET=$HOME/.emacs.d
     test -n "$2" && export TARGET=$2
-    test -n "$2" || export TARGET=/etc/emacs.d
+    test -n "$2" || export TARGET=/usr/local/etc/emacs.d
+    #test -n "$2" || export TARGET=/etc/emacs.d
     #test -n "$2" || export TARGET=$HOME/.emacs.d
 
     test -n "$3" || SUDO=sudo
