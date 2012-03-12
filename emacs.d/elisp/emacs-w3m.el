@@ -7,7 +7,7 @@
   (autoload 'w3m-antenna "w3m-antenna" "Report changes of web sites." t)
   (autoload 'w3m-namazu "w3m-namazu" "Search files with Namazu." t)
   (setq w3m-use-cookies t)
-  (setq w3m-cookie-accept-bad-cookies t)
+  (setq w3m-cookie-accept-bad-cookies nil)
   (setq browse-url-browser-function 'w3m-browse-url)
   (global-set-key "\C-xm" 'browse-url-at-point)
   ;; init.el のプロキシ情報を参照
