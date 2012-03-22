@@ -51,8 +51,8 @@
               ((spacing . -1))
              ))))
         (setq default-frame-alist
-              (append (list '(top . 0) ; 起動時の表示位置（上から）
-                            '(left . 0) ; 起動時の表示位置（左から）
+              (append (list '(top . 10) ; 起動時の表示位置（上から）
+                            '(left . 10) ; 起動時の表示位置（左から）
                             '(width . 120) ; 起動時のサイズ（幅）
                             '(height . 40) ; 起動時のサイズ（縦）
                             '(font . "vl-gothic-12"); VL Gothic
@@ -62,8 +62,8 @@
 ;; (要:ttf-bitstream-veraパッケージ)
       ((eq system-type 'gnu/linux)
         (setq default-frame-alist ; ThinkPad X60/X61 に最適化
-              (append (list '(top . 0) ; 起動時の表示位置（上から）
-                            '(left . 0) ; 起動時の表示位置（左から）
+              (append (list '(top . 10) ; 起動時の表示位置（上から）
+                            '(left . 10) ; 起動時の表示位置（左から）
                             '(width . 120) ; 起動時のサイズ（幅）
                             '(height . 40) ; 起動時のサイズ（縦）
                             )))
@@ -80,8 +80,8 @@
           ((< emacs-major-version '23)
             (progn
               (setq default-frame-alist
-                    (append (list '(top . 0) ; 起動時の表示位置（上から）
-                                  '(left . 0) ; 起動時の表示位置（左から）
+                    (append (list '(top . 10) ; 起動時の表示位置（上から）
+                                  '(left . 10) ; 起動時の表示位置（左から）
                                   '(width . 180) ; 起動時のサイズ（幅）
                                   '(height . 45) ; 起動時のサイズ（縦）
                                   )))
@@ -89,8 +89,8 @@
           ((>= emacs-major-version '23)
             (progn
               (setq default-frame-alist ; 13inch MacBook Pro に最適化
-                    (append (list '(top . 0) ; 起動時の表示位置（上から）
-                                  '(left . 0) ; 起動時の表示位置（左から）
+                    (append (list '(top . 10) ; 起動時の表示位置（上から）
+                                  '(left . 10) ; 起動時の表示位置（左から）
                                   '(width . 180) ; 起動時のサイズ（幅）
                                   '(height . 50) ; 起動時のサイズ（縦）
                                   )))
