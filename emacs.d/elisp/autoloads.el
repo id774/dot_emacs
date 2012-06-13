@@ -415,7 +415,7 @@
 ;; key-chord.el 複数キー同時押しをサポート
 ;; http://www.emacswiki.org/cgi-bin/wiki/download/key-chord.el
 (when (load-p "key-chord")
-  (setq key-chord-two-keys-delay 0.04)
+  (setq key-chord-two-keys-delay 0.02)
   (key-chord-mode 1))
 
 ;; Customize minor-mode key priority

@@ -23,10 +23,6 @@
 (key-chord-define-global "rt" 'beginning-of-buffer)
 (key-chord-define-global "vb" 'end-of-buffer)
 
-;; スクロール
-(key-chord-define-global "er" 'scroll-down)
-(key-chord-define-global "cv" 'scroll-up)
-
 ;; バッファリスト
 (key-chord-define-global "kl" 'electric-buffer-list)
 (key-chord-define-global "nm" 'iswitchb-buffer)
