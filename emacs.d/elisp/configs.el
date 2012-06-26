@@ -37,12 +37,6 @@
 ;; 画像展開
 (auto-image-file-mode)
 
-;; interactive switch buffer
-(cond
-  ((< emacs-major-version '24)
-    (iswitchb-mode)
-    (iswitchb-default-keybindings)))
-
 ;; 自動セーブファイルを作成するかどうか
 (setq auto-save-default nil)
 

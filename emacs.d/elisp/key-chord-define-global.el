@@ -2,6 +2,8 @@
 
 ;; yu で auto-complete-modeの有効/無効を切り替える
 (key-chord-define-global "yu" 'auto-complete-mode)
+;; ty で行数表示/非表示
+(key-chord-define-global "ty" 'linum-mode)
 
 ;; ウィンドウ移動
 (key-chord-define-global "io" 'windmove-up)
@@ -25,7 +27,7 @@
 
 ;; バッファリスト
 (key-chord-define-global "kl" 'electric-buffer-list)
-(key-chord-define-global "nm" 'iswitchb-buffer)
+(key-chord-define-global "nm" 'electric-buffer-list)
 (key-chord-define-global "bn" 'buffer-menu)
 
 ;; ファイルを開く

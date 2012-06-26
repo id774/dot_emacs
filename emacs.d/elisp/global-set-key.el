@@ -131,7 +131,7 @@
 ;; バッファリスト
 (define-key global-map "\C-x\C-b" 'electric-buffer-list)
 (define-key global-map "\C-x\ b" 'anything)
-(define-key global-map "\C-c\C-c\ b" 'iswitchb-buffer)
+(define-key global-map "\C-c\C-c\ b" 'anything)
 
 ;; Anything
 (global-set-key (kbd "C-;") 'anything)
