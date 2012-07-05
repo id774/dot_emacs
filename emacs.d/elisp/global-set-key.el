@@ -108,10 +108,10 @@
 (defun toggle-view-mode ()
   (interactive)
   (cond (view-mode
-      (view-mode nil)
+      (toggle-read-only)
       (setq hl-line-mode nil))
     (t
-      (view-mode))))
+      (toggle-read-only))))
 (define-key global-map "\C-x\C-j" 'toggle-view-mode)
 (define-key global-map "\C-x\ j" 'toggle-view-mode)
 
