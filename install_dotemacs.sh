@@ -96,7 +96,7 @@ emacs_batch_byte_compile() {
     do
         $SUDO $EMACS --batch -Q -f batch-byte-compile $1
         shift
-    done 
+    done
 }
 
 byte_compile_all() {
