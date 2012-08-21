@@ -205,13 +205,21 @@
 (define-key global-map "\C-c\C-c\C-p" 'revert-current-buffer)
 (define-key global-map "\C-c\C-c\ p" 'revert-all-buffers)
 
-;; 開いているすべてのバッファをkillする
-(define-key global-map "\C-c\C-c\ 0" 'kill-all-buffers)
+;; 開いているすべてのバッファを kill する
+(define-key global-map "\C-c\C-c\ 0" 'confirm-kill-all-buffers)
+(define-key global-map "\C-x\ 7" 'confirm-kill-all-buffers)
+
+;; バッファをすべて kill するときに確認
+(defun confirm-kill-all-buffers ()
+  (interactive)
+  (if (y-or-n-p "kill all buffers?")
+    (kill-all-buffers)))
+(global-set-key "\C-x\C-c" 'confirm-save-buffers-kill-emacs)
 
 ;; C-x C-cで必ず確認する
 (defun confirm-save-buffers-kill-emacs ()
   (interactive)
-  (if (yes-or-no-p "quit emacs? ")
+  (if (y-or-n-p "quit emacs? ")
     (save-buffers-kill-emacs)))
 (global-set-key "\C-x\C-c" 'confirm-save-buffers-kill-emacs)
 
