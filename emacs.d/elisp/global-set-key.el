@@ -91,6 +91,7 @@
 
 ;; タブ, 全角スペース、改行直前の半角スペースを表示する(トグルで動作)
 (define-key global-map "\C-c\C-c\C-t" 'jaspace-mode)
+(define-key global-map "\C-x\ 9" 'jaspace-mode)
 
 ;; C-M-g でも keyboard-escape-quit する
 (global-set-key "\C-\M-g" 'keyboard-escape-quit)
