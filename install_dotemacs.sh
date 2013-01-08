@@ -8,6 +8,8 @@
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+# v1.14 1/8,2013
+#       Don't use the editor.
 # v1.13 2/12,2012
 #       Change default install target to /usr/local/etc/emacs.d.
 # v1.12 2/6,2012
@@ -84,11 +86,6 @@ emacs_private_settings() {
     if [ -f $HOME/etc/config.local/proxy.el ]; then
         $SUDO cp $OPTIONS $HOME/etc/config.local/*.el $TARGET/elisp/
     fi
-    $SUDO vi \
-      $HOME/.mew.el \
-      $TARGET/elisp/proxy.el \
-      $TARGET/elisp/faces.el \
-      $TARGET/elisp/emacs-w3m.el
 }
 
 emacs_batch_byte_compile() {
