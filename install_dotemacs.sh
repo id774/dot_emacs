@@ -8,6 +8,8 @@
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+# v1.15 1/18,2013
+#       Delete unnecessary symlinks.
 # v1.14 1/8,2013
 #       Don't use the editor.
 # v1.13 2/12,2012
@@ -153,7 +155,8 @@ byte_compile_all() {
 slink_elisp() {
     test -d $HOME/.emacs.d || mkdir $HOME/.emacs.d
     if [ "$TARGET" != "$HOME/.emacs.d" ]; then
-        ln -s $TARGET/elisp $HOME/.emacs.d/elisp
+        ln -fs $TARGET/elisp $HOME/.emacs.d/elisp
+        test -L $TARGET/elisp/elisp && $SUDO rm $TARGET/elisp/elisp
     fi
     test -d $HOME/.emacs.d/site-lisp || mkdir $HOME/.emacs.d/site-lisp
     test -d $HOME/.emacs.d/anything || mkdir $HOME/.emacs.d/anything
@@ -161,18 +164,18 @@ slink_elisp() {
     test -d $HOME/.emacs.d/tmp || mkdir $HOME/.emacs.d/tmp
     test -d $HOME/.emacs.d/tramp-auto-save || mkdir $HOME/.emacs.d/tramp-auto-save
     test -d $HOME/.emacs.d/auto-save-list || mkdir $HOME/.emacs.d/auto-save-list
-    sudo chmod 750 $HOME/.emacs.d
-    sudo chmod 750 $HOME/.emacs.d/site-lisp
+    $SUDO chmod 750 $HOME/.emacs.d
+    $SUDO chmod 750 $HOME/.emacs.d/site-lisp
     cp $DOT_EMACS/emacs.d/site-lisp/loader.el $HOME/.emacs.d/site-lisp/
     cp $DOT_EMACS/emacs.d/site-lisp/auto-install.el $HOME/.emacs.d/site-lisp/
     cd $HOME/.emacs.d/site-lisp
     $EMACS --batch -Q -f batch-byte-compile loader.el
     $EMACS --batch -Q -f batch-byte-compile auto-install.el
-    sudo chmod 750 $HOME/.emacs.d/anything
-    sudo chmod 750 $HOME/.emacs.d/backups
-    sudo chmod 750 $HOME/.emacs.d/tmp
-    sudo chmod 750 $HOME/.emacs.d/tramp-auto-save
-    sudo chmod 750 $HOME/.emacs.d/auto-save-list
+    $SUDO chmod 750 $HOME/.emacs.d/anything
+    $SUDO chmod 750 $HOME/.emacs.d/backups
+    $SUDO chmod 750 $HOME/.emacs.d/tmp
+    $SUDO chmod 750 $HOME/.emacs.d/tramp-auto-save
+    $SUDO chmod 750 $HOME/.emacs.d/auto-save-list
     touch $HOME/.emacs.d/anything/anything-c-adaptive-history
 }
 
