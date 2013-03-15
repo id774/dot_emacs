@@ -363,16 +363,11 @@
   (setq tramp-verbose 3)
 )
 
-;; Redo+
-(cond
-  ((< emacs-major-version '24)
-    (progn
-      (when (load-p "redo+")
-        (global-set-key (kbd "C-^") 'redo)
-        (setq undo-no-redo t)
-        (setq undo-limit 600000)
-        (setq undo-strong-limit 900000))
-      ))
+;; Redo
+(when (load-p "undo-tree")
+  (global-undo-tree-mode 1)
+  (defalias 'redo 'undo-tree-redo)
+  (global-set-key (kbd "M-/") 'redo)
 )
 
 ;; ¶ë·ÁÁªÂò

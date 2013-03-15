@@ -8,6 +8,8 @@
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+# v1.16 3/15,2013
+#       Replace redo+.el to undo-tree.el for redo.
 # v1.15 1/18,2013
 #       Delete unnecessary symlinks.
 # v1.14 1/8,2013
@@ -111,7 +113,7 @@ byte_compile_all() {
     cd $TARGET/elisp/3rd-party
     emacs_batch_byte_compile \
       js2.el \
-      redo+.el \
+      undo-tree.el \
       shadow.el \
       viewer.el \
       ruby-block.el \
