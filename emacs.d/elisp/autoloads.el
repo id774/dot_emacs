@@ -364,11 +364,16 @@
 )
 
 ;; Redo+
-(when (load-p "redo+")
-  (global-set-key (kbd "C-^") 'redo)
-  (setq undo-no-redo t)
-  (setq undo-limit 600000)
-  (setq undo-strong-limit 900000))
+(cond
+  ((< emacs-major-version '24)
+    (progn
+      (when (load-p "redo+")
+        (global-set-key (kbd "C-^") 'redo)
+        (setq undo-no-redo t)
+        (setq undo-limit 600000)
+        (setq undo-strong-limit 900000))
+      ))
+)
 
 ;; ¶ë·ÁÁªÂò
 (cua-mode t)
