@@ -227,18 +227,6 @@
   (interactive)
   (setq global-proxy-use
         (not global-proxy-use))
-  (setq twitter1-proxy-use
-        (not twitter1-proxy-use))
-  (setq twitter2-proxy-use
-        (not twitter2-proxy-use))
-  (setq twitter3-proxy-use
-        (not twitter3-proxy-use))
-  (setq twitter4-proxy-use
-        (not twitter4-proxy-use))
-  (setq twitter5-proxy-use
-        (not twitter5-proxy-use))
-  (setq twitter6-proxy-use
-        (not twitter6-proxy-use))
   (message "%s %s"
            "Use Proxy:"
            (if global-proxy-use

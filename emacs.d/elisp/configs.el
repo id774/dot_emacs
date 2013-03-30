@@ -232,17 +232,6 @@
 ;; key-chord.el専用キーバインド設定
 (load-p "key-chord-define-global")
 
-;; Twitter
-;;(load-p "twitter1-account")
-;;(load-p "twitter2-account")
-;;(load-p "twitter3-account")
-;;(load-p "twitter4-account")
-;;(load-p "twitter5-account")
-;;(load-p "twitter6-account")
-
-;; Twitter用キーバインド設定
-;;(load-p "twitter-key")
-
 ;; root所有のファイルを開くときはtrampでsudoする
 (defun file-root-p (filename)
   "Return t if file FILENAME created by root."
