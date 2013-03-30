@@ -320,6 +320,13 @@
 (require 'wdired)
 (define-key dired-mode-map "r" 'wdired-change-to-wdired-mode)
 
+;; minibuf-isearch
+(require 'minibuf-isearch)
+
+;; browse-kill-ring
+(require 'browse-kill-ring)
+(global-set-key (kbd "C-c k") 'browse-kill-ring)
+
 ;; zsh like completion
 (cond
   ((>= emacs-major-version '23)

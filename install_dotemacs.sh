@@ -112,6 +112,7 @@ byte_compile_all() {
       rubydb3x.el
     cd $TARGET/elisp/3rd-party
     emacs_batch_byte_compile \
+      browse-kill-ring.el \
       js2.el \
       undo-tree.el \
       shadow.el \
@@ -127,6 +128,7 @@ byte_compile_all() {
       bat-mode.el \
       git.el \
       git-blame.el \
+      minibuf-isearch.el \
       minor-mode-hack.el \
       open-junk-file.el \
       paredit.el \
