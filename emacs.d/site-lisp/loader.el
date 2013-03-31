@@ -11,7 +11,3 @@
     (auto-install-compatibility-setup)
     (setq ediff-window-setup-function 'ediff-setup-windows-plain)))
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:
