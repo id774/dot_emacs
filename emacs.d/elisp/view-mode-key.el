@@ -1,3 +1,6 @@
+;; view-mode-key.el
+;; 読み取り専用のモードでの特別な動作を定義
+
 ;; http://d.hatena.ne.jp/rubikitch/20081104/1225745862
 ;; http://d.hatena.ne.jp/yaotti/20081104/1225809687
 ;; http://gist.github.com/22143

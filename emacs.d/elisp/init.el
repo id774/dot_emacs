@@ -17,14 +17,14 @@
 It is used as a default value of target path to search file or
 subdirectory under load-path.")
 (setq my-load-path
-      (list "/usr/local/share/emacs/site-lisp"
-	    (expand-file-name "~/.emacs.d/site-lisp")
-	    (expand-file-name "~/.emacs.d/elisp")
-	    (expand-file-name "~/.emacs.d/elisp/3rd-party")
-	    (expand-file-name "~/.emacs.d/elisp/3rd-party/ruby-mode")
-	    (expand-file-name "~/.emacs.d/elisp/3rd-party/nxhtml")
-	    (expand-file-name "~/.emacs.d/elisp/3rd-party/rhtml")
-	    (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari")))
+  (list "/usr/local/share/emacs/site-lisp"
+  (expand-file-name "~/.emacs.d/site-lisp")
+  (expand-file-name "~/.emacs.d/elisp")
+  (expand-file-name "~/.emacs.d/elisp/3rd-party")
+  (expand-file-name "~/.emacs.d/elisp/3rd-party/ruby-mode")
+  (expand-file-name "~/.emacs.d/elisp/3rd-party/nxhtml")
+  (expand-file-name "~/.emacs.d/elisp/3rd-party/rhtml")
+  (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari")))
 (setq load-path (append my-load-path default-load-path))
 
 ;; custom

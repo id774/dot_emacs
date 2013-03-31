@@ -3,7 +3,7 @@
   (interactive)
   (delete-other-windows)
   (dolist (buf (buffer-list))
-	  (kill-buffer buf)))
+    (kill-buffer buf)))
 
 ;; Local Variables:
 ;; mode : emacs-lisp

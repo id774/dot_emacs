@@ -1,5 +1,4 @@
-;;存在しないファイルを開こうとしたとき念押し
-;;fj.editor.emacsより
+;; 存在しないファイルを開こうとしたとき確認する
 (add-hook 'find-file-not-found-hooks 'new-file-p)
 (defun new-file-p ()
   (interactive)

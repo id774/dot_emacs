@@ -1,6 +1,6 @@
 ;; キーバインド設定
 
-;; こっちのwidowで編集しながらあっちの*help*をスクロールとか。
+;; 他のウィンドウをスクロールできる
 (global-set-key "\M-V" 'scroll-other-window-down)
 
 ;; C-x p で C-x o の逆の動作をする
@@ -45,7 +45,7 @@
 (define-key global-map "\C-c\C-c\ -" 'my-decrease-tab-width)
 (define-key global-map "\C-c\C-c\ +" 'my-increase-tab-width)
 
-;; ウィンドウが1つしかない場合は縦に分割する関数
+;; ウィンドウが 1 つしかない場合は縦に分割する
 (defun split-one-window-p ()
   (if (one-window-p)
     (split-window-horizontally)))
@@ -85,13 +85,6 @@
   (navi2ch))
 (define-key global-map "\C-c\C-c\C-i" 'switch-to-navi2ch)
 (define-key global-map "\C-c\C-c\ i" 'switch-to-navi2ch)
-
-;; 行末の空白を一括削除する
-(define-key global-map "\C-c\C-c\ t" 'delete-trailing-whitespace)
-
-;; タブ, 全角スペース、改行直前の半角スペースを表示する(トグルで動作)
-(define-key global-map "\C-c\C-c\C-t" 'jaspace-mode)
-(define-key global-map "\C-x\ 9" 'jaspace-mode)
 
 ;; C-M-g でも keyboard-escape-quit する
 (global-set-key "\C-\M-g" 'keyboard-escape-quit)
@@ -215,14 +208,21 @@
 (define-key global-map "\C-c\C-c\ 0" 'confirm-kill-all-buffers)
 (define-key global-map "\C-x\ 7" 'confirm-kill-all-buffers)
 
-;; C-x C-cで必ず確認する
+;; C-x C-c で必ず確認する
 (defun confirm-save-buffers-kill-emacs ()
   (interactive)
   (if (y-or-n-p "quit emacs? ")
     (save-buffers-kill-emacs)))
 (global-set-key "\C-x\C-c" 'confirm-save-buffers-kill-emacs)
 
-;; Proxyのオンオフを切り替えるする関数
+;; タブ, 全角スペース、改行直前の半角スペースを表示する(トグルで動作)
+(define-key global-map "\C-c\C-c\C-t" 'jaspace-mode)
+(define-key global-map "\C-x\ 9" 'jaspace-mode)
+
+;; 行末の空白を一括削除する
+(define-key global-map "\C-c\C-c\ t" 'delete-trailing-whitespace)
+
+;; Proxy のオンオフを切り替えるする
 (defun global-proxy-use-toggle () ""
   (interactive)
   (setq global-proxy-use

@@ -1,8 +1,7 @@
 ;; configs.el
 ;; 基本的な環境設定
 
-;;モードラインに今いる関数を表示
-;;読み込み時のみスキャンっていうのがちょっといけてない
+;; モードラインに今いる関数を表示
 (which-func-mode)
 
 ;; blink
@@ -14,14 +13,14 @@
     (tool-bar-mode nil)
     (scroll-bar-mode -1)))
 
-;; メニューバー使う?
+;; メニューバー使う
 (menu-bar-mode -1)
 
-;; ホイールマウス使う?
+;; ホイールマウス使う
 ;; emacs 23.2 で使えないのでコメントアウト
 ;;(mouse-wheel-mode 1)
 
-;; xtermとかgnome-terminalとか。
+;; xtermとかgnome-terminalとか
 (xterm-mouse-mode -1)
 
 ;; ;; fringe(左右に余白のように見えてるアレ)
@@ -30,7 +29,7 @@
 ;; ;; 時間表示
 (display-time)
 
-;; 行番号と列番号
+;; 行番号と列番号を表示
 (line-number-mode t)
 (column-number-mode t)
 
@@ -44,7 +43,7 @@
 (setq make-backup-files t)
 
 ;; バックアップファイルの保存位置指定
-;; CVSで管理していても設定しておくと安全
+;; VCS で管理していても設定しておくと安全
 ;; !path!to!file-name~ で保存される
 (setq backup-directory-alist
       '(("." . "~/.emacs.d/backups")))
@@ -52,7 +51,7 @@
 ;; transient-mark
 (setq transient-mark-mode t)
 
-;;isearch を色つきに
+;; isearch を色つきに
 (setq search-highlight t)
 (setq query-replace-highlight t)
 ;;(setq isearch-lazy-highlight-initial-delay 0) ; obsolate
@@ -66,10 +65,10 @@
                       "/usr/share/man/ja_JP.ujis"))
 (setq woman-cache-filename (expand-file-name "~/.emacs.d/woman-cache"))
 
-;; バックアップごときでinodeが変わるのが許せない
+;; バックアップで inode を変化させないようにする
 (setq backup-by-copying t)
 
-;;GC間隔
+;; GC間隔
 (setq gc-cons-threshold 1000000)
 
 ;; スプラッシュ非表示 : 起動が速くなる
@@ -78,28 +77,28 @@
 ;; 画面反転をやめる
 (setq visible-bell nil)
 
-;; あまりに大きいファイルは色付けると時間かかるので、上限を指定
+;; あまりに大きいファイルは色付けると時間かかるので、上限を指定する
 (setq font-lock-maximum-size nil)
 
 ;; ;; fast-lock
 ;; (setq font-lock-support-mode 'fast-lock-mode)
 ;; (setq fast-lock-cache-directories '("~/.emacs.d/emacs-flc"))
 
-;; auto-saveの場所
+;; auto-save の場所
 (setq auto-save-list-file-prefix "~/.emacs.d/auto-save-list/.saves-")
 
-;; 最後に改行を付ける。
+;; 最後に改行を付ける
 (setq require-final-newline t)
 
-;; /tmp でもまあいいんだけど。
+;; 一時ファイルの場所
 ;; (setq temporary-file-directory "~/.emacs.d/tmp")
 (setq temporary-file-directory "/dev/shm")
 
-;; 1行ずつスクロール。
+;; 1行ずつスクロール
 (setq scroll-conservatively 1)
 
-;;新規行を作成しない
-;;emacs21ではデフォルト。
+;; 新規行を作成しない
+;; emacs21ではデフォルト
 (setq next-line-add-newlines nil)
 
 ;; 80 だとちょっと……
@@ -123,7 +122,7 @@
 (setq vc-suppress-confirm t)
 (setq vc-command-messages t)
 
-;; narrowingの警告を抑止
+;; narrowing の警告を抑止
 (put 'narrow-to-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
 
@@ -154,7 +153,7 @@
 ;; (set-input-method "japanese-anthy")
 ;; (set-input-method "japanese-prime")
 
-;; C言語系の設定群
+;; C 言語系の設定群
 
 ;; Ruby default style
 (c-add-style "ruby"
@@ -164,7 +163,7 @@
     (label . 2)
     (statement-case-intro . 2))))
 
-;; でも本当は stroustrup が好き。
+;; Stroustrup style
 (defun-add-hook 'c-mode-common-hook
   (c-set-style "Stroustrup")
   (c-toggle-hungry-state 1)
@@ -186,7 +185,7 @@
 ;; (setq hl-line-face 'underline) ; 下線
 (hl-line-mode 1)
 
-;; ファイルオープン直後は読み取り専用(C-x j で切替)
+;; ファイルオープン直後は読み取り専用 (C-x j で切替)
 (add-hook 'find-file-hooks
   (lambda ()
     (cond (view-mode)
@@ -226,13 +225,13 @@
 ;; キーバインド設定
 (load-p "global-set-key")
 
-;; view-modeキーバインド設定
+;; view-mode キーバインド設定
 (load-p "view-mode-key")
 
-;; key-chord.el専用キーバインド設定
+;; key-chord.el 専用キーバインド設定
 (load-p "key-chord-define-global")
 
-;; root所有のファイルを開くときはtrampでsudoする
+;; root 所有のファイルを開くときは tramp で sudo する
 (defun file-root-p (filename)
   "Return t if file FILENAME created by root."
   (eq 0 (nth 2 (file-attributes filename))))
@@ -262,7 +261,7 @@
   (interactive "F")
   (set-buffer (find-file (concat "/sudo::" file))))
 
-;; 環境固有の設定をここに
+;; その他の環境固有の設定をここに
 (if window-system
   (progn
     (cond

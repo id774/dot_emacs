@@ -2,7 +2,6 @@
 
 ;; 日本語設定
 (set-language-environment 'Japanese)
-;; 最近もう$LANGでいいやという気になった。
 ;; (set-default-coding-systems 'euc-jp-unix)
 ;; (set-buffer-file-coding-system 'euc-jp-unix)
 ;; (set-terminal-coding-system 'utf-8)
@@ -11,14 +10,14 @@
 ;; (set-clipboard-coding-system 'iso-2022-jp-unix)
 ;; (setq default-process-coding-system '(undecided . euc-jp-unix))
 
-;; UTF-8の優先順位を高くする
+;; UTF-8 の優先順位を高くする
 (prefer-coding-system 'utf-8-unix)
 
 (if window-system
   (progn
     (cond
-;; Windows(Meadow3)用GUI設定
-;; VLゴシックフォント必要
+;; Windows(Meadow3) 用設定
+;; VL ゴシックフォント必要
 ;; http://dicey.org/vlgothic/
       ((eq system-type 'windows-nt)
         (w32-add-font
@@ -57,9 +56,9 @@
                             '(height . 40) ; 起動時のサイズ（縦）
                             '(font . "vl-gothic-12"); VL Gothic
                             ))))
-;; GNU/Linux用GUI設定
-;; Bitstream Vera Sans Mono/VLゴシックを指定
-;; (要:ttf-bitstream-veraパッケージ)
+;; GNU/Linux 用設定
+;; Bitstream Vera Sans Mono/VL ゴシックを指定
+;; (要 :ttf-bitstream-vera パッケージ)
       ((eq system-type 'gnu/linux)
         (setq default-frame-alist ; ThinkPad X60/X61 に最適化
               (append (list '(top . 10) ; 起動時の表示位置（上から）
@@ -74,7 +73,7 @@
                           '("VL ゴシック" . "unicode-bmp"))
       )
       ((eq system-type 'darwin)
-;; Mac OS X Cocoa/Carbon Emacs用GUI設定
+;; Mac OS X Cocoa/Carbon Emacs 用設定
 ;; http://diary.mrmt.net/item/1356
         (cond
           ((< emacs-major-version '23)
@@ -171,8 +170,7 @@
       (set-face-bold-p 'font-lock-warning-face nil)
     ))
 ))
-;;
-
+
 ;; Local Variables:
 ;; mode : emacs-lisp
 ;; coding : euc-jp-unix

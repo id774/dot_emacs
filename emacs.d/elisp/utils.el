@@ -20,7 +20,6 @@
 	(message (format "failed to load %s" loadlib)))
     load-status))
 
-
 ;; Local Variables:
 ;; mode : emacs-lisp
 ;; coding : euc-jp-unix

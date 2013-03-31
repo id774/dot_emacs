@@ -6,7 +6,7 @@
 ;; Mew
 (load-p "mew-settings")
 
-;; Text モードをデフォルトに
+;; Text モードをデフォルトにする
 (setq default-major-mode 'text-mode)
 
 ;; オートコンプリート
@@ -113,7 +113,7 @@
   ((>= emacs-major-version '23)
     (load-p "autostart")))
 
-;; gtags-mode : global 便利。
+;; gtags-mode : global
 (when (autoload-p 'gtags-mode "gtags" "GNU GLOBAL" 'interactive)
   (setq gtags-mode-hook
   (function (lambda ()
@@ -121,7 +121,7 @@
     (local-set-key "\M-r" 'gtags-find-rtag)   ; reverse tag
     (local-set-key "\M-s" 'gtags-find-symbol) ; find
     (local-set-key "\C-t" 'gtags-pop-stack)))); pop
-  ;; C-mode のときは常に gtags 使用。
+  ;; C-mode のときは常に gtags にする
   (defun-add-hook 'c-mode-common-hook (gtags-mode 1)))
 
 ;; js2-mode
@@ -179,7 +179,7 @@
 (autoload-p 'bat-mode "bat-mode"
       "DOS and Windows BAT files" t)
 
-;; sense-region.el : \C-spc で region<->rectabgle をトグル。便利。
+;; sense-region.el : \C-spc で region<->rectabgle をトグル
 (when (autoload-p 'sense-region-on "sense-region" "sense-region" 'interactive)
   (sense-region-on))
 
@@ -263,26 +263,14 @@
 (when (load-p "develock")
   (global-font-lock-mode t))
 
-;; Open recent。便利。
-;; (when (load-p "recentf")
-;;  (recentf-mode 1)
-;;  ;; Open recent で保存する数
-;;  (setq recentf-max-menu-items 16)
-;;  (setq recentf-max-saved-items 48))
-
 ;; 物理行移動
 (load-p "physical-line")
-
-;; なんでもタブでやる ac-mdoe
-;; (when (load-p "ac-mode")
-;;  (setq ac-mode-exception '(dired-mode hex-mode ruby-mode))
-;;  (add-hook 'find-file-hooks 'ac-mode-without-exception))
 
 (when (load-p "windmove")
   (windmove-default-keybindings)
   (setq windmove-wrap-around t))
 
-;; screen と emacs -nw を混ぜるとこいつが強烈にほしくなる
+;; screen の hard status を更新する
 (when (and (not window-system)
      (string-match "^xterm\\|^screen" (getenv "TERM"))
      (load-p "term/xterm"))
@@ -339,10 +327,7 @@
         (define-key map (kbd "<up>")    'zlc-select-previous-vertical)
         (define-key map (kbd "<right>") 'zlc-select-next)
         (define-key map (kbd "<left>")  'zlc-select-previous)
-      )
-    )
-  )
-)
+      ))))
 
 ;; 自動保存
 (when (load-p "auto-save-buffers")
@@ -358,8 +343,7 @@
   ;; (diminish 'gtags-mode "G")
   (diminish 'abbrev-mode "Abbr")
   ;; (diminish 'ac-mode "[tab]")
-  (diminish 'font-lock-mode ""); 動いていて当たり前
-  ;; ついでだから major mode も書き換えちゃえ
+  (diminish 'font-lock-mode "");
   (defun-add-hook 'lisp-interaction-mode-hook (setq mode-name "Lisp"))
   (defun-add-hook 'emacs-lisp-mode-hook (setq mode-name "elisp"))
   (defun-add-hook 'texinfo-mode-hook (setq mode-name "texi"))
