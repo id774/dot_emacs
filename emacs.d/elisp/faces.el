@@ -1,6 +1,6 @@
 ;; Faces
 
-;; ÆüËÜ¸ìÀßÄê
+;; æ—¥æœ¬èªè¨­å®š
 (set-language-environment 'Japanese)
 ;; (set-default-coding-systems 'euc-jp-unix)
 ;; (set-buffer-file-coding-system 'euc-jp-unix)
@@ -10,14 +10,14 @@
 ;; (set-clipboard-coding-system 'iso-2022-jp-unix)
 ;; (setq default-process-coding-system '(undecided . euc-jp-unix))
 
-;; UTF-8 ¤ÎÍ¥Àè½ç°Ì¤ò¹â¤¯¤¹¤ë
+;; UTF-8 ã®å„ªå…ˆé †ä½ã‚’é«˜ãã™ã‚‹
 (prefer-coding-system 'utf-8-unix)
 
 (if window-system
   (progn
     (cond
-;; Windows(Meadow3) ÍÑÀßÄê
-;; VL ¥´¥·¥Ã¥¯¥Õ¥©¥ó¥ÈÉ¬Í×
+;; Windows(Meadow3) ç”¨è¨­å®š
+;; VL ã‚´ã‚·ãƒƒã‚¯ãƒ•ã‚©ãƒ³ãƒˆå¿…è¦
 ;; http://dicey.org/vlgothic/
       ((eq system-type 'windows-nt)
         (w32-add-font
@@ -25,80 +25,80 @@
          '((spec
             ((:char-spec ascii :height any)
              strict
-             (w32-logfont "VL ¥´¥·¥Ã¥¯" 0 -12 400 0 nil nil nil 128 1 3 49))
+             (w32-logfont "VL ã‚´ã‚·ãƒƒã‚¯" 0 -12 400 0 nil nil nil 128 1 3 49))
              ((:char-spec ascii :height any :weight bold)
               strict
-              (w32-logfont "VL ¥´¥·¥Ã¥¯" 0 -12 700 0 nil nil nil 128 1 3 49))
+              (w32-logfont "VL ã‚´ã‚·ãƒƒã‚¯" 0 -12 700 0 nil nil nil 128 1 3 49))
              ((:char-spec ascii :height any :slant italic)
              strict
-             (w32-logfont "VL ¥´¥·¥Ã¥¯" 0 -12 400 0 t nil nil 128 1 3 49))
+             (w32-logfont "VL ã‚´ã‚·ãƒƒã‚¯" 0 -12 400 0 t nil nil 128 1 3 49))
              ((:char-spec ascii :height any :weight bold :slant italic)
               strict
-              (w32-logfont "VL ¥´¥·¥Ã¥¯" 0 -12 700 0 t nil nil 128 1 3 49))
+              (w32-logfont "VL ã‚´ã‚·ãƒƒã‚¯" 0 -12 700 0 t nil nil 128 1 3 49))
              ((:char-spec japanese-jisx0208 :height any)
               strict
-              (w32-logfont "VL ¥´¥·¥Ã¥¯" 0 -12 400 0 nil nil nil 128 1 3 49))
+              (w32-logfont "VL ã‚´ã‚·ãƒƒã‚¯" 0 -12 400 0 nil nil nil 128 1 3 49))
              ((:char-spec japanese-jisx0208 :height any :weight bold)
               strict
-              (w32-logfont "VL ¥´¥·¥Ã¥¯" 0 -12 700 0 nil nil nil 128 1 3 49))
+              (w32-logfont "VL ã‚´ã‚·ãƒƒã‚¯" 0 -12 700 0 nil nil nil 128 1 3 49))
              ((:char-spec japanese-jisx0208 :height any :slant italic)
              strict
-             (w32-logfont "VL ¥´¥·¥Ã¥¯" 0 -12 400 0 t nil nil 128 1 3 49))
+             (w32-logfont "VL ã‚´ã‚·ãƒƒã‚¯" 0 -12 400 0 t nil nil 128 1 3 49))
              ((:char-spec japanese-jisx0208 :height any :weight bold :slant italic)
               strict
-              (w32-logfont "VL ¥´¥·¥Ã¥¯" 0 -12 700 0 t nil nil 128 1 3 49)
+              (w32-logfont "VL ã‚´ã‚·ãƒƒã‚¯" 0 -12 700 0 t nil nil 128 1 3 49)
               ((spacing . -1))
              ))))
         (setq default-frame-alist
-              (append (list '(top . 10) ; µ¯Æ°»ş¤ÎÉ½¼¨°ÌÃÖ¡Ê¾å¤«¤é¡Ë
-                            '(left . 10) ; µ¯Æ°»ş¤ÎÉ½¼¨°ÌÃÖ¡Êº¸¤«¤é¡Ë
-                            '(width . 120) ; µ¯Æ°»ş¤Î¥µ¥¤¥º¡ÊÉı¡Ë
-                            '(height . 40) ; µ¯Æ°»ş¤Î¥µ¥¤¥º¡Ê½Ä¡Ë
+              (append (list '(top . 10) ; èµ·å‹•æ™‚ã®è¡¨ç¤ºä½ç½®ï¼ˆä¸Šã‹ã‚‰ï¼‰
+                            '(left . 10) ; èµ·å‹•æ™‚ã®è¡¨ç¤ºä½ç½®ï¼ˆå·¦ã‹ã‚‰ï¼‰
+                            '(width . 120) ; èµ·å‹•æ™‚ã®ã‚µã‚¤ã‚ºï¼ˆå¹…ï¼‰
+                            '(height . 40) ; èµ·å‹•æ™‚ã®ã‚µã‚¤ã‚ºï¼ˆç¸¦ï¼‰
                             '(font . "vl-gothic-12"); VL Gothic
                             ))))
-;; GNU/Linux ÍÑÀßÄê
-;; Bitstream Vera Sans Mono/VL ¥´¥·¥Ã¥¯¤ò»ØÄê
-;; (Í× :ttf-bitstream-vera ¥Ñ¥Ã¥±¡¼¥¸)
+;; GNU/Linux ç”¨è¨­å®š
+;; Bitstream Vera Sans Mono/VL ã‚´ã‚·ãƒƒã‚¯ã‚’æŒ‡å®š
+;; (è¦ :ttf-bitstream-vera ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸)
       ((eq system-type 'gnu/linux)
-        (setq default-frame-alist ; ThinkPad X60/X61 ¤ËºÇÅ¬²½
-              (append (list '(top . 10) ; µ¯Æ°»ş¤ÎÉ½¼¨°ÌÃÖ¡Ê¾å¤«¤é¡Ë
-                            '(left . 10) ; µ¯Æ°»ş¤ÎÉ½¼¨°ÌÃÖ¡Êº¸¤«¤é¡Ë
-                            '(width . 120) ; µ¯Æ°»ş¤Î¥µ¥¤¥º¡ÊÉı¡Ë
-                            '(height . 40) ; µ¯Æ°»ş¤Î¥µ¥¤¥º¡Ê½Ä¡Ë
+        (setq default-frame-alist ; ThinkPad X60/X61 ã«æœ€é©åŒ–
+              (append (list '(top . 10) ; èµ·å‹•æ™‚ã®è¡¨ç¤ºä½ç½®ï¼ˆä¸Šã‹ã‚‰ï¼‰
+                            '(left . 10) ; èµ·å‹•æ™‚ã®è¡¨ç¤ºä½ç½®ï¼ˆå·¦ã‹ã‚‰ï¼‰
+                            '(width . 120) ; èµ·å‹•æ™‚ã®ã‚µã‚¤ã‚ºï¼ˆå¹…ï¼‰
+                            '(height . 40) ; èµ·å‹•æ™‚ã®ã‚µã‚¤ã‚ºï¼ˆç¸¦ï¼‰
                             )))
         (set-default-font "Bitstream Vera Sans Mono-8")
         ;; (set-default-font "DejaVu Sans Mono-8") ;; Ubuntu Lucid
         (set-fontset-font (frame-parameter nil 'font)
                           'japanese-jisx0208
-                          '("VL ¥´¥·¥Ã¥¯" . "unicode-bmp"))
+                          '("VL ã‚´ã‚·ãƒƒã‚¯" . "unicode-bmp"))
       )
       ((eq system-type 'darwin)
-;; Mac OS X Cocoa/Carbon Emacs ÍÑÀßÄê
+;; Mac OS X Cocoa/Carbon Emacs ç”¨è¨­å®š
 ;; http://diary.mrmt.net/item/1356
         (cond
           ((< emacs-major-version '23)
             (progn
               (setq default-frame-alist
-                    (append (list '(top . 10) ; µ¯Æ°»ş¤ÎÉ½¼¨°ÌÃÖ¡Ê¾å¤«¤é¡Ë
-                                  '(left . 10) ; µ¯Æ°»ş¤ÎÉ½¼¨°ÌÃÖ¡Êº¸¤«¤é¡Ë
-                                  '(width . 180) ; µ¯Æ°»ş¤Î¥µ¥¤¥º¡ÊÉı¡Ë
-                                  '(height . 45) ; µ¯Æ°»ş¤Î¥µ¥¤¥º¡Ê½Ä¡Ë
+                    (append (list '(top . 10) ; èµ·å‹•æ™‚ã®è¡¨ç¤ºä½ç½®ï¼ˆä¸Šã‹ã‚‰ï¼‰
+                                  '(left . 10) ; èµ·å‹•æ™‚ã®è¡¨ç¤ºä½ç½®ï¼ˆå·¦ã‹ã‚‰ï¼‰
+                                  '(width . 180) ; èµ·å‹•æ™‚ã®ã‚µã‚¤ã‚ºï¼ˆå¹…ï¼‰
+                                  '(height . 45) ; èµ·å‹•æ™‚ã®ã‚µã‚¤ã‚ºï¼ˆç¸¦ï¼‰
                                   )))
               ))
           ((>= emacs-major-version '23)
             (progn
-              (setq default-frame-alist ; 13inch MacBook Pro ¤ËºÇÅ¬²½
-                    (append (list '(top . 10) ; µ¯Æ°»ş¤ÎÉ½¼¨°ÌÃÖ¡Ê¾å¤«¤é¡Ë
-                                  '(left . 10) ; µ¯Æ°»ş¤ÎÉ½¼¨°ÌÃÖ¡Êº¸¤«¤é¡Ë
-                                  '(width . 180) ; µ¯Æ°»ş¤Î¥µ¥¤¥º¡ÊÉı¡Ë
-                                  '(height . 50) ; µ¯Æ°»ş¤Î¥µ¥¤¥º¡Ê½Ä¡Ë
+              (setq default-frame-alist ; 13inch MacBook Pro ã«æœ€é©åŒ–
+                    (append (list '(top . 10) ; èµ·å‹•æ™‚ã®è¡¨ç¤ºä½ç½®ï¼ˆä¸Šã‹ã‚‰ï¼‰
+                                  '(left . 10) ; èµ·å‹•æ™‚ã®è¡¨ç¤ºä½ç½®ï¼ˆå·¦ã‹ã‚‰ï¼‰
+                                  '(width . 180) ; èµ·å‹•æ™‚ã®ã‚µã‚¤ã‚ºï¼ˆå¹…ï¼‰
+                                  '(height . 50) ; èµ·å‹•æ™‚ã®ã‚µã‚¤ã‚ºï¼ˆç¸¦ï¼‰
                                   )))
               ;; (set-input-method "MacOSX")
               (setq fixed-width-use-QuickDraw-for-ascii t)
               (setq mac-allow-anti-aliasing t)
               (set-face-attribute 'default nil
                                   :family "monaco"
-                                  :height 120) ; ÁêÂĞÅª¤ÊÊ¸»ú¤ÎÂç¤­¤µ¤ò·èÄê¤¹¤ë
+                                  :height 120) ; ç›¸å¯¾çš„ãªæ–‡å­—ã®å¤§ãã•ã‚’æ±ºå®šã™ã‚‹
               (set-fontset-font
                (frame-parameter nil 'font)
                'japanese-jisx0208
@@ -107,20 +107,20 @@
                (frame-parameter nil 'font)
                'japanese-jisx0212
                '("Hiragino Kaku Gothic Pro" . "iso10646-1"))
-              ;;; Unicode ¥Õ¥©¥ó¥È
+              ;;; Unicode ãƒ•ã‚©ãƒ³ãƒˆ
               (set-fontset-font
                (frame-parameter nil 'font)
                'mule-unicode-0100-24ff
                '("monaco" . "iso10646-1"))
-             ;;; ¥­¥ê¥ë¡¤¥®¥ê¥·¥¢Ê¸»úÀßÄê
-             ;;; Ãí°Õ¡§ ¤³¤ÎÀßÄê¤À¤±¤Ç¤Ï¸ÅÂå¥®¥ê¥·¥¢Ê¸»ú¡¢¥³¥×¥ÈÊ¸»ú¤ÏÉ½¼¨¤Ç¤­¤Ê¤¤
-             ;;; http://socrates.berkeley.edu/~pinax/greekkeys/NAUdownload.html ¤¬É¬Í×
-             ;;; ¥­¥ê¥ëÊ¸»ú
+             ;;; ã‚­ãƒªãƒ«ï¼Œã‚®ãƒªã‚·ã‚¢æ–‡å­—è¨­å®š
+             ;;; æ³¨æ„ï¼š ã“ã®è¨­å®šã ã‘ã§ã¯å¤ä»£ã‚®ãƒªã‚·ã‚¢æ–‡å­—ã€ã‚³ãƒ—ãƒˆæ–‡å­—ã¯è¡¨ç¤ºã§ããªã„
+             ;;; http://socrates.berkeley.edu/~pinax/greekkeys/NAUdownload.html ãŒå¿…è¦
+             ;;; ã‚­ãƒªãƒ«æ–‡å­—
               (set-fontset-font
                (frame-parameter nil 'font)
                'cyrillic-iso8859-5
                '("monaco" . "iso10646-1"))
-             ;;; ¥®¥ê¥·¥¢Ê¸»ú
+             ;;; ã‚®ãƒªã‚·ã‚¢æ–‡å­—
               (set-fontset-font
                (frame-parameter nil 'font)
                'greek-iso8859-7
@@ -138,24 +138,24 @@
           ))
         ))
       )
-;; ¥Õ¥ì¡¼¥àÀßÄê
+;; ãƒ•ãƒ¬ãƒ¼ãƒ è¨­å®š
     (setq default-frame-alist
-          (append (list '(foreground-color . "#00FF00") ; Ê¸»ú¤Î¿§
-                        '(background-color . "#000000") ; ÇØ·Ê¤Î¿§
+          (append (list '(foreground-color . "#00FF00") ; æ–‡å­—ã®è‰²
+                        '(background-color . "#000000") ; èƒŒæ™¯ã®è‰²
                         '(border-color . "#000000") ;
                         '(mouse-color . "#00FFFF") ;
-                        '(cursor-color . "#FF0000") ; ¥«¡¼¥½¥ë¤Î¿§
+                        '(cursor-color . "#FF0000") ; ã‚«ãƒ¼ã‚½ãƒ«ã®è‰²
                         '(vertical-scroll-bars . nil) ;
                    )
                   default-frame-alist))
-;;¥ê¡¼¥¸¥ç¥ó¤Ë¿§¤òÉÕ¤±¤ë
+;;ãƒªãƒ¼ã‚¸ãƒ§ãƒ³ã«è‰²ã‚’ä»˜ã‘ã‚‹
     (setq transient-mark-mode t)
-;;¥Õ¥©¥ó¥È¥í¥Ã¥¯
+;;ãƒ•ã‚©ãƒ³ãƒˆãƒ­ãƒƒã‚¯
     (global-font-lock-mode 1)
     (setq font-lock-support-mode 'jit-lock-mode)
-;; ¿§¤Å¤±¤ÏºÇÂç¸Â¤Ë
+;; è‰²ã¥ã‘ã¯æœ€å¤§é™ã«
     (setq font-lock-maximum-decoration t)
-;; ¥Ç¥Õ¥©¥ë¥È¤Î¿§¤Å¤±¤òÊÑ¤¨¤ë
+;; ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®è‰²ã¥ã‘ã‚’å¤‰ãˆã‚‹
     (add-hook 'font-lock-mode-hook '(lambda ()
       (set-face-foreground 'font-lock-builtin-face "spring green")
       (set-face-foreground 'font-lock-comment-face "slate gray")
@@ -171,7 +171,3 @@
     ))
 ))
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

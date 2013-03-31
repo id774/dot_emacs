@@ -1,7 +1,7 @@
-;; Mew ¤ò»È¤¦°Ù¤ÎÀßÄê
+;; Mew ã‚’ä½¿ã†ç‚ºã®è¨­å®š
 (autoload 'mew "mew" nil t)
 (autoload 'mew-send "mew" nil t)
-;; ¥Ñ¥¹¥ï¡¼¥ÉÈóÉ½¼¨
+;; ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰éè¡¨ç¤º
 (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
 ;; Optional setup (Read Mail menu for Emacs 21):
 (if (boundp 'read-mail-command)
@@ -19,7 +19,3 @@
       'mew-send-hook))
 (define-key global-map "\C-c\C-c\ m" 'mew)
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

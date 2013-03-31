@@ -1,4 +1,4 @@
-;; ¥¿¥Ö, Á´³Ñ¥¹¥Ú¡¼¥¹¡¢²ş¹ÔÄ¾Á°¤ÎÈ¾³Ñ¥¹¥Ú¡¼¥¹¤òÉ½¼¨¤¹¤ë
+;; ã‚¿ãƒ–, å…¨è§’ã‚¹ãƒšãƒ¼ã‚¹ã€æ”¹è¡Œç›´å‰ã®åŠè§’ã‚¹ãƒšãƒ¼ã‚¹ã‚’è¡¨ç¤ºã™ã‚‹
 (when (require 'jaspace nil t)
   (when (boundp 'jaspace-modes)
     (setq jaspace-modes (append jaspace-modes
@@ -9,7 +9,7 @@
                                       'text-mode
                                       'fundamental-mode))))
   (when (boundp 'jaspace-alternate-jaspace-string)
-    (setq jaspace-alternate-jaspace-string "¢¢"))
+    (setq jaspace-alternate-jaspace-string "â–¡"))
   (when (boundp 'jaspace-highlight-tabs)
     (setq jaspace-highlight-tabs ?^))
   (add-hook 'jaspace-mode-off-hook
@@ -46,7 +46,3 @@
                                      :strike-through nil
                                      :underline t))))))))
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

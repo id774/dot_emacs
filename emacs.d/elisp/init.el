@@ -1,5 +1,5 @@
 ;; init.el
-;; ¥í¡¼¥É¥Ñ¥¹¤Ê¤É¤Î½é´üÀßÄê¤ò¤·¤Æ autoloads.el ¤ò¸Æ¤Ö
+;; ãƒ­ãƒ¼ãƒ‰ãƒ‘ã‚¹ãªã©ã®åˆæœŸè¨­å®šã‚’ã—ã¦ autoloads.el ã‚’å‘¼ã¶
 
 ;; proxy
 (load "~/.emacs.d/elisp/proxy")
@@ -7,7 +7,7 @@
 ;; chdir
 (cd "~/")
 
-;; path ·Ï
+;; path ç³»
 (setq exec-path (append '("/usr/local/bin" "/opt/local/bin") exec-path))
 (setenv "PATH" (concat '"/usr/local/bin:/opt/local/bin:/usr/bin:" (getenv "PATH")))
 
@@ -37,7 +37,3 @@ subdirectory under load-path.")
 ;; main
 (load "autoloads")
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

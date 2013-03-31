@@ -1,11 +1,7 @@
-;; ³«¤¤¤Æ¤¤¤ë¤¹¤Ù¤Æ¤Î¥Ğ¥Ã¥Õ¥¡¤òkill¤¹¤ë
+;; é–‹ã„ã¦ã„ã‚‹ã™ã¹ã¦ã®ãƒãƒƒãƒ•ã‚¡ã‚’killã™ã‚‹
 (defun kill-all-buffers ()
   (interactive)
   (delete-other-windows)
   (dolist (buf (buffer-list))
     (kill-buffer buf)))
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

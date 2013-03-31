@@ -1,26 +1,22 @@
 ;; utils.el
-;; .emacs ¤ÎÃæ¤Ç»È¤¦´Ø¿ô
+;; .emacs ã®ä¸­ã§ä½¿ã†é–¢æ•°
 
 ;; http://www.sodan.org/~knagano/emacs/dotemacs.html
-;; ¤È¤«»²¾È¡£
+;; ã¨ã‹å‚ç…§ã€‚
 
 (defun autoload-p (function file &optional docstring interactive type)
   "set autoload iff. FILE has found."
   (and (locate-library file)
        (autoload function file docstring interactive type)))
 (defmacro defun-add-hook (hookname &rest sexplist)
-  "add-hook ¤Î¥¨¥¤¥ê¥¢¥¹¡£°ú¿ô¤ò´Ø¿ô¤Ë¥Ñ¥Ã¥¯¤·¤Æ hook ¤ËÄÉ²Ã¤¹¤ë¡£"
+  "add-hook ã®ã‚¨ã‚¤ãƒªã‚¢ã‚¹ã€‚å¼•æ•°ã‚’é–¢æ•°ã«ãƒ‘ãƒƒã‚¯ã—ã¦ hook ã«è¿½åŠ ã™ã‚‹ã€‚"
   `(add-hook ,hookname
 	     (function (lambda () ,@sexplist))))
 (defun load-p (loadlib)
-  "°ÂÁ´¤Ê load¡£ÆÉ¤ß¹ş¤ß¤Ë¼ºÇÔ¤·¤Æ¤â¤½¤³¤Ç»ß¤Ş¤é¤Ê¤¤¡£"
-  ;; missing-ok ¤ÇÆÉ¤ó¤Ç¤ß¤Æ¡¢¥À¥á¤Ê¤é¤³¤Ã¤½¤ê message ¤Ç¤â½Ğ¤·¤Æ¤ª¤¯
+  "å®‰å…¨ãª loadã€‚èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¦ã‚‚ãã“ã§æ­¢ã¾ã‚‰ãªã„ã€‚"
+  ;; missing-ok ã§èª­ã‚“ã§ã¿ã¦ã€ãƒ€ãƒ¡ãªã‚‰ã“ã£ãã‚Š message ã§ã‚‚å‡ºã—ã¦ãŠã
   (let ((load-status (load loadlib t)))
     (or load-status
 	(message (format "failed to load %s" loadlib)))
     load-status))
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

@@ -1,4 +1,4 @@
-;; 4 ¥¿¥Ö¤Ë¤¹¤ë (¥í¡¼¥«¥ë¥Ğ¥Ã¥Õ¥¡¤Î¤ß)
+;; 4 ã‚¿ãƒ–ã«ã™ã‚‹ (ãƒ­ãƒ¼ã‚«ãƒ«ãƒãƒƒãƒ•ã‚¡ã®ã¿)
 ;; usage M-x tab4
 (defun tab4 (arg)
   "Toggle `tab-width' between 4 and 8.
@@ -16,7 +16,3 @@ With arg, set `tab-width' to 4 if and only if arg is positive."
 	      n (+ n width))))
     (message "TAB=%d" width)))
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

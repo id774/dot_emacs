@@ -1,12 +1,8 @@
-;; Â¸ºß¤·¤Ê¤¤¥Õ¥¡¥¤¥ë¤ò³«¤³¤¦¤È¤·¤¿¤È¤­³ÎÇ§¤¹¤ë
+;; å­˜åœ¨ã—ãªã„ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ã“ã†ã¨ã—ãŸã¨ãç¢ºèªã™ã‚‹
 (add-hook 'find-file-not-found-hooks 'new-file-p)
 (defun new-file-p ()
   (interactive)
   (or (y-or-n-p
        (format "\"%s\"not found. Create this file?"
-	       buffer-file-name))))
+         buffer-file-name))))
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

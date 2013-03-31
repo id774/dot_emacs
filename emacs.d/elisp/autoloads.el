@@ -1,15 +1,15 @@
 ;; autoloads.el
-;; ³°Éô¥Õ¥¡¥¤¥ë¤ò¥í¡¼¥É¤·¤Æ configs.el ¤òºÇ¸å¤Ë¸Æ¤Ö
+;; å¤–éƒ¨ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒ­ãƒ¼ãƒ‰ã—ã¦ configs.el ã‚’æœ€å¾Œã«å‘¼ã¶
 
 (load "utils")
 
 ;; Mew
 (load-p "mew-settings")
 
-;; Text ¥â¡¼¥É¤ò¥Ç¥Õ¥©¥ë¥È¤Ë¤¹¤ë
+;; Text ãƒ¢ãƒ¼ãƒ‰ã‚’ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã«ã™ã‚‹
 (setq default-major-mode 'text-mode)
 
-;; ¥ª¡¼¥È¥³¥ó¥×¥ê¡¼¥È
+;; ã‚ªãƒ¼ãƒˆã‚³ãƒ³ãƒ—ãƒªãƒ¼ãƒˆ
 (when (load-p "auto-complete")
   (global-auto-complete-mode t))
 
@@ -121,7 +121,7 @@
     (local-set-key "\M-r" 'gtags-find-rtag)   ; reverse tag
     (local-set-key "\M-s" 'gtags-find-symbol) ; find
     (local-set-key "\C-t" 'gtags-pop-stack)))); pop
-  ;; C-mode ¤Î¤È¤­¤Ï¾ï¤Ë gtags ¤Ë¤¹¤ë
+  ;; C-mode ã®ã¨ãã¯å¸¸ã« gtags ã«ã™ã‚‹
   (defun-add-hook 'c-mode-common-hook (gtags-mode 1)))
 
 ;; js2-mode
@@ -179,7 +179,7 @@
 (autoload-p 'bat-mode "bat-mode"
       "DOS and Windows BAT files" t)
 
-;; sense-region.el : \C-spc ¤Ç region<->rectabgle ¤ò¥È¥°¥ë
+;; sense-region.el : \C-spc ã§ region<->rectabgle ã‚’ãƒˆã‚°ãƒ«
 (when (autoload-p 'sense-region-on "sense-region" "sense-region" 'interactive)
   (sense-region-on))
 
@@ -249,28 +249,28 @@
   (setq navi2ch-list-bbstable-url "http://menu.2ch.net/bbsmenu.html")
   (setq navi2ch-article-auto-range nil)
   (setq navi2ch-mona-enable t)
-  ;; init.el ¤Î¥×¥í¥­¥·¾ğÊó¤ò»²¾È
+  ;; init.el ã®ãƒ—ãƒ­ã‚­ã‚·æƒ…å ±ã‚’å‚ç…§
   (if global-proxy-use
     (defvar navi2ch-net-http-proxy (concat global-proxy-server ":" (number-to-string global-proxy-port)))
     (defvar navi2ch-net-http-proxy-userid global-proxy-user)
     (defvar navi2ch-net-http-proxy-password global-proxy-password)))
 
-;; ³ç¸Ì¶¯Ä´
+;; æ‹¬å¼§å¼·èª¿
 (when (load-p "mic-paren")
   (paren-activate))
 
-;; ¿§¤Ä¤­
+;; è‰²ã¤ã
 (when (load-p "develock")
   (global-font-lock-mode t))
 
-;; ÊªÍı¹Ô°ÜÆ°
+;; ç‰©ç†è¡Œç§»å‹•
 (load-p "physical-line")
 
 (when (load-p "windmove")
   (windmove-default-keybindings)
   (setq windmove-wrap-around t))
 
-;; screen ¤Î hard status ¤ò¹¹¿·¤¹¤ë
+;; screen ã® hard status ã‚’æ›´æ–°ã™ã‚‹
 (when (and (not window-system)
      (string-match "^xterm\\|^screen" (getenv "TERM"))
      (load-p "term/xterm"))
@@ -329,7 +329,7 @@
         (define-key map (kbd "<left>")  'zlc-select-previous)
       ))))
 
-;; ¼«Æ°ÊİÂ¸
+;; è‡ªå‹•ä¿å­˜
 (when (load-p "auto-save-buffers")
   (setq auto-save-buffers-regexp "^/[^:]+/")
   (run-with-idle-timer 0.1 t 'auto-save-buffers))
@@ -371,22 +371,22 @@
   (global-set-key (kbd "M-/") 'redo)
 )
 
-;; ¶ë·ÁÁªÂò
+;; çŸ©å½¢é¸æŠ
 (cua-mode t)
-(setq cua-enable-cua-keys nil) ;; ÊÑ¤Ê¥­¡¼¥Ğ¥¤¥ó¥É¶Ø»ß
+(setq cua-enable-cua-keys nil) ;; å¤‰ãªã‚­ãƒ¼ãƒã‚¤ãƒ³ãƒ‰ç¦æ­¢
 
-;; ³«¤¤¤Æ¤¤¤ë¤¹¤Ù¤Æ¤Î¥Ğ¥Ã¥Õ¥¡¤ò kill ¤¹¤ë
+;; é–‹ã„ã¦ã„ã‚‹ã™ã¹ã¦ã®ãƒãƒƒãƒ•ã‚¡ã‚’ kill ã™ã‚‹
 (load-p "kill-all-buffers")
 
-;; ¥Õ¥¡¥¤¥ë¤ÎÆâÍÆ¤¬Ìµ¤±¤ì¤Ğ¡¢¥Õ¥¡¥¤¥ë¤È¥Ğ¥Ã¥Õ¥¡¤ò¾Ã¤¹
+;; ãƒ•ã‚¡ã‚¤ãƒ«ã®å†…å®¹ãŒç„¡ã‘ã‚Œã°ã€ãƒ•ã‚¡ã‚¤ãƒ«ã¨ãƒãƒƒãƒ•ã‚¡ã‚’æ¶ˆã™
 (load-p "delete-empty-file")
 
-;; ¥¿¥Ö¤ò 4 ¤Ë
+;; ã‚¿ãƒ–ã‚’ 4 ã«
 (load-p "tab4")
 
-;; ¥¿¥Ö, Á´³Ñ¥¹¥Ú¡¼¥¹¡¢²ş¹ÔÄ¾Á°¤ÎÈ¾³Ñ¥¹¥Ú¡¼¥¹¤òÉ½¼¨¤¹¤ë
+;; ã‚¿ãƒ–, å…¨è§’ã‚¹ãƒšãƒ¼ã‚¹ã€æ”¹è¡Œç›´å‰ã®åŠè§’ã‚¹ãƒšãƒ¼ã‚¹ã‚’è¡¨ç¤ºã™ã‚‹
 (load-p "jaspace-mode")
-;;(setq jaspace-alternate-jaspace-string "¢¢")
+;;(setq jaspace-alternate-jaspace-string "â–¡")
 (setq jaspace-alternate-eol-string "$\n")
 (setq jaspace-highlight-tabs t)
 
@@ -395,10 +395,10 @@
   ((>= emacs-major-version '23)
     (load-p "hlinum")))
 
-;; ¿·¤·¤¤¥Õ¥¡¥¤¥ë¤òºî¤ëÁ°¤Ë³ÎÇ§
+;; æ–°ã—ã„ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œã‚‹å‰ã«ç¢ºèª
 ;(load-p "new-file-p")
 
-;; scratch ¥Ğ¥Ã¥Õ¥¡¤ò¾Ã¤·¤Æ¤âºÆÀ¸À®¤¹¤ë
+;; scratch ãƒãƒƒãƒ•ã‚¡ã‚’æ¶ˆã—ã¦ã‚‚å†ç”Ÿæˆã™ã‚‹
 (load-p "persistent-scratch")
 
 ;; Anything.el
@@ -413,7 +413,7 @@
   (define-key anything-map (kbd "C-v") 'anything-next-source)
   (define-key anything-map (kbd "M-v") 'anything-previous-source))
 
-;; key-chord.el Ê£¿ô¥­¡¼Æ±»ş²¡¤·¤ò¥µ¥İ¡¼¥È
+;; key-chord.el è¤‡æ•°ã‚­ãƒ¼åŒæ™‚æŠ¼ã—ã‚’ã‚µãƒãƒ¼ãƒˆ
 ;; http://www.emacswiki.org/cgi-bin/wiki/download/key-chord.el
 (when (load-p "key-chord")
   (setq key-chord-two-keys-delay 0.02)
@@ -424,16 +424,12 @@
 ;;(lower-minor-mode-map-alist 'ruby-electric-mode)
 ;;(raise-minor-mode-map-alist 'anthy-minor-mode)
 
-;; É½¼¨ÀßÄê¤ò¥í¡¼¥É¤¹¤ë
+;; è¡¨ç¤ºè¨­å®šã‚’ãƒ­ãƒ¼ãƒ‰ã™ã‚‹
 (load-p "faces")
 
-;; ´Ä¶­ÀßÄê¤ò¥í¡¼¥É¤¹¤ë (ºÇ¸å¤Ë)
+;; ç’°å¢ƒè¨­å®šã‚’ãƒ­ãƒ¼ãƒ‰ã™ã‚‹ (æœ€å¾Œã«)
 (load-p "configs")
 
-;; ~/.emacs.d/site-lisp ¤ò¤¹¤Ù¤Æ¥í¡¼¥É¤¹¤ë (configs ¤Î¤µ¤é¤Ë¸å)
+;; ~/.emacs.d/site-lisp ã‚’ã™ã¹ã¦ãƒ­ãƒ¼ãƒ‰ã™ã‚‹ (configs ã®ã•ã‚‰ã«å¾Œ)
 (load-p "loader")
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

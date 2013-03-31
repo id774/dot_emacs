@@ -1,5 +1,5 @@
 ;; view-mode-key.el
-;; $BFI$_<h$j@lMQ$N%b!<%I$G$NFCJL$JF0:n$rDj5A(B
+;; 読み取り専用のモードでの特別な動作を定義
 
 ;; http://d.hatena.ne.jp/rubikitch/20081104/1225745862
 ;; http://d.hatena.ne.jp/yaotti/20081104/1225809687
@@ -49,7 +49,7 @@
   (define-key view-mode-map " " 'scroll-up))
 (add-hook 'view-mode-hook 'view-mode-hook0)
 
-;; $B=q$-9~$_ITG=$J%U%!%$%k$O(Bview-mode$B$G3+$/$h$&$K(B
+;; 書き込み不能なファイルはview-modeで開くように
 (defadvice find-file
   (around find-file-switch-to-view-file (file &optional wild) activate)
   (if (and (not (file-writable-p file))
@@ -57,7 +57,7 @@
       (view-file file)
     ad-do-it))
 
-;; $B=q$-9~$_ITG=$J>l9g$O(Bview-mode$B$rH4$1$J$$$h$&$K(B
+;; 書き込み不能な場合はview-modeを抜けないように
 (viewer-stay-in-setup)
 
 (provide 'view-support)

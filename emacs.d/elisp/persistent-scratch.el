@@ -1,4 +1,4 @@
-;; *scratch* ¤¬¤­¤¨¤Ê¤¤¤è¤¦¤Ë¤¹¤ë
+;; *scratch* ãŒããˆãªã„ã‚ˆã†ã«ã™ã‚‹
 ;; http://www-tsujii.is.s.u-tokyo.ac.jp/~yoshinag/tips/elisp_tips.html#scratch
 (defun my-make-scratch (&optional arg)
   (interactive)
@@ -23,7 +23,3 @@
 	    (unless (member (get-buffer "*scratch*") (buffer-list))
 	      (my-make-scratch 1))))
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

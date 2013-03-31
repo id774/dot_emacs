@@ -10,7 +10,7 @@
   (setq w3m-cookie-accept-bad-cookies nil)
   (setq browse-url-browser-function 'w3m-browse-url)
   (global-set-key "\C-xm" 'browse-url-at-point)
-  ;; init.el ¤Î¥×¥í¥­¥·¾ğÊó¤ò»²¾È
+  ;; init.el ã®ãƒ—ãƒ­ã‚­ã‚·æƒ…å ±ã‚’å‚ç…§
   (if global-proxy-use
       (setq w3m-command-arguments-alist
         '(("^http://\\([^/]*\\.\\)hoge\\.co\\.jp\\(/\\|$\\)" "-no-proxy")
@@ -19,7 +19,3 @@
   (define-key global-map "\C-c\C-c\C-l" 'w3m)
   (define-key global-map "\C-c\C-c\ l" 'w3m))
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

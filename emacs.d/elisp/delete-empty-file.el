@@ -1,4 +1,4 @@
-;; ¥Õ¥¡¥¤¥ë¤ÎÆâÍÆ¤¬Ìµ¤±¤ì¤Ğ¡¢¥Õ¥¡¥¤¥ë¤È¥Ğ¥Ã¥Õ¥¡¤ò¾Ã¤¹
+;; ãƒ•ã‚¡ã‚¤ãƒ«ã®å†…å®¹ãŒç„¡ã‘ã‚Œã°ã€ãƒ•ã‚¡ã‚¤ãƒ«ã¨ãƒãƒƒãƒ•ã‚¡ã‚’æ¶ˆã™
 (if (not (memq 'delete-file-if-no-contents after-save-hook))
     (setq after-save-hook
           (cons 'delete-file-if-no-contents after-save-hook)))
@@ -12,7 +12,3 @@
        (buffer-file-name (current-buffer)))
       (kill-buffer (current-buffer)))))
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

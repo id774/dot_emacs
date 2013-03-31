@@ -1,13 +1,13 @@
-;; $B%-!<%P%$%s%I@_Dj(B
+;; キーバインド設定
 
-;; $BB>$N%&%#%s%I%&$r%9%/%m!<%k$G$-$k(B
+;; 他のウィンドウをスクロールできる
 (global-set-key "\M-V" 'scroll-other-window-down)
 
-;; C-x p $B$G(B C-x o $B$N5U$NF0:n$r$9$k(B
+;; C-x p で C-x o の逆の動作をする
 (define-key ctl-x-map "p"
   #'(lambda (arg) (interactive "p") (other-window (- arg))))
 
-;; $BIaCJ!"%$%s%G%s%H$9$k$h$&$K$9$k(B
+;; 普段、インデントするようにする
 (global-set-key "\C-m" 'newline-and-indent)
 (global-set-key "\C-j" 'newline)
 
@@ -19,22 +19,22 @@
        t) ;; ok
       (t (keyboard-translate ?\C-h ?\C-?)))
 
-;; C-x t $B$G9T?tI=<((B/$BHsI=<((B
+;; C-x t で行数表示/非表示
 (cond
   ((>= emacs-major-version '23)
     (define-key global-map "\C-x\ t" 'linum-mode))
   ((< emacs-major-version '23)
     (define-key global-map "\C-x\ t" 'wb-line-number-toggle)))
 
-;; C-x C-y $B$^$?$O(B C-x y $B$G(B auto-complete-mode $B$NM-8z(B/$BL58z$r@Z$jBX$($k(B
+;; C-x C-y または C-x y で auto-complete-mode の有効/無効を切り替える
 (define-key global-map "\C-x\C-y" 'auto-complete-mode)
 (define-key global-map "\C-x\ y" 'auto-complete-mode)
 
-;; C-x C-z $B$^$?$O(B C-x z $B$G(B zencoding-mode $B$NM-8z(B/$BL58z$r@Z$jBX$($k(B
+;; C-x C-z または C-x z で zencoding-mode の有効/無効を切り替える
 (define-key global-map "\C-x\C-z" 'zencoding-mode)
 (define-key global-map "\C-x\ z" 'zencoding-mode)
 
-;; $B%?%VI}$rHyD4@0(B
+;; タブ幅を微調整
 (defun my-increase-tab-width ()
     (interactive)
       (setq tab-width (+ tab-width 1)))
@@ -45,7 +45,7 @@
 (define-key global-map "\C-c\C-c\ -" 'my-decrease-tab-width)
 (define-key global-map "\C-c\C-c\ +" 'my-increase-tab-width)
 
-;; $B%&%#%s%I%&$,(B 1 $B$D$7$+$J$$>l9g$O=D$KJ,3d$9$k(B
+;; ウィンドウが 1 つしかない場合は縦に分割する
 (defun split-one-window-p ()
   (if (one-window-p)
     (split-window-horizontally)))
@@ -53,7 +53,7 @@
   (interactive)
   (split-one-window-p))
 
-;; $B%&%#%s%I%&0\F0(B
+;; ウィンドウ移動
 (global-set-key [right] 'windmove-right)
 (global-set-key [left] 'windmove-left)
 (define-key global-map [up] 'windmove-up)
@@ -64,7 +64,7 @@
 (define-key global-map [(C shift b)] 'windmove-left)
 (define-key global-map [(C shift f)] 'windmove-right)
 
-;; $B%&%#%s%I%&J,3d(B
+;; ウィンドウ分割
 (define-key global-map "\C-c\C-c\C-k" 'delete-window)
 (define-key global-map "\C-c\C-c\ k" 'delete-other-windows)
 (define-key global-map "\C-c\C-c\C-y" 'split-window-vertically)
@@ -72,7 +72,7 @@
 (define-key global-map "\C-c\C-c\C-j" 'split-one-window)
 (define-key global-map "\C-c\C-c\ j" 'split-window-horizontally)
 
-;; $BJ,3d$7$?%&%#%s%I%&$r;~7W2s$j$K0\F0(B
+;; 分割したウィンドウを時計回りに移動
 (define-key global-map "\C-c\C-c\C-w" 'other-window)
 (define-key global-map "\C-c\C-c\ w" 'other-window)
 (define-key global-map "\C-c\C-c\C-c" 'other-window)
@@ -86,19 +86,19 @@
 (define-key global-map "\C-c\C-c\C-i" 'switch-to-navi2ch)
 (define-key global-map "\C-c\C-c\ i" 'switch-to-navi2ch)
 
-;; C-M-g $B$G$b(B keyboard-escape-quit $B$9$k(B
+;; C-M-g でも keyboard-escape-quit する
 (global-set-key "\C-\M-g" 'keyboard-escape-quit)
 
-;; C-x C-k $B$G$b(B kill buffer$B$9$k(B
+;; C-x C-k でも kill bufferする
 (define-key global-map "\C-x\C-k" 'kill-buffer)
 
-;; C-h $B$r(B backspace $B$K$9$k(B
+;; C-h を backspace にする
 (global-set-key "\C-h" 'delete-backward-char)
 
-;; C-\ $B$r(B help-command $B$K$9$k(B
+;; C-\ を help-command にする
 (global-set-key "\C-\\" 'help-command)
 
-;; C-x C-j $B$^$?$O(B C-x j $B$G(B view-mode $B$r@Z$jBX$($k(B
+;; C-x C-j または C-x j で view-mode を切り替える
 (defun toggle-view-mode ()
   (interactive)
   (cond (view-mode
@@ -109,7 +109,7 @@
 (define-key global-map "\C-x\C-j" 'toggle-view-mode)
 (define-key global-map "\C-x\ j" 'toggle-view-mode)
 
-;; $B%P%C%U%!$r(BM-n,M-p$B$G@Z$jBX$((B
+;; バッファをM-n,M-pで切り替え
 (defun previous-buffer ()
   "Select previous window."
   (interactive)
@@ -122,7 +122,7 @@
 (global-set-key "\M-n" 'previous-buffer)
 (global-set-key "\M-p" 'backward-buffer)
 
-;; $B%P%C%U%!%j%9%H(B
+;; バッファリスト
 (define-key global-map "\C-x\ b" 'electric-buffer-list)
 (define-key global-map "\C-x\C-b" 'anything)
 (define-key global-map "\C-c\C-c\ b" 'anything)
@@ -131,21 +131,21 @@
 (global-set-key (kbd "C-;") 'anything)
 (global-set-key (kbd "C-:") 'anything)
 
-;; $BF0E*N,8lJQ49(B
+;; 動的略語変換
 (define-key global-map [C-tab] 'dabbrev-expand)
 (define-key global-map [C-S-tab] 'dabbrev-completion)
 
-;; C-x C-w$B$r>e=q$-J]B8$K$9$k(B($BJLL>J]B8$O(BC-x w)
+;; C-x C-wを上書き保存にする(別名保存はC-x w)
 (define-key global-map "\C-x\C-w" 'save-buffer)
 (define-key global-map "\C-x\ w" 'write-file)
 
-;; C-M-x C-w$B$G$b>e=q$-J]B8$9$k(B
+;; C-M-x C-wでも上書き保存する
 (global-set-key "\C-\M-x\C-w" 'save-buffer)
 
-;; C-x C-r$B$NB8:_0U5A$,L5$$$N$G%i%$%V%i%j8!:w$K3d$jEv$F(B
+;; C-x C-rの存在意義が無いのでライブラリ検索に割り当て
 (global-set-key "\C-x\C-r" 'find-library)
 
-;; $B%P%C%U%!@hF,(B/$BKvHx$X$N%+!<%=%k0\F0(B
+;; バッファ先頭/末尾へのカーソル移動
 (define-key global-map "\C-c\C-c\C-a" 'beginning-of-buffer)
 (define-key global-map "\C-c\C-c\ a" 'beginning-of-buffer)
 (define-key global-map "\C-c\C-c\C-e" 'end-of-buffer)
@@ -158,7 +158,7 @@
 (define-key global-map "\C-c\C-c\ f" 'describe-function)
 (define-key global-map "\C-c\C-c\C-b" 'describe-bindings)
 
-;; $B8!:w(B/$BCV49(B
+;; 検索/置換
 (define-key global-map "\C-c\C-c\C-q" 'query-replace-regexp)
 (define-key global-map "\C-c\C-c\ q" 'query-replace-regexp-eval)
 (global-set-key "\C-x\C-q" 'query-replace)
@@ -172,17 +172,17 @@
 (global-set-key "\C-x\C-a" '(lambda ()(interactive)(ansi-term "/bin/zsh")))
 (global-set-key "\C-x\ a" '(lambda ()(interactive)(ansi-term "/bin/zsh")))
 
-;; $B6k7AA*Br(B
+;; 矩形選択
 (define-key global-map "\C-c\C-c\C-z" 'cua-mode)
 (define-key global-map "\C-c\C-c\ z" 'cua-mode)
 
-;; $B%"%s%I%%(B/$B%j%I%%(B
+;; アンドゥ/リドゥ
 (define-key global-map "\C-c\C-c\C-u" 'undo)
 (define-key global-map "\C-c\C-c\ u" 'undo)
 (define-key global-map "\C-c\C-c\C-r" 'redo)
 (define-key global-map "\C-c\C-c\ r" 'redo)
 
-;; $B%P%C%U%!:FFI$_9~$_(B
+;; バッファ再読み込み
 (defun revert-current-buffer ()
   (interactive)
   (revert-buffer t t))
@@ -199,30 +199,30 @@
 (define-key global-map "\C-c\C-c\C-p" 'revert-current-buffer)
 (define-key global-map "\C-c\C-c\ p" 'revert-all-buffers)
 
-;; $B%P%C%U%!$r$9$Y$F(B kill $B$9$k$H$-$K3NG'(B
+;; バッファをすべて kill するときに確認
 (defun confirm-kill-all-buffers ()
   (interactive)
   (if (y-or-n-p "kill all buffers?")
     (kill-all-buffers)))
-;; $B3+$$$F$$$k$9$Y$F$N%P%C%U%!$r(B kill $B$9$k(B
+;; 開いているすべてのバッファを kill する
 (define-key global-map "\C-c\C-c\ 0" 'confirm-kill-all-buffers)
 (define-key global-map "\C-x\ 7" 'confirm-kill-all-buffers)
 
-;; C-x C-c $B$GI,$:3NG'$9$k(B
+;; C-x C-c で必ず確認する
 (defun confirm-save-buffers-kill-emacs ()
   (interactive)
   (if (y-or-n-p "quit emacs? ")
     (save-buffers-kill-emacs)))
 (global-set-key "\C-x\C-c" 'confirm-save-buffers-kill-emacs)
 
-;; $B%?%V(B, $BA43Q%9%Z!<%9!"2~9TD>A0$NH>3Q%9%Z!<%9$rI=<($9$k(B($B%H%0%k$GF0:n(B)
+;; タブ, 全角スペース、改行直前の半角スペースを表示する(トグルで動作)
 (define-key global-map "\C-c\C-c\C-t" 'jaspace-mode)
 (define-key global-map "\C-x\ 9" 'jaspace-mode)
 
-;; $B9TKv$N6uGr$r0l3g:o=|$9$k(B
+;; 行末の空白を一括削除する
 (define-key global-map "\C-c\C-c\ t" 'delete-trailing-whitespace)
 
-;; Proxy $B$N%*%s%*%U$r@Z$jBX$($k$9$k(B
+;; Proxy のオンオフを切り替えるする
 (defun global-proxy-use-toggle () ""
   (interactive)
   (setq global-proxy-use
@@ -233,7 +233,3 @@
                "on" "off")))
 (define-key global-map "\C-c\M-c\ p" 'global-proxy-use-toggle)
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

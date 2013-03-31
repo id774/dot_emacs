@@ -1,7 +1,7 @@
 ;; configs.el
-;; ´ğËÜÅª¤Ê´Ä¶­ÀßÄê
+;; åŸºæœ¬çš„ãªç’°å¢ƒè¨­å®š
 
-;; ¥â¡¼¥É¥é¥¤¥ó¤Ëº£¤¤¤ë´Ø¿ô¤òÉ½¼¨
+;; ãƒ¢ãƒ¼ãƒ‰ãƒ©ã‚¤ãƒ³ã«ä»Šã„ã‚‹é–¢æ•°ã‚’è¡¨ç¤º
 (which-func-mode)
 
 ;; blink
@@ -13,45 +13,45 @@
     (tool-bar-mode nil)
     (scroll-bar-mode -1)))
 
-;; ¥á¥Ë¥å¡¼¥Ğ¡¼»È¤¦
+;; ãƒ¡ãƒ‹ãƒ¥ãƒ¼ãƒãƒ¼ä½¿ã†
 (menu-bar-mode -1)
 
-;; ¥Û¥¤¡¼¥ë¥Ş¥¦¥¹»È¤¦
-;; emacs 23.2 ¤Ç»È¤¨¤Ê¤¤¤Î¤Ç¥³¥á¥ó¥È¥¢¥¦¥È
+;; ãƒ›ã‚¤ãƒ¼ãƒ«ãƒã‚¦ã‚¹ä½¿ã†
+;; emacs 23.2 ã§ä½¿ãˆãªã„ã®ã§ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
 ;;(mouse-wheel-mode 1)
 
-;; xterm¤È¤«gnome-terminal¤È¤«
+;; xtermã¨ã‹gnome-terminalã¨ã‹
 (xterm-mouse-mode -1)
 
-;; ;; fringe(º¸±¦¤ËÍ¾Çò¤Î¤è¤¦¤Ë¸«¤¨¤Æ¤ë¥¢¥ì)
+;; ;; fringe(å·¦å³ã«ä½™ç™½ã®ã‚ˆã†ã«è¦‹ãˆã¦ã‚‹ã‚¢ãƒ¬)
 ;; (fringe-mode 8)
 
-;; ;; »ş´ÖÉ½¼¨
+;; ;; æ™‚é–“è¡¨ç¤º
 (display-time)
 
-;; ¹ÔÈÖ¹æ¤ÈÎóÈÖ¹æ¤òÉ½¼¨
+;; è¡Œç•ªå·ã¨åˆ—ç•ªå·ã‚’è¡¨ç¤º
 (line-number-mode t)
 (column-number-mode t)
 
-;; ²èÁüÅ¸³«
+;; ç”»åƒå±•é–‹
 (auto-image-file-mode)
 
-;; ¼«Æ°¥»¡¼¥Ö¥Õ¥¡¥¤¥ë¤òºîÀ®¤¹¤ë¤«¤É¤¦¤«
+;; è‡ªå‹•ã‚»ãƒ¼ãƒ–ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆã™ã‚‹ã‹ã©ã†ã‹
 (setq auto-save-default nil)
 
-;; ¥Ğ¥Ã¥¯¥¢¥Ã¥×¥Õ¥¡¥¤¥ë¤òºîÀ®¤¹¤ë¤«¤É¤¦¤«
+;; ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆã™ã‚‹ã‹ã©ã†ã‹
 (setq make-backup-files t)
 
-;; ¥Ğ¥Ã¥¯¥¢¥Ã¥×¥Õ¥¡¥¤¥ë¤ÎÊİÂ¸°ÌÃÖ»ØÄê
-;; VCS ¤Ç´ÉÍı¤·¤Æ¤¤¤Æ¤âÀßÄê¤·¤Æ¤ª¤¯¤È°ÂÁ´
-;; !path!to!file-name~ ¤ÇÊİÂ¸¤µ¤ì¤ë
+;; ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—ãƒ•ã‚¡ã‚¤ãƒ«ã®ä¿å­˜ä½ç½®æŒ‡å®š
+;; VCS ã§ç®¡ç†ã—ã¦ã„ã¦ã‚‚è¨­å®šã—ã¦ãŠãã¨å®‰å…¨
+;; !path!to!file-name~ ã§ä¿å­˜ã•ã‚Œã‚‹
 (setq backup-directory-alist
       '(("." . "~/.emacs.d/backups")))
 
 ;; transient-mark
 (setq transient-mark-mode t)
 
-;; isearch ¤ò¿§¤Ä¤­¤Ë
+;; isearch ã‚’è‰²ã¤ãã«
 (setq search-highlight t)
 (setq query-replace-highlight t)
 ;;(setq isearch-lazy-highlight-initial-delay 0) ; obsolate
@@ -65,52 +65,52 @@
                       "/usr/share/man/ja_JP.ujis"))
 (setq woman-cache-filename (expand-file-name "~/.emacs.d/woman-cache"))
 
-;; ¥Ğ¥Ã¥¯¥¢¥Ã¥×¤Ç inode ¤òÊÑ²½¤µ¤»¤Ê¤¤¤è¤¦¤Ë¤¹¤ë
+;; ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—ã§ inode ã‚’å¤‰åŒ–ã•ã›ãªã„ã‚ˆã†ã«ã™ã‚‹
 (setq backup-by-copying t)
 
-;; GC´Ö³Ö
+;; GCé–“éš”
 (setq gc-cons-threshold 1000000)
 
-;; ¥¹¥×¥é¥Ã¥·¥åÈóÉ½¼¨ : µ¯Æ°¤¬Â®¤¯¤Ê¤ë
+;; ã‚¹ãƒ—ãƒ©ãƒƒã‚·ãƒ¥éè¡¨ç¤º : èµ·å‹•ãŒé€Ÿããªã‚‹
 (setq inhibit-startup-message t)
 
-;; ²èÌÌÈ¿Å¾¤ò¤ä¤á¤ë
+;; ç”»é¢åè»¢ã‚’ã‚„ã‚ã‚‹
 (setq visible-bell nil)
 
-;; ¤¢¤Ş¤ê¤ËÂç¤­¤¤¥Õ¥¡¥¤¥ë¤Ï¿§ÉÕ¤±¤ë¤È»ş´Ö¤«¤«¤ë¤Î¤Ç¡¢¾å¸Â¤ò»ØÄê¤¹¤ë
+;; ã‚ã¾ã‚Šã«å¤§ãã„ãƒ•ã‚¡ã‚¤ãƒ«ã¯è‰²ä»˜ã‘ã‚‹ã¨æ™‚é–“ã‹ã‹ã‚‹ã®ã§ã€ä¸Šé™ã‚’æŒ‡å®šã™ã‚‹
 (setq font-lock-maximum-size nil)
 
 ;; ;; fast-lock
 ;; (setq font-lock-support-mode 'fast-lock-mode)
 ;; (setq fast-lock-cache-directories '("~/.emacs.d/emacs-flc"))
 
-;; auto-save ¤Î¾ì½ê
+;; auto-save ã®å ´æ‰€
 (setq auto-save-list-file-prefix "~/.emacs.d/auto-save-list/.saves-")
 
-;; ºÇ¸å¤Ë²ş¹Ô¤òÉÕ¤±¤ë
+;; æœ€å¾Œã«æ”¹è¡Œã‚’ä»˜ã‘ã‚‹
 (setq require-final-newline t)
 
-;; °ì»ş¥Õ¥¡¥¤¥ë¤Î¾ì½ê
+;; ä¸€æ™‚ãƒ•ã‚¡ã‚¤ãƒ«ã®å ´æ‰€
 ;; (setq temporary-file-directory "~/.emacs.d/tmp")
 (setq temporary-file-directory "/dev/shm")
 
-;; 1¹Ô¤º¤Ä¥¹¥¯¥í¡¼¥ë
+;; 1è¡Œãšã¤ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«
 (setq scroll-conservatively 1)
 
-;; ¿·µ¬¹Ô¤òºîÀ®¤·¤Ê¤¤
-;; emacs21¤Ç¤Ï¥Ç¥Õ¥©¥ë¥È
+;; æ–°è¦è¡Œã‚’ä½œæˆã—ãªã„
+;; emacs21ã§ã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ
 (setq next-line-add-newlines nil)
 
-;; 80 ¤À¤È¤Á¤ç¤Ã¤È¡Ä¡Ä
+;; 80 ã ã¨ã¡ã‚‡ã£ã¨â€¦â€¦
 (setq fill-column 79)
 
-;; *Messages* ¤ÎÄ¹¤µ
+;; *Messages* ã®é•·ã•
 (setq message-log-max 200)
 
-;; .gz ¤Ê¥Õ¥¡¥¤¥ë¤È¤«¤òÆ©²áÅª¤Ë°µ½Ì/¿­Ä¥
+;; .gz ãªãƒ•ã‚¡ã‚¤ãƒ«ã¨ã‹ã‚’é€éçš„ã«åœ§ç¸®/ä¼¸å¼µ
 (auto-compression-mode t)
 
-;; apropos ¤ò¤¢¤é¤æ¤ë¤È¤³¤È¤Ë
+;; apropos ã‚’ã‚ã‚‰ã‚†ã‚‹ã¨ã“ã¨ã«
 (setq apropos-do-all t)
 
 ;; abbrev
@@ -122,20 +122,20 @@
 (setq vc-suppress-confirm t)
 (setq vc-command-messages t)
 
-;; narrowing ¤Î·Ù¹ğ¤òÍŞ»ß
+;; narrowing ã®è­¦å‘Šã‚’æŠ‘æ­¢
 (put 'narrow-to-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
 
-;; ¥«¡¼¥½¥ë°ì¸Ä
+;; ã‚«ãƒ¼ã‚½ãƒ«ä¸€å€‹
 (setq cursor-in-non-selected-windows nil)
 
-;; ¶õ¹Ô¶¯Ä´
+;; ç©ºè¡Œå¼·èª¿
 (setq-default indicate-empty-lines t)
 
-;; ¹ÔÆ¬¤Î C-k ¤Ç¹ÔÁ´ÂÎ¤òºï½ü
+;; è¡Œé ­ã® C-k ã§è¡Œå…¨ä½“ã‚’å‰Šé™¤
 (setq kill-whole-line t)
 
-;; ¹Ô´Ö
+;; è¡Œé–“
 ;; (setq-default line-spacing 0)
 
 ;; eldoc
@@ -153,7 +153,7 @@
 ;; (set-input-method "japanese-anthy")
 ;; (set-input-method "japanese-prime")
 
-;; C ¸À¸ì·Ï¤ÎÀßÄê·²
+;; C è¨€èªç³»ã®è¨­å®šç¾¤
 
 ;; Ruby default style
 (c-add-style "ruby"
@@ -170,7 +170,7 @@
   (setq indent-tabs-mode nil)
   (setq c-basic-offset 4))
 
-;; ¥«¡¼¥½¥ë¹Ô¤Î¥Ï¥¤¥é¥¤¥È
+;; ã‚«ãƒ¼ã‚½ãƒ«è¡Œã®ãƒã‚¤ãƒ©ã‚¤ãƒˆ
 (defface hlline-face
   '((((class color)
       (background dark))
@@ -182,16 +182,16 @@
      ()))
   "*Face used by hl-line.")
 (setq hl-line-face 'hlline-face)
-;; (setq hl-line-face 'underline) ; ²¼Àş
+;; (setq hl-line-face 'underline) ; ä¸‹ç·š
 (hl-line-mode 1)
 
-;; ¥Õ¥¡¥¤¥ë¥ª¡¼¥×¥óÄ¾¸å¤ÏÆÉ¤ß¼è¤êÀìÍÑ (C-x j ¤ÇÀÚÂØ)
+;; ãƒ•ã‚¡ã‚¤ãƒ«ã‚ªãƒ¼ãƒ—ãƒ³ç›´å¾Œã¯èª­ã¿å–ã‚Šå°‚ç”¨ (C-x j ã§åˆ‡æ›¿)
 (add-hook 'find-file-hooks
   (lambda ()
     (cond (view-mode)
       (t
         (view-mode)))
-;; ¹Ô¿ôÉ½¼¨(C-x t ¤ÇÀÚÂØ)
+;; è¡Œæ•°è¡¨ç¤º(C-x t ã§åˆ‡æ›¿)
     (cond
       ((>= emacs-major-version '23)
         (linum-mode)
@@ -206,11 +206,11 @@
            ((t (:foreground "white" :background "LightBlue2")))))
       ))))
 
-;; ²èÌÌÃ¼¤ÇÀŞ¤êÊÖ¤¹
+;; ç”»é¢ç«¯ã§æŠ˜ã‚Šè¿”ã™
 (setq truncate-partial-width-windows nil)
 
 ;; fullscreen
-;; µ¯Æ°»ş¤Ë¥¦¥£¥ó¥É¥¦¤òºÇÂç²½¤¹¤ë¾ì¹ç¤Ï¥³¥á¥ó¥È¥¢¥¦¥È¤ò²ò½ü
+;; èµ·å‹•æ™‚ã«ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’æœ€å¤§åŒ–ã™ã‚‹å ´åˆã¯ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã‚’è§£é™¤
 ;(set-frame-parameter nil 'fullscreen 'fullboth)
 (defun toggle-fullscreen ()
   (interactive)
@@ -219,19 +219,19 @@
       'fullboth)))
 (global-set-key [(meta return)] 'toggle-fullscreen)
 
-;; Æ©ÌÀ²½
+;; é€æ˜åŒ–
 (add-to-list 'default-frame-alist '(alpha . (80 50)))
 
-;; ¥­¡¼¥Ğ¥¤¥ó¥ÉÀßÄê
+;; ã‚­ãƒ¼ãƒã‚¤ãƒ³ãƒ‰è¨­å®š
 (load-p "global-set-key")
 
-;; view-mode ¥­¡¼¥Ğ¥¤¥ó¥ÉÀßÄê
+;; view-mode ã‚­ãƒ¼ãƒã‚¤ãƒ³ãƒ‰è¨­å®š
 (load-p "view-mode-key")
 
-;; key-chord.el ÀìÍÑ¥­¡¼¥Ğ¥¤¥ó¥ÉÀßÄê
+;; key-chord.el å°‚ç”¨ã‚­ãƒ¼ãƒã‚¤ãƒ³ãƒ‰è¨­å®š
 (load-p "key-chord-define-global")
 
-;; root ½êÍ­¤Î¥Õ¥¡¥¤¥ë¤ò³«¤¯¤È¤­¤Ï tramp ¤Ç sudo ¤¹¤ë
+;; root æ‰€æœ‰ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ãã¨ãã¯ tramp ã§ sudo ã™ã‚‹
 (defun file-root-p (filename)
   "Return t if file FILENAME created by root."
   (eq 0 (nth 2 (file-attributes filename))))
@@ -261,7 +261,7 @@
   (interactive "F")
   (set-buffer (find-file (concat "/sudo::" file))))
 
-;; ¤½¤ÎÂ¾¤Î´Ä¶­¸ÇÍ­¤ÎÀßÄê¤ò¤³¤³¤Ë
+;; ãã®ä»–ã®ç’°å¢ƒå›ºæœ‰ã®è¨­å®šã‚’ã“ã“ã«
 (if window-system
   (progn
     (cond
@@ -275,11 +275,11 @@
         (cond
           ((< emacs-major-version '23)
             (progn
-              (set-frame-parameter nil 'fullscreen 'fullboth) ; ºÇÂç²½
+              (set-frame-parameter nil 'fullscreen 'fullboth) ; æœ€å¤§åŒ–
               ))
           ((>= emacs-major-version '23)
             (progn
-              (tool-bar-mode 0) ; toolbarÈóÉ½¼¨
+              (tool-bar-mode 0) ; toolbaréè¡¨ç¤º
               ))
         )
       )
@@ -287,7 +287,3 @@
   )
 )
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

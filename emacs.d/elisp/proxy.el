@@ -1,14 +1,10 @@
 ;; proxy.el
-;; ¥×¥í¥­¥·¥µ¡¼¥Ğ¡¼¤ÎÀßÄê
+;; ãƒ—ãƒ­ã‚­ã‚·ã‚µãƒ¼ãƒãƒ¼ã®è¨­å®š
 
-;; Proxy ¤òÍøÍÑ¤¹¤ë¤Ê¤é global-proxy-use ¤ò t ¤Ë
+;; Proxy ã‚’åˆ©ç”¨ã™ã‚‹ãªã‚‰ global-proxy-use ã‚’ t ã«
 (defvar global-proxy-use nil)
 (defvar global-proxy-server "proxy.hoge.co.jp")
 (defvar global-proxy-port 8080)
 (defvar global-proxy-user nil)
 (defvar global-proxy-password nil)
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:

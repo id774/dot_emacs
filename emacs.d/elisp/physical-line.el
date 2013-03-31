@@ -1,4 +1,4 @@
-;; ʪ���԰�ư
+;; 物理行移動
 (global-set-key "\C-p" 'previous-window-line)
 (global-set-key "\C-n" 'next-window-line)
 (defun previous-window-line (n)
@@ -20,7 +20,3 @@
   (run-hooks 'auto-line-hook)
   )
 
-;; Local Variables:
-;; mode : emacs-lisp
-;; coding : euc-jp-unix
-;; End:
