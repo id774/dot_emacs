@@ -179,6 +179,10 @@
 (autoload-p 'bat-mode "bat-mode"
       "DOS and Windows BAT files" t)
 
+;; Erlang
+(when (require 'erlang)
+  (add-to-list 'auto-mode-alist '("\\.erl\\'" . erlang-mode)))
+
 ;; sense-region.el : \C-spc で region<->rectabgle をトグル
 (when (autoload-p 'sense-region-on "sense-region" "sense-region" 'interactive)
   (sense-region-on))

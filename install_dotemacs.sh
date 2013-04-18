@@ -126,6 +126,7 @@ byte_compile_all() {
       key-chord.el \
       anything.el \
       bat-mode.el \
+      erlang.el \
       git.el \
       git-blame.el \
       minibuf-isearch.el \
