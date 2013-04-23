@@ -183,6 +183,10 @@
 (when (require 'erlang)
   (add-to-list 'auto-mode-alist '("\\.erl\\'" . erlang-mode)))
 
+;; anything-git-files
+(when (require 'anything-git-files)
+  (define-key global-map "\C-c\C-c\ b" 'anything-git-files))
+
 ;; sense-region.el : \C-spc で region<->rectabgle をトグル
 (when (autoload-p 'sense-region-on "sense-region" "sense-region" 'interactive)
   (sense-region-on))
