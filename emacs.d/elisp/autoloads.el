@@ -37,8 +37,8 @@
 
 (defun ruby-optional-load ()
   ;; ruby-electric.el
-  (require 'ruby-electric)
-  (add-hook 'ruby-mode-hook '(lambda () (ruby-electric-mode t)))
+  (when (require 'ruby-electric)
+    (add-hook 'ruby-mode-hook '(lambda () (ruby-electric-mode t)))
 
   ;; rubydbnx.el
   (autoload 'rubydb "rubydb2x"
@@ -47,9 +47,9 @@
   and source-file directory for your debugger." t)
 
   ;; ruby-block.el
-  (require 'ruby-block)
-  (ruby-block-mode t)
-  (setq ruby-block-highlight-toggle t))
+  (when (require 'ruby-block)
+    (ruby-block-mode t)
+    (setq ruby-block-highlight-toggle t))))
 
 ;; ruby-mode
 (when (autoload-p 'ruby-mode "ruby-mode" "Ruby" 'interactive)
@@ -168,7 +168,7 @@
 
 ;; bat-mode
 (setq auto-mode-alist
-       (append 
+       (append
          (list (cons "\\.[bB][aA][tT]$" 'bat-mode))
          (list (cons "\\.[cC][mM][dD]$" 'bat-mode))
          ;; For DOS init files
@@ -302,40 +302,40 @@
 
 ;; popwin-el
 (if (require 'popwin nil t)
-    (progn
-        (setq display-buffer-function 'popwin:display-buffer)
-        (setq popwin:popup-window-height 0.4)
-        (setq anything-samewindow nil)
-        (push '("*anything*" :height 20) popwin:special-display-config)
-        (push '(dired-mode :position top) popwin:special-display-config)
-        (push '("\\*[Vv][Cc]" :regexp t :position top) popwin:special-display-config)
-        (push '("\\*git-" :regexp t :position top) popwin:special-display-config)
+  (progn
+    (setq display-buffer-function 'popwin:display-buffer)
+    (setq popwin:popup-window-height 0.4)
+    (setq anything-samewindow nil)
+    (push '("*anything*" :height 20) popwin:special-display-config)
+    (push '(dired-mode :position top) popwin:special-display-config)
+    (push '("\\*[Vv][Cc]" :regexp t :position top) popwin:special-display-config)
+    (push '("\\*git-" :regexp t :position top) popwin:special-display-config)
 ))
 
 ;; wdired
-(require 'wdired)
-(define-key dired-mode-map "r" 'wdired-change-to-wdired-mode)
+(when (require 'wdired)
+  (define-key dired-mode-map "r" 'wdired-change-to-wdired-mode))
 
 ;; minibuf-isearch
 (require 'minibuf-isearch)
 
 ;; browse-kill-ring
-(require 'browse-kill-ring)
-(global-set-key (kbd "C-c k") 'browse-kill-ring)
+(when (require 'browse-kill-ring)
+  (global-set-key (kbd "C-c k") 'browse-kill-ring))
 
 ;; zsh like completion
 (cond
   ((>= emacs-major-version '23)
     (progn
-      (require 'zlc)
-      (zlc-mode t)
-      (setq zlc-select-completion-immediately nil)
-      (let ((map minibuffer-local-map))
-        (define-key map (kbd "<down>")  'zlc-select-next-vertical)
-        (define-key map (kbd "<up>")    'zlc-select-previous-vertical)
-        (define-key map (kbd "<right>") 'zlc-select-next)
-        (define-key map (kbd "<left>")  'zlc-select-previous)
-      ))))
+      (when (require 'zlc)
+        (zlc-mode t)
+        (setq zlc-select-completion-immediately nil)
+        (let ((map minibuffer-local-map))
+          (define-key map (kbd "<down>")  'zlc-select-next-vertical)
+          (define-key map (kbd "<up>")    'zlc-select-previous-vertical)
+          (define-key map (kbd "<right>") 'zlc-select-next)
+          (define-key map (kbd "<left>")  'zlc-select-previous)
+        )))))
 
 ;; 自動保存
 (when (load-p "auto-save-buffers")
