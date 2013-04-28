@@ -432,6 +432,11 @@
 ;;(lower-minor-mode-map-alist 'ruby-electric-mode)
 ;;(raise-minor-mode-map-alist 'anthy-minor-mode)
 
+;; ユニークなシンボルをハイライトする
+;; http://hitode909.hatenablog.com/entry/2013/02/11/233449
+(when (require 'highlight-unique-symbol)
+  (highlight-unique-symbol t))
+
 ;; 表示設定をロードする
 (load-p "faces")
 
