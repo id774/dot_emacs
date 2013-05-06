@@ -115,6 +115,8 @@
 
 
 (defun cucumber-compilation-do (name cmdlist)
+  (save-some-buffers (not compilation-ask-about-save)
+                     compilation-save-buffers-predicate)
   (let ((comp-buffer-name (format "*%s*" name)))
     (unless (comint-check-proc comp-buffer-name)
       (let* ((buffer (apply 'make-comint name (car cmdlist) nil (cdr cmdlist)))
