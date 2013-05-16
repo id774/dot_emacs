@@ -3,6 +3,8 @@
 
 (require 'cl)
 (require 'deferred)
+(require 'vc)
+(require 'vc-git)
 
 (defcustom highlight-unique-symbol:interval 0.1
   "Interval to check symbol's appearance count"
@@ -23,17 +25,12 @@
   (replace-regexp-in-string "[\n\r]+$" "" str))
 
 (defun highlight-unique-symbol:git-project-p ()
-  (string=
-   (highlight-unique-symbol:chomp
-    (shell-command-to-string "git rev-parse --is-inside-work-tree"))
-   "true"))
+  (not (string= (highlight-unique-symbol:git-root-directory) "")))
 
 (defun highlight-unique-symbol:git-root-directory ()
-  (cond ((highlight-unique-symbol:git-project-p)
-         (highlight-unique-symbol:chomp
-          (shell-command-to-string "git rev-parse --show-toplevel")))
-        (t
-         "")))
+  (or (vc-file-getprop default-directory 'highlight-unique-symbol-git-root-directory)
+      (vc-file-setprop default-directory 'highlight-unique-symbol-git-root-directory
+                       (or (vc-git-root default-directory) ""))))
 
 (defun highlight-unique-symbol:check ()
   (interactive)
@@ -53,17 +50,20 @@
       (overlay-put current-overlay 'highlight-unique-symbol:symbol current-symbol)
       (deferred:$
         (deferred:process-shell (format
-                                 "cd %s && git grep --word-regexp --name-only %s | wc -l"
+                                 ;; -I Don't match the pattern in binary files
+                                 "git --no-pager grep --cached --word-regexp -I --fixed-strings --quiet -e %s -- %s"
+                                 (shell-quote-argument current-symbol)
                                  (highlight-unique-symbol:git-root-directory)
-                                 (shell-quote-argument current-symbol)))
+                                 ))
+        ;; success when found
         (deferred:nextc it
           (lambda (res)
-            (lexical-let
-                ((appear-count (string-to-number res)))
-              (if (<= appear-count 1)
-                  (highlight-unique-symbol:warn current-overlay)
-                (highlight-unique-symbol:ok current-overlay))
-              )))))))
+            (highlight-unique-symbol:ok current-overlay)))
+        ;; error when not found
+        (deferred:error it
+          (lambda (res)
+            (highlight-unique-symbol:warn current-overlay)))
+        ))))
 
 (defun highlight-unique-symbol:is-overlay-changed (overlay symbol-at-point)
   (not (string= (overlay-get overlay 'highlight-unique-symbol:symbol) symbol-at-point)))
