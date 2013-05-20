@@ -13,6 +13,7 @@
 (when (load-p "auto-complete")
   (global-auto-complete-mode t))
 
+;; 同じキーバインド連打でラクをする
 ;; sequential-command
 (when (require 'sequential-command-config)
   (global-set-key "\C-a" 'seq-home)
@@ -23,6 +24,12 @@
   (define-key esc-map "u" 'seq-upcase-backward-word)
   (define-key esc-map "c" 'seq-capitalize-backward-word)
   (define-key esc-map "l" 'seq-downcase-backward-word))
+;; smartchr
+(when (require 'smartchr)
+  (global-set-key (kbd "=") (smartchr '(" = " " == " "=")))
+  (global-set-key (kbd "{") (smartchr '("{ `!!' }" "{")))
+  (global-set-key (kbd ">") (smartchr '(">" " => " " => '`!!''" " => \"`!!'\"")))
+  (global-set-key (kbd "F") (smartchr '("F" "$" "$_" "$_->" "@$"))))
 
 ;; git.el
 (load-p "git")
