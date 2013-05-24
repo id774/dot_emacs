@@ -439,9 +439,9 @@
         (define-key global-map [remap list-buffers] 'helm-buffers-list)
         (define-key lisp-interaction-mode-map [remap completion-at-point] 'helm-lisp-completion-at-point)
         (define-key emacs-lisp-mode-map       [remap completion-at-point] 'helm-lisp-completion-at-point))
-        (define-key global-map "\C-x\C-b" 'helm-mini)
-        (global-set-key (kbd "C-;") 'helm-for-files)
-        (global-set-key (kbd "C-:") 'helm-show-kill-ring)
+        (define-key global-map "\C-x\C-b" 'helm-for-files)
+        (global-set-key (kbd "C-;") 'helm-mini)
+        (global-set-key (kbd "C-:") 'helm-resume)
       ))
   ((< emacs-major-version '24)
     ;;; Anything.el
