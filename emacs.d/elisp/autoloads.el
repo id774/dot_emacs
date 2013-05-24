@@ -427,17 +427,37 @@
 ;; scratch バッファを消しても再生成する
 (load-p "persistent-scratch")
 
-;; Anything.el
-(when (load-p "anything-config")
-  (setq anything-sources (list anything-c-source-buffers
-                               anything-c-source-bookmarks
-                               anything-c-source-recentf
-                               anything-c-source-file-name-history
-                               anything-c-source-locate))
-  (define-key anything-map (kbd "C-p") 'anything-previous-line)
-  (define-key anything-map (kbd "C-n") 'anything-next-line)
-  (define-key anything-map (kbd "C-v") 'anything-next-source)
-  (define-key anything-map (kbd "M-v") 'anything-previous-source))
+;; helm or anything
+(cond
+  ((>= emacs-major-version '24)
+    ;;; helm
+    (progn
+      (when (require 'helm-config)
+        (helm-mode 1)
+        (define-key global-map [remap find-file] 'helm-find-files)
+        (define-key global-map [remap occur] 'helm-occur)
+        (define-key global-map [remap list-buffers] 'helm-buffers-list)
+        (define-key lisp-interaction-mode-map [remap completion-at-point] 'helm-lisp-completion-at-point)
+        (define-key emacs-lisp-mode-map       [remap completion-at-point] 'helm-lisp-completion-at-point))
+        (define-key global-map "\C-x\C-b" 'helm-mini)
+        (global-set-key (kbd "C-;") 'helm-for-files)
+        (global-set-key (kbd "C-:") 'helm-show-kill-ring)
+      ))
+  ((< emacs-major-version '24)
+    ;;; Anything.el
+    (progn
+      (when (load-p "anything-config")
+        (setq anything-sources (list anything-c-source-buffers
+                                     anything-c-source-bookmarks
+                                     anything-c-source-recentf
+                                     anything-c-source-file-name-history
+                                     anything-c-source-locate))
+        (define-key global-map "\C-x\C-b" 'anything)
+        (define-key anything-map (kbd "C-p") 'anything-previous-line)
+        (define-key anything-map (kbd "C-n") 'anything-next-line)
+        (define-key anything-map (kbd "C-v") 'anything-next-source)
+        (define-key anything-map (kbd "M-v") 'anything-previous-source))
+      )))
 
 ;; key-chord.el 複数キー同時押しをサポート
 ;; http://www.emacswiki.org/cgi-bin/wiki/download/key-chord.el

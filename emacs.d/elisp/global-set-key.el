@@ -124,11 +124,6 @@
 
 ;; バッファリスト
 (define-key global-map "\C-x\ b" 'electric-buffer-list)
-(define-key global-map "\C-x\C-b" 'anything)
-
-;; Anything
-(global-set-key (kbd "C-;") 'anything)
-(global-set-key (kbd "C-:") 'anything)
 
 ;; 動的略語変換
 (define-key global-map [C-tab] 'dabbrev-expand)
