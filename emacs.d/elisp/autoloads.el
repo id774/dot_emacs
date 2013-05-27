@@ -197,6 +197,11 @@
 (autoload-p 'bat-mode "bat-mode"
       "DOS and Windows BAT files" t)
 
+;; markdown-mode
+(when (autoload 'markdown-mode "markdown-mode.el" "Major mode for editing Markdown files" t)
+  (setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
+  (setq auto-mode-alist (cons '("\\.txt" . markdown-mode) auto-mode-alist)))
+
 ;; Erlang
 (when (require 'erlang)
   (add-to-list 'auto-mode-alist '("\\.erl\\'" . erlang-mode)))
