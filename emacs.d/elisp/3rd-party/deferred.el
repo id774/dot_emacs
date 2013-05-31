@@ -3,7 +3,7 @@
 ;; Copyright (C) 2010, 2011, 2012  SAKURAI Masashi
 
 ;; Author: SAKURAI Masashi <m.sakurai at kiwanami.net>
-;; Version: 0.3.1
+;; Version: 0.3.2
 ;; Keywords: deferred, async
 ;; URL: https://github.com/kiwanami/emacs-deferred
 
@@ -69,7 +69,7 @@
   (require 'cl))
 
 (defvar deferred:version nil "deferred.el version")
-(setq deferred:version "0.3")
+(setq deferred:version "0.3.2")
 
 ;;; Code:
 
@@ -419,7 +419,7 @@ an argument value for execution of the deferred task."
 (defun deferred:fail (&optional arg)
   "Create a synchronous deferred object."
   (let ((d (deferred:new)))
-    (deferred:exec-task d 'ok arg)
+    (deferred:exec-task d 'ng arg)
     d))
 
 (defun deferred:next (&optional callback arg)
