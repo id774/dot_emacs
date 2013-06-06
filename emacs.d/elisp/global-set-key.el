@@ -123,7 +123,7 @@
 (global-set-key "\M-p" 'backward-buffer)
 
 ;; バッファリスト
-(define-key global-map "\C-x\ b" 'electric-buffer-list)
+(define-key global-map "\C-c\C-c\ h" 'electric-buffer-list)
 
 ;; 動的略語変換
 (define-key global-map [C-tab] 'dabbrev-expand)
