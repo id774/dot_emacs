@@ -348,7 +348,7 @@
 
 ;; zsh like completion
 (cond
-  ((>= emacs-major-version '23)
+  ((= emacs-major-version '23)
     (progn
       (when (require 'zlc)
         (zlc-mode t)
@@ -451,14 +451,21 @@
     (progn
       (when (require 'helm-config)
         (helm-mode 1)
-        ;; (define-key global-map [remap find-file] 'helm-find-files)
+        (define-key global-map [remap find-file] 'helm-find-files)
         (define-key global-map [remap occur] 'helm-occur)
         (define-key global-map [remap list-buffers] 'helm-buffers-list)
         (define-key lisp-interaction-mode-map [remap completion-at-point] 'helm-lisp-completion-at-point)
         (define-key emacs-lisp-mode-map       [remap completion-at-point] 'helm-lisp-completion-at-point))
+        (define-key helm-c-read-file-map (kbd "TAB") 'helm-execute-persistent-action)
         (define-key global-map "\C-x\ b" 'helm-for-files)
         (global-set-key (kbd "C-;") 'helm-find-files)
         (global-set-key (kbd "C-:") 'helm-mini)
+        ;; 自動補完を無効
+        (custom-set-variables '(helm-ff-auto-update-initial-value nil))
+        ;; C-hでバックスペースと同じように文字を削除  
+        (define-key helm-c-read-file-map (kbd "C-h") 'delete-backward-char)
+        ;; TABで任意補完。選択肢が出てきたらC-nやC-pで上下移動してから決定することも可能
+        (define-key helm-c-read-file-map (kbd "TAB") 'helm-execute-persistent-action)
     ))
   ((< emacs-major-version '24)
     (progn
