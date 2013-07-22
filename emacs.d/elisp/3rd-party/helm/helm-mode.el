@@ -727,7 +727,6 @@ Keys description:
                                         (helm-find-files-get-candidates must-match)))))
                        (filtered-candidate-transformer
                         helm-find-files-transformer)
-                       (match . helm-ff-match-fn)
                        (no-delay-on-input)
                        (persistent-action . ,persistent-action)
                        (candidate-number-limit . 9999)
@@ -761,8 +760,10 @@ Keys description:
                        (if (listp default-filename)
                            (car default-filename)
                            default-filename)))
-         (init (or default initial dir default-directory))
-         (ini-input (and init (expand-file-name init)))
+         (init (or (and default (if (file-directory-p default)
+                                    default
+                                    (file-name-directory default)))
+                   initial dir default-directory))
          (current-command (or (helm-this-command) this-command))
          (str-command (symbol-name current-command))
          (helm-file-completion-sources

@@ -53,27 +53,41 @@ e.g
 
 Each time \"<f5> q\" is pressed the next function is executed, if you wait
 More than 2 seconds, next hit will run again the first function and so on."
+   (define-key keymap key (helm-make-multi-command functions delay)))
+
+(defmacro helm-multi-key-defun (name docstring funs &optional delay)
+  "Define NAME as a multi-key command running FUNS.
+After DELAY seconds the FUNS list is reinitialised.
+See `helm-define-multi-key'."
+  (declare (indent 2))
+  (setq docstring (if docstring (concat docstring "\n\n")
+                      "This is a helmish multi-key command."))
+  `(defalias (quote ,name) (helm-make-multi-command ,funs ,delay) ,docstring))
+
+(defun helm-make-multi-command (functions &optional delay)
+  "Return an anonymous multi-key command running FUNCTIONS.
+Run each function of FUNCTIONS list in turn when called within DELAY seconds."
+  (declare (indent 1))
   (lexical-let ((funs functions)
                 (iter (gensym "helm-iter-key"))
                 (timeout delay))
     (eval (list 'defvar iter nil))
-    (define-key keymap key #'(lambda ()
-                               (interactive)
-                               (helm-run-multi-key-command
-                                funs iter timeout)))))
+    #'(lambda () (interactive) (helm-run-multi-key-command funs iter timeout))))
 
 (defun helm-run-multi-key-command (functions iterator delay)
   (let ((fn #'(lambda ()
                 (loop for count from 1 to (length functions)
                       collect count)))
         next)
-    (unless (symbol-value iterator)
+    (unless (and (symbol-value iterator)
+                 ;; Reset iterator when another key is pressed.
+                 (eq this-command real-last-command))
       (set iterator (helm-iter-list (funcall fn))))
     (setq next (helm-iter-next (symbol-value iterator)))
     (unless next
       (set iterator (helm-iter-list (funcall fn)))
       (setq next (helm-iter-next (symbol-value iterator))))
-    (and next (eval iterator) (funcall (nth (1- next) functions)))
+    (and next (eval iterator) (call-interactively (nth (1- next) functions)))
     (when delay (run-with-idle-timer delay nil `(lambda ()
                                                   (setq ,iterator nil))))))
 
@@ -88,6 +102,12 @@ More than 2 seconds, next hit will run again the first function and so on."
 (defun helm-iter-next (iterator)
   "Return next elm of ITERATOR."
   (funcall iterator))
+
+(helm-multi-key-defun helm-toggle-resplit-and-swap-windows
+    "Multi key command to resplit and swap helm window.
+First call run `helm-toggle-resplit-window',
+second call within 0.5s run `helm-swap-windows'."
+  '(helm-toggle-resplit-window helm-swap-windows) 0.5)
 
 
 ;;; Keymap
@@ -110,8 +130,8 @@ More than 2 seconds, next hit will run again the first function and so on."
     (define-key map (kbd "<right>")    'helm-next-source)
     (define-key map (kbd "<left>")     'helm-previous-source)
     (define-key map (kbd "<RET>")      'helm-exit-minibuffer)
-    (define-key map (kbd "C-z")        'helm-select-action)
-    (define-key map (kbd "C-i")        'helm-execute-persistent-action)
+    (define-key map (kbd "C-i")        'helm-select-action)
+    (define-key map (kbd "C-z")        'helm-execute-persistent-action)
     (define-key map (kbd "C-e")        'helm-select-2nd-action-or-end-of-line)
     (define-key map (kbd "C-j")        'helm-select-3rd-action)
     (define-key map (kbd "C-o")        'helm-next-source)
@@ -152,8 +172,7 @@ More than 2 seconds, next hit will run again the first function and so on."
     ;; Disable `file-cache-minibuffer-complete'.
     (define-key map (kbd "<C-tab>")    'undefined)
     ;; Multi keys
-    (helm-define-multi-key map (kbd "C-t") '(helm-toggle-resplit-window
-                                             helm-swap-windows) 0.5)
+    (define-key map (kbd "C-t")        'helm-toggle-resplit-and-swap-windows)
     ;; Debugging command
     (define-key map (kbd "C-h C-d")    'undefined)
     (define-key map (kbd "C-h C-d")    'helm-debug-output)
@@ -197,7 +216,7 @@ Set it to nil if you don't want this limit."
   :group 'helm
   :type 'integer)
 
-(defcustom helm-idle-delay 0.3
+(defcustom helm-idle-delay 0.1
   "Be idle for this many seconds, before updating in delayed sources.
 This is useful for sources involving heavy operations
 \(like launching external programs\), so that candidates
@@ -210,7 +229,7 @@ Be sure to know what you are doing when modifying this."
   :group 'helm
   :type 'float)
 
-(defcustom helm-input-idle-delay 0.3
+(defcustom helm-input-idle-delay 0.1
   "Be idle for this many seconds, before updating.
 
 Unlike `helm-idle-delay', it is also effective for non-delayed sources.
@@ -831,7 +850,7 @@ not `exit-minibuffer' or unwanted functions."
 
 (defmacro with-helm-temp-hook (hook &rest body)
   "Execute temporarily BODY as a function for HOOK."
-  (declare (indent 0) (debug t))
+  (declare (indent 1) (debug t))
   (let ((fun (gensym "helm-hook")))
     `(progn
        (defun ,fun ()
@@ -1946,7 +1965,7 @@ For ANY-PRESELECT ANY-RESUME ANY-KEYMAP ANY-DEFAULT ANY-HISTORY, See `helm'."
                     (minibuffer-with-setup-hook
                         #'(lambda ()
                             (setq timer (run-with-idle-timer
-                                         (max helm-input-idle-delay 0.1) 'repeat
+                                         (max helm-input-idle-delay 0.01) 'repeat
                                          #'(lambda ()
                                              ;; Stop updating when in persistent action
                                              ;; or when `helm-suspend-update-flag' is
@@ -2117,6 +2136,8 @@ Helm plug-ins are realized by this function."
                              (helm-interpret-value candidate-proc source)
                              (if (or helm-force-updating-p
                                      helm-never-delay-on-input
+                                     ;; Avoid using `while-no-input' with tramp.
+                                     (file-remote-p helm-pattern)
                                      (assoc 'no-delay-on-input source))
                                  (helm-interpret-value candidate-fn source)
                                  (let ((result (while-no-input
@@ -2452,7 +2473,7 @@ is done on whole `helm-buffer' and not on current source."
              ;; to helm-input-idle-delay
              ;; otherwise use value of helm-input-idle-delay
              ;; or 0.1 if == to 0.
-             (max helm-idle-delay helm-input-idle-delay 0.1) nil
+             (max helm-idle-delay helm-input-idle-delay 0.01) nil
              'helm-process-delayed-sources delayed-sources preselect source)))
         (helm-log "end update")))))
 
@@ -4086,7 +4107,7 @@ This happen after `helm-input-idle-delay' secs."
   (and (not (get-buffer-window helm-action-buffer 'visible))
        (eq (assoc-default 'follow (helm-get-current-source)) 1)
        (sit-for (and helm-input-idle-delay
-                     (max helm-input-idle-delay 0.1)))
+                     (max helm-input-idle-delay 0.01)))
        (helm-window)
        (helm-get-selection)
        (save-excursion

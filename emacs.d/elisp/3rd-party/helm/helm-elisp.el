@@ -73,10 +73,10 @@ This is used in macro `with-helm-show-completion'."
                  'display (helm-get-selection))))
 
 (defun helm-show-completion-init-overlay (beg end)
-  (and helm-turn-on-show-completion
-       (setq helm-show-completion-overlay (make-overlay beg end))
-       (overlay-put helm-show-completion-overlay
-                    'face 'helm-lisp-show-completion)))
+  (when (and helm-turn-on-show-completion beg end)
+    (setq helm-show-completion-overlay (make-overlay beg end))
+    (overlay-put helm-show-completion-overlay
+                 'face 'helm-lisp-show-completion)))
 
 (defun helm-show-completion-display-function (buffer &rest _args)
   "A special resized helm window is used depending on position in BUFFER."
@@ -105,35 +105,85 @@ If `helm-turn-on-show-completion' is nil just do nothing."
           (and helm-turn-on-show-completion
                (append (list 'helm-show-completion)
                        helm-move-selection-after-hook))))
+     (with-helm-temp-hook 'helm-after-initialize-hook
+       (with-helm-buffer
+         (set (make-local-variable 'helm-display-function)
+              (if helm-show-completion-use-special-display
+                  'helm-show-completion-display-function
+                  'helm-default-display-buffer))))
      (unwind-protect
           (progn
             (helm-show-completion-init-overlay ,beg ,end)
-            (let ((helm-display-function
-                   (if helm-show-completion-use-special-display
-                       'helm-show-completion-display-function
-                       'helm-default-display-buffer)))
-              ,@body))
-       (and helm-turn-on-show-completion
-            (delete-overlay helm-show-completion-overlay)))))
+            ,@body)
+       (when (and helm-turn-on-show-completion
+                  helm-show-completion-overlay
+                  (overlayp helm-show-completion-overlay))
+         (delete-overlay helm-show-completion-overlay)))))
 
 
 ;;; Lisp symbol completion.
 ;;
 ;;
+(defun helm-lisp-completion-predicate-at-point (beg)
+  ;; Return a predicate for `all-completions'.
+  (save-excursion
+    (goto-char beg)
+    (if (or (not (eq (char-before) ?\()) ; no paren before str.
+            ;; Looks like we are in a let statement.
+            (condition-case nil
+                (progn (up-list -2) (forward-char 1)
+                       (eq (char-after) ?\())
+              (error nil)))
+        (lambda (sym)
+          (or (boundp sym) (fboundp sym) (symbol-plist sym)))
+        #'fboundp)))
+
+(defun helm-thing-before-point (&optional limits)
+  "Return symbol name before point.
+With LIMITS arg specified return the beginning and en position
+of symbol before point."
+  (save-excursion
+    (let ((beg (point)))
+      (when (re-search-backward
+             "\\_<" (field-beginning nil nil (point-at-bol)) t)
+        (if limits
+            (cons (match-end 0) beg)
+            (buffer-substring-no-properties beg (match-end 0)))))))
+
+(defun helm-bounds-of-thing-before-point ()
+  "Get the beginning and end position of `helm-thing-before-point'.
+Return a cons \(beg . end\)."
+  (helm-thing-before-point 'limits))
+
+(defun helm-insert-completion-at-point (beg end str)
+  ;; When there is no space after point
+  ;; we are completing inside a symbol or
+  ;; after a partial symbol with the next arg aside
+  ;; without space, in this case mark the region.
+  ;; deleting it would remove the
+  ;; next arg which is unwanted.
+  (delete-region beg end)
+  (insert str)
+  (let ((pos (cdr (bounds-of-thing-at-point 'symbol))))
+    (when (< (point) pos)
+      (push-mark pos t t))))
+
 ;;;###autoload
 (defun helm-lisp-completion-at-point ()
   "Helm lisp symbol completion at point."
   (interactive)
-  (let* ((data       (lisp-completion-at-point))
-         (beg        (car data))
-         (end        (point)) ; 'cadr data' is wrong when no space after point.
-         (plist      (nthcdr 3 data))
-         (pred       (plist-get plist :predicate))
-         (lgst-len   0)
-         (target     (and beg end (buffer-substring-no-properties beg end)))
-         (candidates (and data (all-completions target (nth 2 data) pred)))
+  (let* ((target     (helm-thing-before-point))
+         (beg        (car (helm-bounds-of-thing-before-point)))
+         (end        (point))
+         (pred       (and beg (helm-lisp-completion-predicate-at-point beg)))
+         (loc-vars   (and (fboundp 'lisp--local-variables)
+                          (mapcar #'symbol-name (lisp--local-variables))))
+         (glob-syms  (and target pred (all-completions target obarray pred)))
+         (candidates (append loc-vars glob-syms))
+         (lgst-len   0) ; Special in `helm-lisp-completion-transformer'.
          (helm-quit-if-no-candidate t)
          (helm-execute-action-at-once-if-one t)
+         (enable-recursive-minibuffers t)
          (helm-match-plugin-enabled
           (member 'helm-compile-source--match-plugin
                   helm-compile-source-functions)))
@@ -152,12 +202,16 @@ If `helm-turn-on-show-completion' is nil just do nothing."
              (candidates-in-buffer)
              (persistent-action . helm-lisp-completion-persistent-action)
              (persistent-help . "Show brief doc in mode-line")
-             (filtered-candidate-transformer helm-lisp-completion-transformer)
+             (filtered-candidate-transformer . helm-lisp-completion-transformer)
              (action . (lambda (candidate)
-                         (delete-region beg end)
-                         (insert candidate))))
+                         (with-helm-current-buffer
+                           (run-with-timer
+                            0.01 nil
+                            'helm-insert-completion-at-point
+                            beg end candidate)))))
            :input (if helm-match-plugin-enabled (concat target " ") target)
-           :resume 'noresume))
+           :resume 'noresume
+           :allow-nest t))
         (message "[No Match]"))))
 
 (defun helm-lisp-completion-persistent-action (candidate)
@@ -169,6 +223,34 @@ If `helm-turn-on-show-completion' is nil just do nothing."
        (intern candidate))
       'face 'helm-lisp-completion-info))))
 
+(defun helm-elisp-sort-symbols-fn (s1 s2)
+  "Sort predicate function for helm candidates.
+Args S1 and S2 can be single or \(display . real\) candidates,
+that is sorting is done against real value of candidate."
+  (let* ((reg1  (concat "\\_<" helm-pattern "\\_>"))
+         (reg2  (concat "\\_<" helm-pattern))
+         (split (split-string helm-pattern))
+         (str1  (if (consp s1) (cdr s1) s1))
+         (str2  (if (consp s2) (cdr s2) s2))
+         (score #'(lambda (str r1 r2 lst)
+                    (cond ((string-match r1 str) 4)
+                          ((and (string-match " " helm-pattern)
+                                (string-match (concat "\\_<" (car lst)) str)
+                                (loop for r in (cdr lst)
+                                      always (string-match r str))) 3)
+                          ((and (string-match " " helm-pattern)
+                                (loop for r in lst always (string-match r str))) 2)
+                          ((string-match r2 str) 1)
+                          (t 0))))
+         (sc1 (funcall score str1 reg1 reg2 split))
+         (sc2 (funcall score str2 reg1 reg2 split)))
+    (cond ((or (zerop (length helm-pattern))
+               (and (zerop sc1) (zerop sc2)))
+           (string-lessp str1 str2))
+          ((= sc1 sc2)
+           (< (length str1) (length str2)))
+          (t (> sc1 sc2)))))
+
 (defun helm-lisp-completion-transformer (candidates source)
   "Helm candidates transformer for lisp completion."
   (declare (special lgst-len))
@@ -179,7 +261,8 @@ If `helm-turn-on-show-completion' is nil just do nothing."
                           ((boundp sym)   " (Var)")
                           ((facep sym)    " (Face)"))
         for spaces = (make-string (- lgst-len (length c)) ? )
-        collect (cons (concat c spaces annot) c)))
+        collect (cons (concat c spaces annot) c) into lst
+        finally return (sort lst #'helm-elisp-sort-symbols-fn)))
 
 (defun helm-get-first-line-documentation (sym)
   "Return first line documentation of symbol SYM.
@@ -201,14 +284,6 @@ If SYM is not documented, return \"Not documented\"."
 ;;; File completion.
 ;;
 ;; Complete file name at point.
-(defun helm-thing-before-point ()
-  "Get symbol name before point."
-  (save-excursion
-    (let ((beg (point)))
-      ;; older regexp "\(\\|\\s-\\|^\\|\\_<\\|\r\\|'\\|#'"
-      (when (re-search-backward
-             "\\_<" (field-beginning nil nil (point-at-bol)) t)
-        (buffer-substring-no-properties beg (match-end 0))))))
 
 ;;;###autoload
 (defun helm-complete-file-name-at-point (&optional force)
@@ -259,6 +334,14 @@ Filename completion happen if string start after or between a double quote."
                    (looking-back "[^'`( ]")))
         (helm-complete-file-name-at-point)
         (helm-lisp-completion-at-point))))
+
+(helm-multi-key-defun helm-multi-lisp-complete-at-point
+    "Multi key function for completion in emacs lisp buffers.
+First call indent, second complete symbol, third complete fname."
+  '(helm-lisp-indent
+    helm-lisp-completion-at-point
+    helm-complete-file-name-at-point)
+  0.3)
 
 
 ;;; Apropos
@@ -407,60 +490,43 @@ Filename completion happen if string start after or between a double quote."
   (helm-other-buffer 'helm-source-advice "*helm advice*"))
 
 
-;;; Elisp library scan
+;;; Locate elisp library
 ;;
 ;;
-(defvar helm-source-elisp-library-scan
+(defvar helm-source-locate-library
   '((name . "Elisp libraries (Scan)")
-    (init . (helm-elisp-library-scan-init))
+    (init . (helm-locate-library-scan-init))
     (candidates-in-buffer)
-    (action ("Find library"
-             . (lambda (candidate) (find-file (find-library-name candidate))))
-     ("Find library other window"
-      . (lambda (candidate)
-          (find-file-other-window (find-library-name candidate))))
-     ("Load library"
-      . (lambda (candidate) (load-library candidate))))))
+    (action . (("Find library"
+                . (lambda (candidate)
+                    (find-file (find-library-name candidate))))
+               ("Find library other window"
+                . (lambda (candidate)
+                    (find-file-other-window
+                     (find-library-name candidate))))
+               ("Load library"
+                . (lambda (candidate) (load-library candidate)))))))
 
-(defun helm-elisp-library-scan-init ()
+(defun helm-locate-library-scan-init ()
   "Init helm buffer status."
-  (let ((helm-buffer (helm-candidate-buffer 'global))
-        (library-list (helm-elisp-library-scan-list)))
-    (with-current-buffer helm-buffer
-      (dolist (library library-list)
-        (insert (format "%s\n" library))))))
+  (helm-init-candidates-in-buffer
+   'global (helm-locate-library-scan-list)))
 
-(defun helm-elisp-library-scan-list (&optional dirs string)
-  "Do completion for file names passed to `locate-file'.
-DIRS is directory to search path.
-STRING is string to match."
-  ;; Use `load-path' as path when ignore `dirs'.
-  (or dirs (setq dirs load-path))
-  ;; Init with blank when ignore `string'.
-  (or string (setq string ""))
-  ;; Get library list.
-  (let ((string-dir (file-name-directory string))
-        ;; File regexp that suffix match `load-file-rep-suffixes'.
-        (match-regexp (format "^.*\\.el%s$" (regexp-opt load-file-rep-suffixes)))
-        name
-        names)
-    (dolist (dir dirs)
-      (unless dir
-        (setq dir default-directory))
-      (if string-dir
-          (setq dir (expand-file-name string-dir dir)))
-      (when (file-directory-p dir)
-        (dolist (file (file-name-all-completions
-                       (file-name-nondirectory string) dir))
-          ;; Suffixes match `load-file-rep-suffixes'.
-          (setq name (if string-dir (concat string-dir file) file))
-          (if (string-match match-regexp name)
-              (add-to-list 'names name)))))
-    names))
+(defun helm-locate-library-scan-list ()
+  (loop for dir in load-path
+        when (file-directory-p dir)
+        append (directory-files dir t (regexp-opt (get-load-suffixes)))
+        into lst
+        finally return (helm-fast-remove-dups lst :test 'equal)))
+
+;;;###autoload
+(defun helm-locate-library ()
+  (interactive)
+  (helm :sources 'helm-source-locate-library
+        :buffer "*helm locate library*"))
 
 (defun helm-set-variable (var)
   "Set value to VAR interactively."
-  (interactive)
   (let ((sym (helm-symbolify var)))
     (set sym (eval-minibuffer (format "Set %s: " var)
                               (prin1-to-string (symbol-value sym))))))

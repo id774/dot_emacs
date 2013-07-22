@@ -48,7 +48,8 @@ filtered from the list of candidates if the
   :group 'helm-buffers)
 
 (defcustom helm-buffer-max-length 20
-  "Max length of buffer names before truncate."
+  "Max length of buffer names before truncate.
+When nil use the longest buffer-name length found."
   :group 'helm-buffers
   :type  'integer)
 
@@ -122,7 +123,11 @@ filtered from the list of candidates if the
   `((name . "Buffers")
     (init . (lambda ()
               ;; Issue #51 Create the list before `helm-buffer' creation.
-              (setq helm-buffers-list-cache (helm-buffer-list))))
+              (setq helm-buffers-list-cache (helm-buffer-list))
+              (unless helm-buffer-max-length
+                (setq helm-buffer-max-length
+                      (loop for b in helm-buffers-list-cache
+                            maximize (length b))))))
     (candidates . helm-buffers-list-cache)
     (type . buffer)
     (match helm-buffer-match-major-mode)
@@ -303,7 +308,8 @@ with name matching pattern."
                 ((string-match "\\s-$" helm-pattern)
                  (string-match (car split) mjm))
                 ((string-match "\\s-[@]" helm-pattern)
-                 (and (string-match (car split) mjm)
+                 (and (or (string-match (car split) mjm)
+                          (string-match (car split) cand))
                       (helm-buffers-match-inside cand (cdr split))))
                 ((string-match "\\s-" helm-pattern)
                  (and (string-match (car split) mjm)

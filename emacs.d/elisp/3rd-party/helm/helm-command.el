@@ -20,6 +20,7 @@
 (require 'cl)
 (require 'helm)
 (require 'helm-mode)
+(require 'helm-elisp)
 
 
 (defgroup helm-command nil
@@ -28,7 +29,7 @@
 
 (defcustom helm-M-x-requires-pattern 2
   "Value of requires-pattern for `helm-M-x'.
-Set it to 0 to disable requires-pattern in `helm-M-x'."
+Set it to 0 to show all candidates on startup."
   :group 'helm-command
   :type 'boolean)
 
@@ -100,7 +101,7 @@ Show global bindings and local bindings according to current `major-mode'."
                                        'face 'helm-M-x-key))))
                 cand) into ls
           finally return
-          (sort ls #'(lambda (x y) (string-lessp (car x) (car y)))))))
+          (sort ls #'helm-elisp-sort-symbols-fn))))
 
 ;;;###autoload
 (defun helm-M-x ()
