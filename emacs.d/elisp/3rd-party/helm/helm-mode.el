@@ -166,14 +166,18 @@ If COLLECTION is an `obarray', a TEST should be needed. See `obarray'."
 
 (defun helm-cr-default-transformer (candidates source)
   "Default filter candidate function for `helm-comp-read'."
-  (loop for cand in candidates
-        if (and (equal cand helm-pattern)
-                helm-cr-unknow-pattern-flag)
+  (loop with lst for c in candidates
+        for cand = (if (stringp c) (replace-regexp-in-string "\\s\\" "" c) c)
+        for pat = (replace-regexp-in-string "\\s\\" "" helm-pattern)
+        if (and (equal cand pat) helm-cr-unknow-pattern-flag)
         collect
-        (cons (concat (propertize " " 'display (propertize
-                                                "[?]" 'face 'helm-ff-prefix))
-                      cand) cand)
-        else collect cand))
+        (cons (concat (propertize
+                       " " 'display
+                       (propertize "[?]" 'face 'helm-ff-prefix))
+                      cand)
+              cand) into lst
+        else collect cand into lst
+        finally return (helm-fast-remove-dups lst :test 'equal)))
 
 ;;;###autoload
 (defun* helm-comp-read (prompt collection
@@ -184,6 +188,7 @@ If COLLECTION is an `obarray', a TEST should be needed. See `obarray'."
                                preselect
                                (buffer "*Helm Completions*")
                                must-match
+                               reverse-history
                                (requires-pattern 0)
                                (history nil)
                                input-history
@@ -225,6 +230,9 @@ Keys description:
 - BUFFER: Name of helm-buffer.
 
 - MUST-MATCH: Candidate selected must be one of COLLECTION.
+
+- REVERSE-HISTORY: When non--nil display history source after current
+  source completion.
 
 - REQUIRES-PATTERN: Same as helm attribute, default is 0.
 
@@ -316,8 +324,11 @@ that use `helm-comp-read' See `helm-M-x' for example."
                        (filtered-candidate-transformer
                         . (lambda (candidates sources)
                             (loop for i in candidates
-                                  do (set-text-properties 0 (length i) nil i)
-                                  collect i)))
+                                  ;; Input is added to history in completing-read's
+                                  ;; and may be regexp-quoted, so unquote it.
+                                  for cand = (replace-regexp-in-string "\\s\\" "" i)
+                                  do (set-text-properties 0 (length cand) nil cand)
+                                  collect cand)))
                        (persistent-action . ,persistent-action)
                        (persistent-help . ,persistent-help)
                        (mode-line . ,mode-line)
@@ -375,6 +386,7 @@ that use `helm-comp-read' See `helm-M-x' for example."
                                    src))))
            (helm-execute-action-at-once-if-one exec-when-only-one)
            result)
+      (when reverse-history (setq src-list (nreverse src-list)))
       (setq result (helm
                     :sources src-list
                     :input initial-input
@@ -388,12 +400,11 @@ that use `helm-comp-read' See `helm-M-x' for example."
                     :buffer buffer))
       ;; Avoid adding an incomplete input to history.
       (when (and result history del-input)
-        (cond (;; Be sure history is not a symbol with a nil value.
-               (and (symbolp history)
-                    (symbol-value history))
-               (setcar (eval history) result))
-              (;; A list with a non--nil value.
-               (consp history) (setcar history result))
+        (cond ((symbolp history) ; History is a symbol.
+               ;; Be sure history is not a symbol with a nil value.
+               (helm-aif (symbol-value history) (setcar it result)))
+              ((consp history) ; A list with a non--nil value.
+               (setcar history result))
               (t ; Possibly a symbol with a nil value.
                (set history (list result)))))
       (or
@@ -493,6 +504,7 @@ It should be used when candidate list don't need to rebuild dynamically."
      prompt collection
      :test test
      :history history
+     :reverse-history t
      :input-history history
      :must-match require-match
      :alistp nil ; Be sure `all-completions' is used.
@@ -508,8 +520,10 @@ It should be used when candidate list don't need to rebuild dynamically."
      ;; If DEF is not provided, fallback to empty string
      ;; to avoid `thing-at-point' to be appended on top of list
      :default (or default "")
-     ;; Use `regexp-quote' to fix initial input
-     ;; with special characters (e.g nnimap+gmail:)
+     ;; Fail with special characters (e.g in gnus "nnimap+gmail:")
+     ;; if regexp-quote is not used.
+     ;; when init is added to history, it will be unquoted by
+     ; helm-comp-read.
      :initial-input (and (stringp init) (regexp-quote init)))))
 
 (defun helm-completing-read-with-cands-in-buffer
@@ -616,12 +630,13 @@ See documentation of `completing-read' and `all-completions' for details."
      &key
      (name "Read File Name")
      (initial-input (expand-file-name default-directory))
-     (buffer "*Helm Completions*")
+     (buffer "*Helm file completions*")
      test
      (case-fold helm-file-name-case-fold-search)
      (preselect nil)
      (history nil)
      must-match
+     default
      (marked-candidates nil)
      (alistp t)
      (persistent-action 'helm-find-files-persistent-action)
@@ -737,11 +752,19 @@ Keys description:
                     :prompt prompt
                     :resume 'noresume
                     :case-fold-search case-fold
+                    :default default
                     :keymap helm-map
                     :buffer buffer
                     :preselect preselect)))
       (or
-       (cond ((and result (stringp result))
+       (cond ((and result (stringp result)
+                   (string= result "") ""))
+             ((and result
+                   (stringp result)
+                   (file-equal-p result initial-input)
+                   default)
+              default)
+             ((and result (stringp result))
               (expand-file-name result))
              ((and result (listp result))
               (mapcar #'expand-file-name result))
@@ -756,14 +779,7 @@ Keys description:
     (prompt &optional dir default-filename mustmatch initial predicate)
   "An helm replacement of `read-file-name'."
   (declare (special helm-mode))
-  (let* ((default (and default-filename
-                       (if (listp default-filename)
-                           (car default-filename)
-                           default-filename)))
-         (init (or (and default (if (file-directory-p default)
-                                    default
-                                    (file-name-directory default)))
-                   initial dir default-directory))
+  (let* ((init (or initial dir default-directory))
          (current-command (or (helm-this-command) this-command))
          (str-command (symbol-name current-command))
          (helm-file-completion-sources
@@ -828,6 +844,7 @@ Keys description:
                        prompt
                        :name str-command
                        :buffer buf-name
+                       :default default-filename
                        :initial-input (expand-file-name init dir)
                        :alistp nil
                        :must-match mustmatch

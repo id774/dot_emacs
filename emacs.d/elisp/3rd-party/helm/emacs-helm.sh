@@ -24,17 +24,32 @@
 
 TMP="/tmp/helm-cfg.el"
 LOADPATH=`dirname $0`
+EMACS=emacs
+
+case $1 in
+    -P)
+        shift 1
+        declare EMACS=$1
+        shift 1
+        ;;
+    -h)
+        echo "Usage: ${0##*/} [-P} Emacs path [-h} help [--] EMACS ARGS"
+        exit 2
+        ;;
+esac
+
 cat > $TMP <<EOF
 (setq initial-scratch-message (concat initial-scratch-message
 ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n\
-;; This Emacs is Powered by \`HELM'.\n\
+;; This Emacs is Powered by \`HELM' using\n\
+;; emacs program \"$EMACS\".\n\
 ;; This is a minimal \`helm' configuration to discover \`helm' or debug it.\n\
 ;; You can retrieve this minimal configuration in \"$TMP\" \n\
 ;; Some originals emacs commands have been replaced by own \`helm' commands:\n\n\
 ;; - \`find-file'(C-x C-f)           =>\`helm-find-files'\n\
 ;; - \`occur'(M-s o)                 =>\`helm-occur'\n\
 ;; - \`list-buffers'(C-x C-b)        =>\`helm-buffers-list'\n\
-;; - \`completion-at-point'(tab)     =>\`helm-lisp-completion-at-point'\n\n\
+;; - \`completion-at-point'(M-tab)   =>\`helm-lisp-completion-at-point'\n\n\
 ;; Some others native emacs commands are \"helmized\" by \`helm-mode'.\n\
 ;; You will find embeded help for most helm commands with \`C-c ?'.\n\
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n\n"))
@@ -55,4 +70,6 @@ cat > $TMP <<EOF
 (add-hook 'kill-emacs-hook #'(lambda () (delete-file "$TMP")))
 (cd "~/")
 EOF
-emacs -Q -l $TMP $@
+
+$EMACS -Q -l $TMP $@
+

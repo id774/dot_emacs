@@ -138,22 +138,28 @@ If `helm-turn-on-show-completion' is nil just do nothing."
           (or (boundp sym) (fboundp sym) (symbol-plist sym)))
         #'fboundp)))
 
-(defun helm-thing-before-point (&optional limits)
+(defun helm-thing-before-point (&optional limits regexp)
   "Return symbol name before point.
-With LIMITS arg specified return the beginning and en position
+If REGEXP is specified return what REGEXP find before point.
+By default match the beginning of symbol before point.
+With LIMITS arg specified return the beginning and end position
 of symbol before point."
   (save-excursion
-    (let ((beg (point)))
-      (when (re-search-backward
-             "\\_<" (field-beginning nil nil (point-at-bol)) t)
+    (let (beg
+          (end (point))
+          (boundary (field-beginning nil nil (point-at-bol))))
+      (if (re-search-backward (or regexp "\\_<") boundary t)
+          (setq beg (match-end 0))
+          (setq beg boundary))
+      (unless (= beg end)
         (if limits
-            (cons (match-end 0) beg)
-            (buffer-substring-no-properties beg (match-end 0)))))))
+            (cons beg end)
+            (buffer-substring-no-properties beg end))))))
 
-(defun helm-bounds-of-thing-before-point ()
+(defun helm-bounds-of-thing-before-point (&optional regexp)
   "Get the beginning and end position of `helm-thing-before-point'.
 Return a cons \(beg . end\)."
-  (helm-thing-before-point 'limits))
+  (helm-thing-before-point 'limits regexp))
 
 (defun helm-insert-completion-at-point (beg end str)
   ;; When there is no space after point
@@ -164,8 +170,10 @@ Return a cons \(beg . end\)."
   ;; next arg which is unwanted.
   (delete-region beg end)
   (insert str)
-  (let ((pos (cdr (bounds-of-thing-at-point 'symbol))))
-    (when (< (point) pos)
+  (let ((pos (cdr (or (bounds-of-thing-at-point 'symbol)
+                      ;; needed for helm-dabbrev.
+                      (bounds-of-thing-at-point 'filename)))))
+    (when (and pos (< (point) pos))
       (push-mark pos t t))))
 
 ;;;###autoload
@@ -211,6 +219,7 @@ Return a cons \(beg . end\)."
                             beg end candidate)))))
            :input (if helm-match-plugin-enabled (concat target " ") target)
            :resume 'noresume
+           :buffer "*helm lisp completion*"
            :allow-nest t))
         (message "[No Match]"))))
 
@@ -223,34 +232,6 @@ Return a cons \(beg . end\)."
        (intern candidate))
       'face 'helm-lisp-completion-info))))
 
-(defun helm-elisp-sort-symbols-fn (s1 s2)
-  "Sort predicate function for helm candidates.
-Args S1 and S2 can be single or \(display . real\) candidates,
-that is sorting is done against real value of candidate."
-  (let* ((reg1  (concat "\\_<" helm-pattern "\\_>"))
-         (reg2  (concat "\\_<" helm-pattern))
-         (split (split-string helm-pattern))
-         (str1  (if (consp s1) (cdr s1) s1))
-         (str2  (if (consp s2) (cdr s2) s2))
-         (score #'(lambda (str r1 r2 lst)
-                    (cond ((string-match r1 str) 4)
-                          ((and (string-match " " helm-pattern)
-                                (string-match (concat "\\_<" (car lst)) str)
-                                (loop for r in (cdr lst)
-                                      always (string-match r str))) 3)
-                          ((and (string-match " " helm-pattern)
-                                (loop for r in lst always (string-match r str))) 2)
-                          ((string-match r2 str) 1)
-                          (t 0))))
-         (sc1 (funcall score str1 reg1 reg2 split))
-         (sc2 (funcall score str2 reg1 reg2 split)))
-    (cond ((or (zerop (length helm-pattern))
-               (and (zerop sc1) (zerop sc2)))
-           (string-lessp str1 str2))
-          ((= sc1 sc2)
-           (< (length str1) (length str2)))
-          (t (> sc1 sc2)))))
-
 (defun helm-lisp-completion-transformer (candidates source)
   "Helm candidates transformer for lisp completion."
   (declare (special lgst-len))
@@ -262,7 +243,7 @@ that is sorting is done against real value of candidate."
                           ((facep sym)    " (Face)"))
         for spaces = (make-string (- lgst-len (length c)) ? )
         collect (cons (concat c spaces annot) c) into lst
-        finally return (sort lst #'helm-elisp-sort-symbols-fn)))
+        finally return (sort lst #'helm-generic-sort-fn)))
 
 (defun helm-get-first-line-documentation (sym)
   "Return first line documentation of symbol SYM.
@@ -289,6 +270,7 @@ If SYM is not documented, return \"Not documented\"."
 (defun helm-complete-file-name-at-point (&optional force)
   "Complete file name at point."
   (interactive)
+  (require 'helm-mode)
   (let* ((tap (thing-at-point 'filename))
          beg
          (init (and tap
@@ -558,18 +540,35 @@ First call indent, second complete symbol, third complete fname."
     "Function. (string or symbol)"))
 
 (define-helm-type-attribute 'variable
-    '((action ("Describe variable" . describe-variable)
+    '((action
+       ("Describe variable" . describe-variable)
        ("Add variable to kill ring" . helm-kill-new)
        ("Go to variable's definition" . find-variable)
        ("Set variable" . helm-set-variable))
       (coerce . helm-symbolify))
   "Variable.")
 
+(defun helm-sexp-eval (cand)
+  (condition-case err
+      (eval (read cand))
+    (error (message "Evaluating gave an error: %S" err)
+           nil)))
 
+(define-helm-type-attribute 'sexp
+  '((action
+     ("Eval" . helm-sexp-eval)
+     ("Edit and eval" .
+      (lambda (cand)
+        (let ((minibuffer-setup-hook
+               (cons (lambda () (insert cand)) minibuffer-setup-hook)))
+          (call-interactively #'eval-expression)))))
+    (persistent-action . helm-sexp-eval))
+  "Sexp.")
 
 (define-helm-type-attribute 'timer
     '((real-to-display . helm-timer-real-to-display)
-      (action ("Cancel Timer" . cancel-timer)
+      (action
+       ("Cancel Timer" . cancel-timer)
        ("Describe Function" . (lambda (tm) (describe-function (timer--function tm))))
        ("Find Function" . (lambda (tm) (find-function (timer--function tm)))))
       (persistent-action . (lambda (tm) (describe-function (timer--function tm))))

@@ -38,7 +38,7 @@ Have no effect when `helm-dabbrev-always-search-all' is non--nil."
   :type 'integer)
 
 (defcustom helm-dabbrev-ignored-buffers-regexps
-  '("\\*helm" "\\*Messages" "\\*Minibuf" "\\*Echo Area" "\\*Buffer List")
+  '("\\*helm" "\\*Messages" "\\*Echo Area" "\\*Buffer List")
   "List of regexps matching names of buffers that helm-dabbrev should not check."
   :group 'helm-dabbrev
   :type '(repeat regexp))
@@ -59,6 +59,22 @@ no need to provide \(lisp-interaction-mode . emacs-lisp-mode\) association."
   :group 'helm-dabbrev
   :type 'integer)
 
+(defcustom helm-dabbrev-cycle-thresold nil
+  "Number of time helm-dabbrev cycle before displaying helm completion.
+When nil or 0 disable cycling."
+  :group 'helm-dabbrev
+  :type '(choice (const :tag "Cycling disabled" nil) integer))
+
+(defcustom helm-dabbrev-case-fold-search 'smart
+  "Set `case-fold-search' in `helm-dabbrev'.
+Same as `helm-case-fold-search' but for `helm-dabbrev'.
+Note that this is not affecting searching in helm buffer,
+but the initial search for all candidates in buffer(s)."
+  :group 'helm-dabbrev
+  :type '(choice (const :tag "Ignore case" t)
+                 (const :tag "Respect case" nil)
+                 (other :tag "Smart" 'smart)))
+
 (defvar helm-dabbrev-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map helm-map)
@@ -77,67 +93,110 @@ no need to provide \(lisp-interaction-mode . emacs-lisp-mode\) association."
                      thereis (string-match r (buffer-name buf)))
         collect buf))
 
-(defun helm-dabbrev--same-major-mode-p (buf)
-  (or (or (assoc major-mode helm-dabbrev-major-mode-assoc)
-          (rassoc major-mode helm-dabbrev-major-mode-assoc))
-      (eq major-mode (with-helm-current-buffer major-mode))))
+(defun helm-dabbrev--same-major-mode-p (start-buffer)
+  ;; START-BUFFER is the current-buffer where we start searching.
+  ;; Determine the major-mode of START-BUFFER as `cur-maj-mode'.
+  ;; Each time the loop go in another buffer we try to find if its
+  ;; `major-mode' is:
+  ;; - same as the `cur-maj-mode'
+  ;; - derived from `cur-maj-mode'
+  ;; - have an assoc entry (major-mode . cur-maj-mode)
+  ;; - have an rassoc entry (cur-maj-mode . major-mode)
+  ;; - check if one of these entries inherit from another one in
+  ;;   `helm-dabbrev-major-mode-assoc'.
+  (let* ((cur-maj-mode  (with-current-buffer start-buffer major-mode))
+         (c-assoc-mode  (assq cur-maj-mode helm-dabbrev-major-mode-assoc))
+         (c-rassoc-mode (rassq cur-maj-mode helm-dabbrev-major-mode-assoc))
+         (o-assoc-mode  (assq major-mode helm-dabbrev-major-mode-assoc))
+         (o-rassoc-mode (rassq major-mode helm-dabbrev-major-mode-assoc))
+         (cdr-c-assoc-mode (cdr c-assoc-mode))
+         (cdr-o-assoc-mode (cdr o-assoc-mode)))
+    (or (eq major-mode cur-maj-mode)
+        (derived-mode-p cur-maj-mode)
+        (or (eq cdr-c-assoc-mode major-mode)
+            (eq (car c-rassoc-mode) major-mode)
+            (eq (cdr (assq cdr-c-assoc-mode helm-dabbrev-major-mode-assoc))
+                major-mode)
+            (eq (car (rassq cdr-c-assoc-mode helm-dabbrev-major-mode-assoc))
+                major-mode))
+        (or (eq cdr-o-assoc-mode cur-maj-mode)
+            (eq (car o-rassoc-mode) cur-maj-mode)
+            (eq (cdr (assq cdr-o-assoc-mode helm-dabbrev-major-mode-assoc))
+                cur-maj-mode)
+            (eq (car (rassq cdr-o-assoc-mode helm-dabbrev-major-mode-assoc))
+                cur-maj-mode)))))
 
 (defun helm-dabbrev--collect (str limit ignore-case all)
-  (let ((case-fold-search ignore-case)
-        (search #'(lambda (pattern direction)
-                    (declare (special result pos-before pos-after))
-                    (while (case direction
-                             (1   (search-forward pattern nil t))
-                             (-1  (search-backward pattern nil t))
-                             (2   (let ((pos
-                                         (save-excursion
-                                           (forward-line
-                                            helm-dabbrev-lineno-around)
-                                               (point))))
-                                    (setq pos-after pos)
-                                    (search-forward pattern pos t)))
-                             (-2  (let ((pos
-                                         (save-excursion
-                                           (forward-line
-                                            (- helm-dabbrev-lineno-around))
-                                           (point))))
-                                    (setq pos-before pos)
-                                    (search-backward pattern pos t))))
-                      (let ((match (substring-no-properties
-                                    (thing-at-point 'symbol)))) 
-                        (unless (or (string= str match) (member match result))
-                          (push match result)))))))
-    (loop with result with pos-before with pos-after
-          for buf in (if all (helm-dabbrev--buffer-list)
-                         (list (current-buffer)))
-          do (with-current-buffer buf
-               (when (helm-dabbrev--same-major-mode-p buf)
-                 (save-excursion
-                   ;; Start searching before thing before point.
-                   (goto-char (- (point) (length str)))
-                   ;; search the last 30 lines before point.
-                   (funcall search str -2)) ; store pos [1]
-                 (save-excursion
-                   ;; search the next 30 lines after point.
-                   (funcall search str 2)) ; store pos [2]
-                 (save-excursion
-                   ;; search all before point.
-                   (goto-char pos-before) ; start from [1]
-                   (funcall search str -1))
-                 (save-excursion
-                   ;; search all after point.
-                   (goto-char pos-after) ; start from [2]
-                   (funcall search str 1))))
-          when (> (length result) limit) return (nreverse result)
-          finally return (nreverse result))))
+  (let* ((case-fold-search ignore-case)
+         (buffer1 (current-buffer)) ; start buffer.
+         (minibuf (minibufferp buffer1))
+         (search-and-store
+          #'(lambda (pattern direction)
+              (declare (special result pos-before pos-after))
+              (while (case direction
+                       (1   (search-forward pattern nil t))
+                       (-1  (search-backward pattern nil t))
+                       (2   (let ((pos
+                                   (save-excursion
+                                     (forward-line
+                                      helm-dabbrev-lineno-around)
+                                     (point))))
+                              (setq pos-after pos)
+                              (search-forward pattern pos t)))
+                       (-2  (let ((pos
+                                   (save-excursion
+                                     (forward-line
+                                      (- helm-dabbrev-lineno-around))
+                                     (point))))
+                              (setq pos-before pos)
+                              (search-backward pattern pos t))))
+                (let* ((match-1 (substring-no-properties
+                                 (thing-at-point 'symbol)))
+                       (match-2 (substring-no-properties
+                                 (thing-at-point 'filename)))
+                       (lst (if (string= match-1 match-2)
+                                (list match-1)
+                                (list match-1 match-2))))
+                  (loop for match in lst
+                        unless (or (string= str match)
+                                   (member match result))
+                        do (push match result)))))))
+         (loop with result with pos-before with pos-after
+               for buf in (if all (helm-dabbrev--buffer-list)
+                              (list (current-buffer)))
+          
+               do (with-current-buffer buf
+                    (when (or minibuf ; check against all buffers when in minibuffer.
+                              (helm-dabbrev--same-major-mode-p buffer1))
+                      (save-excursion
+                        ;; Start searching before thing before point.
+                        (goto-char (- (point) (length str)))
+                        ;; Search the last 30 lines before point.
+                        (funcall search-and-store str -2)) ; store pos [1]
+                      (save-excursion
+                        ;; Search the next 30 lines after point.
+                        (funcall search-and-store str 2)) ; store pos [2]
+                      (save-excursion
+                        ;; Search all before point.
+                        (goto-char pos-before) ; start from [1]
+                        (funcall search-and-store str -1))
+                      (save-excursion
+                        ;; Search all after point.
+                        (goto-char pos-after) ; start from [2]
+                        (funcall search-and-store str 1))))
+               when (> (length result) limit) return (nreverse result)
+               finally return (nreverse result))))
 
 (defun helm-dabbrev--get-candidates (abbrev)
   (assert abbrev nil "[No Match]")
-  (with-helm-current-buffer
+  (with-current-buffer (current-buffer)
     (let* ((dabbrev-get #'(lambda (str all-bufs)
                              (helm-dabbrev--collect
                               str helm-candidate-number-limit
-                              nil all-bufs)))
+                              (case helm-dabbrev-case-fold-search
+                                (smart (helm-set-case-fold-search-1 abbrev))
+                                (t helm-dabbrev-case-fold-search))
+                              all-bufs)))
            (lst (funcall dabbrev-get abbrev helm-dabbrev-always-search-all)))
       (if (and (not helm-dabbrev-always-search-all)
                (<= (length lst) helm-dabbrev-max-length-result))
@@ -146,12 +205,17 @@ no need to provide \(lisp-interaction-mode . emacs-lisp-mode\) association."
             (append lst (funcall dabbrev-get abbrev 'all-bufs)))
           lst))))
 
+;; Internal
+(defvar helm-dabbrev--cache nil)
+(defvar helm-dabbrev--data nil)
+(defstruct helm-dabbrev-info dabbrev limits iterator)
+
 (defvar helm-source-dabbrev
   `((name . "Dabbrev Expand")
     (init . (lambda ()
               (helm-init-candidates-in-buffer
                'global
-               (helm-dabbrev--get-candidates dabbrev))))
+               helm-dabbrev--cache))) 
     (candidates-in-buffer)
     (keymap . ,helm-dabbrev-map)
     (action . (lambda (candidate)
@@ -164,23 +228,70 @@ no need to provide \(lisp-interaction-mode . emacs-lisp-mode\) association."
                      'helm-insert-completion-at-point
                      beg end candidate)))))))
 
+(defvar helm-dabbrev--regexp "\\s-\\|\t\\|[(\[\{\"'`=<$]\\|\\s\\\\|^")
 ;;;###autoload
 (defun helm-dabbrev ()
   (interactive)
-  (declare (special dabbrev))
-  (let ((dabbrev (helm-thing-before-point))
-        (limits (helm-bounds-of-thing-before-point))
+  (let ((dabbrev (helm-thing-before-point nil helm-dabbrev--regexp))
+        (limits (helm-bounds-of-thing-before-point helm-dabbrev--regexp))
         (enable-recursive-minibuffers t)
+        (cycling-disabled-p (or (null helm-dabbrev-cycle-thresold)
+                                (zerop helm-dabbrev-cycle-thresold)))
         (helm-execute-action-at-once-if-one t)
         (helm-quit-if-no-candidate
          #'(lambda ()
              (message "[Helm-dabbrev: No expansion found]"))))
-    (with-helm-show-completion (car limits) (cdr limits)
-      (helm :sources 'helm-source-dabbrev
-            :buffer "*helm dabbrev*"
-            :input (concat "^" dabbrev " ")
-            :resume 'noresume
-            :allow-nest t))))
+    (assert (and (stringp dabbrev) (not (string= dabbrev "")))
+            nil "[Helm-dabbrev: Nothing found before point]")
+    (when (and
+           ;; have been called at least once.
+           (helm-dabbrev-info-p helm-dabbrev--data)
+           ;; But user have moved with some other command
+           ;; in the meaning time.
+           (not (eq last-command 'helm-dabbrev)))
+      (setq helm-dabbrev--data nil))
+    (when cycling-disabled-p
+      (setq helm-dabbrev--cache (helm-dabbrev--get-candidates dabbrev)))
+    (unless (or cycling-disabled-p
+                (helm-dabbrev-info-p helm-dabbrev--data))
+      (setq helm-dabbrev--cache (helm-dabbrev--get-candidates dabbrev))
+      (setq helm-dabbrev--data (make-helm-dabbrev-info
+                                :dabbrev dabbrev
+                                :limits limits
+                                :iterator
+                                (helm-iter-list
+                                 (loop with selection
+                                       for i in helm-dabbrev--cache
+                                       when
+                                       (string-match
+                                        (concat "^" (regexp-quote dabbrev)) i)
+                                       collect i into selection
+                                       when (or (= (length selection)
+                                                   helm-dabbrev-cycle-thresold)
+                                                (= (length selection)
+                                                   (length helm-dabbrev--cache)))
+                                       return selection)))))
+    (let ((iter (and (helm-dabbrev-info-p helm-dabbrev--data)
+                     (helm-dabbrev-info-iterator helm-dabbrev--data)))
+          deactivate-mark)
+      (helm-aif (and iter (helm-iter-next iter))
+          (progn
+            (helm-insert-completion-at-point (car limits) (cdr limits) it)
+            ;; Move already tried candidates to end of list.
+            (setq helm-dabbrev--cache (append (remove it helm-dabbrev--cache)
+                                              (list it))))
+        (unless cycling-disabled-p
+          (delete-region (car limits) (point))
+          (setq dabbrev (helm-dabbrev-info-dabbrev helm-dabbrev--data)
+                limits  (helm-dabbrev-info-limits helm-dabbrev--data))
+          (setq helm-dabbrev--data nil)
+          (insert dabbrev))
+        (with-helm-show-completion (car limits) (cdr limits)
+          (helm :sources 'helm-source-dabbrev
+                :buffer "*helm dabbrev*"
+                :input (concat "^" dabbrev " ")
+                :resume 'noresume
+                :allow-nest t))))))
 
 (provide 'helm-dabbrev)
 
@@ -190,4 +301,4 @@ no need to provide \(lisp-interaction-mode . emacs-lisp-mode\) association."
 ;; indent-tabs-mode: nil
 ;; End:
 
-;;; helm-dabbrev ends here
+;;; helm-dabbrev.el ends here

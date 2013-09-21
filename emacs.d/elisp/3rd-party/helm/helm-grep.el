@@ -359,7 +359,7 @@ It is intended to use as a let-bound variable, DON'T set this globaly.")
          "grep" helm-buffer cmd-line)
       ;; Init sentinel.
       (set-process-sentinel
-       (get-process "grep")
+       (get-buffer-process helm-buffer)
        #'(lambda (process event)
            (let ((noresult (= (process-exit-status process) 1)))
              (unless noresult
@@ -715,26 +715,23 @@ Special commands:
 (defun helm-grep-guess-extensions (files)
   "Try to guess file extensions in FILES list when using grep recurse.
 These extensions will be added to command line with --include arg of grep."
-  (loop
-        with glob-list = nil
+  (loop with glob-list
+        with ext-list = (list helm-grep-preferred-ext "*")
         with lst = (if (file-directory-p (car files))
                        (directory-files
                         (car files) nil
                         directory-files-no-dot-files-regexp)
                        files)
         for i in lst
-        for ext = (file-name-extension i t)
+        for ext = (file-name-extension i 'dot)
         for glob = (and ext (not (string= ext ""))
                         (concat "*" ext))
         unless (or (not glob)
                    (member glob glob-list)
+                   (member glob ext-list)
                    (member glob grep-find-ignored-files))
         collect glob into glob-list
-        finally return (helm-fast-remove-dups
-                        (append glob-list
-                                (delq nil
-                                      (list "*" helm-grep-preferred-ext)))
-                                :test 'equal)))
+        finally return (delq nil (append ext-list glob-list))))
 
 (defun helm-grep-get-file-extensions (files)
   "Try to return a list of file extensions to pass to include arg of grep."
@@ -742,7 +739,6 @@ These extensions will be added to command line with --include arg of grep."
                     (mapcar 'expand-file-name files)))
          (extensions (helm-comp-read "Search Only in: " all-exts
                                      :marked-candidates t
-                                     :preselect helm-grep-preferred-ext
                                      :fc-transformer 'helm-adaptive-sort
                                      :buffer "*helm grep exts*"
                                      :name "*helm grep extensions*")))
@@ -860,7 +856,8 @@ in recurse, search being made on `helm-zgrep-file-extension-regexp'."
      :buffer (format "*helm %s*" (if zgrep "zgrep" (helm-grep-command recurse)))
      :default-directory helm-grep-last-default-directory
      :keymap helm-grep-map ; [1]
-     :history 'helm-grep-history)))
+     :history 'helm-grep-history
+     :truncate-lines t)))
 
 
 ;;; zgrep
@@ -919,19 +916,28 @@ in recurse, search being made on `helm-zgrep-file-extension-regexp'."
                                   (helm-grep-highlight-match str))
               i)))
 
-(defun helm-grep-highlight-match (str)
+(defun helm-grep-highlight-match (str &optional multi-match)
   "Highlight in string STR all occurences matching `helm-pattern'."
-  (condition-case nil
-      (with-temp-buffer
-        (insert str)
-        (goto-char (point-min))
-        (while (and (re-search-forward helm-pattern nil t)
-                    (> (- (match-end 0) (match-beginning 0)) 0))
-          (add-text-properties
-           (match-beginning 0) (match-end 0)
-           '(face helm-grep-match)))
-        (buffer-string))
-    (error nil)))
+  (require 'helm-match-plugin)
+  (let (beg end)
+    (condition-case nil
+        (with-temp-buffer
+          (insert str)
+          (goto-char (point-min))
+          (loop for reg in (if multi-match
+                               (loop for r in (helm-mp-split-pattern
+                                               helm-pattern)
+                                     unless (string-match "\\`!" r)
+                                     collect r)
+                               (list helm-pattern))
+                do
+                (while (and (re-search-forward reg nil t)
+                            (> (- (setq end (match-end 0))
+                                  (setq beg (match-beginning 0))) 0))
+                  (add-text-properties beg end '(face helm-grep-match)))
+                do (goto-char (point-min))) 
+          (buffer-string))
+      (error nil))))
 
 
 ;;; Grep from buffer list
@@ -1009,7 +1015,7 @@ If a prefix arg is given run grep on all buffers ignoring non--file-buffers."
          "pdfgrep" helm-buffer cmd-line)
       (message nil)
       (set-process-sentinel
-       (get-process "pdfgrep")
+       (get-buffer-process helm-buffer)
        #'(lambda (process event)
            (if (string= event "finished\n")
                (with-helm-window

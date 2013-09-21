@@ -101,6 +101,7 @@ the opposite of \"locate\" command."
     (define-key map (kbd "C-c X")   'helm-ff-run-open-file-with-default-tool)
     (define-key map (kbd "M-.")     'helm-ff-run-etags)
     (define-key map (kbd "C-w")     'helm-yank-text-at-point)
+    (define-key map (kbd "C-c @")   'helm-ff-run-insert-org-link)
     (define-key map (kbd "C-c ?")   'helm-generic-file-help)
     map)
   "Generic Keymap for files.")
@@ -216,7 +217,8 @@ See also `helm-locate'."
          (case-sensitive-flag (if locate-is-es "-i" ""))
          (ignore-case-flag (if (or locate-is-es
                                    (not real-locate)) "" "-i"))
-         process-connection-type)
+         process-connection-type
+         (args (split-string helm-pattern " ")))
     (prog1
         (start-process-shell-command
          "locate-process" helm-buffer
@@ -229,9 +231,14 @@ See also `helm-locate'."
                    (t (if helm-locate-case-fold-search
                           ignore-case-flag
                           case-sensitive-flag)))
-                 (shell-quote-argument helm-pattern)))
+                 (concat
+                  ;; The pattern itself.
+                  (shell-quote-argument (car args)) " "
+                  ;; Possible locate args added
+                  ;; after pattern, don't quote them.
+                  (mapconcat 'identity (cdr args) " "))))
       (set-process-sentinel
-       (get-process "locate-process")
+       (get-buffer-process helm-buffer)
        #'(lambda (process event)
            (if (string= event "finished\n")
                (with-helm-window
@@ -261,6 +268,25 @@ See also `helm-locate'."
     (mode-line . helm-generic-file-mode-line-string)
     (delayed))
   "Find files matching the current input pattern with locate.")
+
+;;;###autoload
+(defun helm-locate-read-file-name (prompt)
+  (let* (helm-ff-transformer-show-only-basename
+         (src `((name . "Locate read fname")
+                (init . helm-locate-set-command)
+                (candidates-process . helm-locate-init)
+                (action . identity)
+                (requires-pattern . 3)
+                (history . ,'helm-file-name-history)
+                (candidate-transformer . (helm-skip-boring-files
+                                          helm-highlight-files))
+                (candidate-number-limit . 9999)
+                (no-matchplugin)
+                (delayed))))
+    (or (helm :sources src
+              :buffer "*helm locate read fname*"
+              :resume 'noresume)
+        (keyboard-quit))))
 
 ;;;###autoload
 (defun helm-locate (arg)

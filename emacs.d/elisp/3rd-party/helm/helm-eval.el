@@ -65,6 +65,7 @@ Should take one arg: the string to display."
 
 (defvar helm-source-evaluation-result
   '((name . "Evaluation Result")
+    (init . (lambda () (require 'edebug)))
     (dummy)
     (multiline)
     (mode-line . "C-RET: nl-and-indent, tab: reindent, C-tab:complete, C-p/n: next/prec-line.")
@@ -73,7 +74,10 @@ Should take one arg: the string to display."
                                          (condition-case nil
                                              (with-helm-current-buffer
                                                (pp-to-string
-                                                (eval (read helm-pattern))))
+                                                (if edebug-active
+                                                    (edebug-eval-expression
+                                                     (read helm-pattern))
+                                                    (eval (read helm-pattern)))))
                                            (error "Error")))))
     (action . (("Copy result to kill-ring" . (lambda (candidate)
                                                (with-current-buffer helm-buffer
@@ -92,12 +96,11 @@ Should take one arg: the string to display."
 (defun helm-eldoc-store-minibuffer ()
   "Store minibuffer buffer name in `helm-eldoc-active-minibuffers-list'."
   (with-selected-window (minibuffer-window)
-    (push (buffer-name) helm-eldoc-active-minibuffers-list)))
+    (push (current-buffer) helm-eldoc-active-minibuffers-list)))
 
 (defun helm-eldoc-show-in-eval ()
   "Return eldoc in mode-line for current minibuffer input."
-  (let ((buf (with-selected-window (minibuffer-window)
-               (buffer-name))))
+  (let ((buf (window-buffer (active-minibuffer-window))))
     (condition-case err
         (when (member buf helm-eldoc-active-minibuffers-list)
           (with-current-buffer buf

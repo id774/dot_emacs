@@ -75,6 +75,15 @@ Otherwise `url-retrieve-synchronously' is used."
   :type 'string
   :group 'helm-net)
 
+(defcustom helm-surfraw-duckduckgo-url
+  "https://duckduckgo.com/lite/?q=%s&kp=1"
+  "The duckduckgo url.
+This is a format string, don't forget the `%s'.
+If you have personal settings saved on duckduckgo you should have
+a personal url, see your settings on duckduckgo."
+  :type 'string
+  :group 'helm-net)
+
 
 ;;; Google Suggestions
 ;;
@@ -313,20 +322,22 @@ Return an alist with elements like (data . number_results)."
 ;; Internal
 (defvar helm-surfraw-engines-history nil)
 (defvar helm-surfraw-input-history nil)
+(defvar helm-surfraw--elvi-cache nil)
 
 (defun helm-build-elvi-list ()
   "Return list of all engines and descriptions handled by surfraw."
-  (cdr
-   (with-temp-buffer
-     (call-process "surfraw" nil t nil
-                   "-elvi")
-     (split-string (buffer-string) "\n"))))
+  (or helm-surfraw--elvi-cache
+      (setq helm-surfraw--elvi-cache
+            (cdr (with-temp-buffer
+                   (call-process "surfraw" nil t nil "-elvi")
+                   (split-string (buffer-string) "\n"))))))
 
 ;;;###autoload
 (defun helm-surfraw (pattern engine)
   "Preconfigured `helm' to search PATTERN with search ENGINE."
   (interactive (list (read-string "SearchFor: "
-                                  nil 'helm-surfraw-input-history)
+                                  nil 'helm-surfraw-input-history
+                                  (thing-at-point 'symbol))
                      (helm-comp-read
                       "Engine: "
                       (helm-build-elvi-list)
@@ -335,12 +346,14 @@ Return an alist with elements like (data . number_results)."
                       :del-input nil
                       :history helm-surfraw-engines-history)))
   (let* ((engine-nodesc (car (split-string engine)))
-         (url (with-temp-buffer
-                (apply 'call-process "surfraw" nil t nil
-                       ;;JAVE
-                       (append  (list engine-nodesc "-p") (split-string pattern)))
-                (replace-regexp-in-string
-                 "\n" "" (buffer-string))))
+         (url (if (string= engine-nodesc "duckduckgo")
+                  ;; "sr duckduckgo -p foo" is broken, workaround.
+                  (format helm-surfraw-duckduckgo-url pattern)
+                  (with-temp-buffer
+                    (apply 'call-process "surfraw" nil t nil
+                           (append  (list engine-nodesc "-p") (split-string pattern)))
+                    (replace-regexp-in-string
+                     "\n" "" (buffer-string)))))
          (browse-url-browser-function (or helm-surfraw-default-browser-function
                                           browse-url-browser-function)))
     (if (string= engine-nodesc "W")
