@@ -53,6 +53,9 @@
 ;; timidity-mode : TiMidity++ emacs front-end
 (when (autoload-p 'timidity "timidity" "TiMidity++" 'interactive))
 
+;; scala-mode
+(require 'scala-mode-auto)
+
 (defun ruby-optional-load ()
   ;; ruby-electric.el
   (when (require 'ruby-electric)
