@@ -90,7 +90,7 @@
               (setq default-frame-alist ; 13inch MacBook Pro に最適化
                     (append (list '(top . 15) ; 起動時の表示位置（上から）
                                   '(left . 10) ; 起動時の表示位置（左から）
-                                  '(width . 180) ; 起動時のサイズ（幅）
+                                  '(width . 175) ; 起動時のサイズ（幅）
                                   '(height . 42) ; 起動時のサイズ（縦）
                                   )))
               ;; (set-input-method "MacOSX")
