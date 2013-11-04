@@ -78,8 +78,11 @@
                     (helm-browse-url
                      (helm-firefox-bookmarks-get-value candidate))))
                ("Copy Url"
-                . (lambda (elm)
-                    (kill-new (helm-w3m-bookmarks-get-value elm))))))))
+                . (lambda (candidate)
+                    (let ((url (helm-firefox-bookmarks-get-value
+                               candidate))) 
+                      (kill-new url)
+                      (message "`%s' copied to kill-ring" url))))))))
 
 (defun helm-firefox-bookmarks-get-value (elm)
   (assoc-default elm helm-firefox-bookmarks-alist))

@@ -199,7 +199,6 @@ Italic     => A non--file buffer.
 \\[helm-buffer-switch-other-frame]\t\t->Switch other frame.
 \\[helm-buffer-run-query-replace-regexp]\t\t->Query replace regexp in marked buffers.
 \\[helm-buffer-run-query-replace]\t\t->Query replace in marked buffers.
-\\[helm-buffer-switch-to-elscreen]\t\t->Find buffer in Elscreen.
 \\[helm-buffer-run-ediff]\t\t->Ediff current buffer with candidate.  If two marked buffers ediff those buffers.
 \\[helm-buffer-run-ediff-merge]\t\t->Ediff merge current buffer with candidate.  If two marked buffers ediff merge those buffers.
 \\[helm-buffer-diff-persistent]\t\t->Toggle Diff buffer with saved file without quitting.
@@ -209,6 +208,7 @@ Italic     => A non--file buffer.
 \\[helm-toggle-all-marks]\t\t->Toggle all marks.
 \\[helm-mark-all]\t\t->Mark all.
 \\[helm-toggle-buffers-details]\t\t->Toggle details.
+\\[helm-buffers-toggle-show-hidden-buffers]\t\t->Show hidden buffers. 
 \\[helm-buffer-help]\t\t->Display this help.
 \n== Helm Map ==
 \\{helm-map}")
@@ -342,6 +342,16 @@ Italic     => A non--file buffer.
 ;;
 (defvar helm-generic-file-help-message
   "== Helm Generic files Map ==\
+
+\nLocate tips:
+You can add after writing search pattern any of the locate command line options.
+e.g -b, -e, -n <number>...etc.
+See Man locate for more infos.
+
+Note:
+Some other sources (at the moment recentf and file in current directory sources)
+support the -b flag for compatibility with locate when they are used with it.
+
 \nSpecific commands for helm locate and others files sources:
 \\<helm-generic-files-map>
 \\[helm-ff-run-toggle-basename]\t\t->Toggle basename.
@@ -357,10 +367,6 @@ Italic     => A non--file buffer.
 \\[helm-ff-run-open-file-externally]\t\t->Open file with external program (C-u to choose).
 \\[helm-ff-run-open-file-with-default-tool]\t\t->Open file externally with default tool.
 \\[helm-ff-run-insert-org-link]\t\t->Insert org link.
-\nLocate tips:
-You can add after writing search pattern any of the locate command line options.
-e.g -b, -e, -n <number>...etc.
-See Man locate for more infos.
 \n== Helm Map ==
 \\{helm-map}")
 
@@ -869,7 +875,7 @@ HELM-ATTRIBUTE should be a symbol."
 
 (helm-document-attribute 'candidates-process
     "Same as `candidates' attributes but for process function."
-  "You should use this attribute when using a function involving
+  "  You should use this attribute when using a function involving
   an async process instead of `candidates'.")
 
 (helm-document-attribute 'action "mandatory if type attribute is not provided"
@@ -883,11 +889,13 @@ HELM-ATTRIBUTE should be a symbol."
   selected. The first action of the list is the default.")
 
 (helm-document-attribute 'coerce "optional"
-  "  It's a function called with one argument: the selected candidate.
+  "  It's a function called with one argument: the selected
+  candidate.
 
-  This function is intended for type convertion.
-  In normal case, the selected candidate (string) is passed to action function.
-  If coerce function is specified, it is called just before action function.
+  This function is intended for type convertion. In normal case,
+  the selected candidate (string) is passed to action
+  function. If coerce function is specified, it is called just
+  before action function.
 
   Example: converting string to symbol
     (coerce . intern)")
@@ -912,8 +920,8 @@ HELM-ATTRIBUTE should be a symbol."
   there.")
 
 (helm-document-attribute 'delayed-init "optional"
-  "  Function called with no parameters before candidate function is
-  called.  It is similar with `init' attribute, but its
+  "  Function called with no parameters before candidate function
+  is called.  It is similar with `init' attribute, but its
   evaluation is deferred. It is useful to combine with ")
 
 (helm-document-attribute 'match "optional"
@@ -1021,10 +1029,11 @@ HELM-ATTRIBUTE should be a symbol."
   useful in case of sources with lots of candidates.")
 
 (helm-document-attribute 'persistent-action "optional"
-  "Can be a either a Function called with one parameter (the selected candidate)
-   or a cons cell where first element is this same function and second element
-   a symbol (e.g never-split) that inform `helm-execute-persistent-action'
-   to not split his window to execute this persistent action.")
+  "  Can be a either a Function called with one parameter (the
+  selected candidate) or a cons cell where first element is this
+  same function and second element a symbol (e.g never-split)
+  that inform `helm-execute-persistent-action'to not split his
+  window to execute this persistent action.")
 
 (helm-document-attribute 'candidates-in-buffer "optional"
   "  Shortcut attribute for making and narrowing candidates using
@@ -1048,15 +1057,15 @@ HELM-ATTRIBUTE should be a symbol."
 (helm-document-attribute 'search "optional"
   "  List of functions like `re-search-forward' or `search-forward'.
   Buffer search function used by `helm-candidates-in-buffer'.
-  By default, `helm-candidates-in-buffer' uses `re-search-forward'.
-  This attribute is meant to be used with
+  By default, `helm-candidates-in-buffer' uses
+  `re-search-forward'. This attribute is meant to be used with
   (candidates . helm-candidates-in-buffer) or
   (candidates-in-buffer) in short.")
 
 (helm-document-attribute 'search-from-end "optional"
   "  Make `helm-candidates-in-buffer' search from the end of buffer.
-  If this attribute is specified, `helm-candidates-in-buffer' uses
-  `re-search-backward' instead.")
+  If this attribute is specified, `helm-candidates-in-buffer'
+  uses `re-search-backward' instead.")
 
 (helm-document-attribute 'get-line "optional"
   "  A function like `buffer-substring-no-properties' or `buffer-substring'.
@@ -1100,8 +1109,8 @@ HELM-ATTRIBUTE should be a symbol."
   says.")
 
 (helm-document-attribute 'cleanup "optional"
-  "  Function called with no parameters when *helm* buffer is closed. It
-  is useful for killing unneeded candidates buffer.
+  "  Function called with no parameters when *helm* buffer is
+  closed. It is useful for killing unneeded candidates buffer.
 
   Note that the function is executed BEFORE performing action.")
 
@@ -1126,23 +1135,25 @@ HELM-ATTRIBUTE should be a symbol."
 \\<helm-map>\\[helm-force-update] is pressed."))
 
 (helm-document-attribute 'mode-line "optional"
-  "  source local `helm-mode-line-string'. (included in `mode-line-format')
-  It accepts also variable/function name.")
+  "  Source local `helm-mode-line-string' (included in
+  `mode-line-format'). It accepts also variable/function name.")
 
 (helm-document-attribute 'header-line "optional"
-  "  source local `header-line-format'.
+  "  Source local `header-line-format'.
   It accepts also variable/function name. ")
 
 (helm-document-attribute
     'resume "optional"
-  "  Function called with no parameters when `helm-resume' is started.")
+  "  Function called with no parameters when `helm-resume' is
+  started.")
 
 (helm-document-attribute 'keymap "optional"
   "  Specific keymap for this source.
-  It is useful to have a keymap per source when using more than one source.
-  Otherwise, a keymap can be set per command with `helm' argument KEYMAP.
-  NOTE: when a source have `helm-map' as keymap attr,
-  the global value of `helm-map' will override the actual local one.")
+  It is useful to have a keymap per source when using more than
+  one source.  Otherwise, a keymap can be set per command with
+  `helm' argument KEYMAP.  NOTE: when a source have `helm-map' as
+  keymap attr, the global value of `helm-map' will override the
+  actual local one.")
 
 (helm-document-attribute 'help-message "optional"
   "  Help message for this source.
@@ -1150,53 +1161,55 @@ HELM-ATTRIBUTE should be a symbol."
 
 (helm-document-attribute 'match-part "optional"
   "  Allow matching candidate in the line with `candidates-in-buffer'.
-In candidates-in-buffer sources, match is done with `re-search-forward'
-which allow matching only a regexp on the `helm-buffer'; when this search is
-done, match-part allow matching only a specific part of the current line e.g
-with a line like this:
+  In candidates-in-buffer sources, match is done with
+  `re-search-forward' which allow matching only a regexp on the
+  `helm-buffer'; when this search is done, match-part allow
+  matching only a specific part of the current line e.g with a
+  line like this:
 
-filename:candidate-containing-the-word-filename
+  filename:candidate-containing-the-word-filename
 
-What you want is to ignore \"filename\" part and match only
-\"candidate-containing-the-word-filename\" 
+  What you want is to ignore \"filename\" part and match only
+  \"candidate-containing-the-word-filename\" 
 
-So give a function matching only the part of candidate after \":\"
+  So give a function matching only the part of candidate after \":\"
 
-If source contain match-part attribute, match is computed only
-on part of candidate returned by the call of function provided
-by this attribute.
-The function should have one arg, candidate, and return only
-a specific part of candidate.
+  If source contain match-part attribute, match is computed only
+  on part of candidate returned by the call of function provided
+  by this attribute. The function should have one arg, candidate,
+  and return only a specific part of candidate.
 
-NOTE: This have effect only on sources using `candidates-in-buffer'.")
+  NOTE: This have effect only on sources using
+  `candidates-in-buffer'.")
 
 (helm-document-attribute 'match-strict "optional"
-  " When specifying a match function within a source and
-helm-match-plugin is enabled, the result of all matching functions will
-be concatened, which in some cases is not what is wanted.
-When using `match-strict' only this or these functions will be used.
-You can specify those functions as a list of functions or a single
-symbol function.
-For anonymous function don't add the dot, e.g:
-\(match-strict (lambda () (foo))).")
+  "  When specifying a match function within a source and
+  helm-match-plugin is enabled, the result of all matching
+  functions will be concatened, which in some cases is not what
+  is wanted. When using `match-strict' only this or these
+  functions will be used. You can specify those functions as a
+  list of functions or a single symbol function. For anonymous
+  function don't add the dot, e.g:
+
+  \(match-strict (lambda () (foo))).")
 
 (helm-document-attribute 'nohighlight "optional"
-  " Disable highlight match in this source.")
+  "  Disable highlight match in this source.")
 
 (helm-document-attribute 'no-delay-on-input "optional"
-  " Don't use `while-no-input' when computing candidates.")
+  "  Don't use `while-no-input' when computing candidates.")
 
 (helm-document-attribute 'history "optional"
-  " Allow passing history variable to helm from source.
-It should be a quoted symbol evaluated from source.
-i.e (history . ,'history-var).")
+  "  Allow passing history variable to helm from source.
+  It should be a quoted symbol evaluated from source, i.e:
+  (history . ,'history-var)")
 
 (helm-document-attribute 'follow "optional"
-  " Enable `helm-follow-mode' for this source only.
-You must give it a value of 1 or -1, though giving a -1 value
-is surely not what you want.
-e.g (follow . 1)
-See `helm-follow-mode' for more infos")
+  "  Enable `helm-follow-mode' for this source only.
+  You must give it a value of 1 or -1, though giving a -1 value
+  is surely not what you want, e.g: (follow . 1)
+
+  See `helm-follow-mode' for more infos")
 
 (provide 'helm-help)
 

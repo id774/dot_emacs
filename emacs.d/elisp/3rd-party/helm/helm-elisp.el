@@ -81,18 +81,20 @@ This is used in macro `with-helm-show-completion'."
 (defun helm-show-completion-display-function (buffer &rest _args)
   "A special resized helm window is used depending on position in BUFFER."
   (with-selected-window (selected-window)
-    (let* ((screen-size  (+ (count-screen-lines (window-start) (point) t)
-                            1                             ; mode-line
-                            (if header-line-format 1 0))) ; header-line
-           (def-size     (- (window-height)
-                            helm-show-completion-min-window-height))
-           (upper-height (max window-min-height (min screen-size def-size)))
-           split-window-keep-point)
-      (recenter -1)
-      (set-window-buffer (if (active-minibuffer-window)
-                             (minibuffer-selected-window)
-                             (split-window nil upper-height))
-                         buffer))))
+    (if (window-dedicated-p)
+        (helm-default-display-buffer buffer)
+        (let* ((screen-size  (+ (count-screen-lines (window-start) (point) t)
+                                1                         ; mode-line
+                                (if header-line-format 1 0))) ; header-line
+               (def-size     (- (window-height)
+                                helm-show-completion-min-window-height))
+               (upper-height (max window-min-height (min screen-size def-size)))
+               split-window-keep-point)
+          (recenter -1)
+          (set-window-buffer (if (active-minibuffer-window)
+                                 (minibuffer-selected-window)
+                                 (split-window nil upper-height))
+                             buffer)))))
 
 (defmacro with-helm-show-completion (beg end &rest body)
   "Show helm candidate in an overlay at point.
@@ -232,7 +234,7 @@ Return a cons \(beg . end\)."
        (intern candidate))
       'face 'helm-lisp-completion-info))))
 
-(defun helm-lisp-completion-transformer (candidates source)
+(defun helm-lisp-completion-transformer (candidates _source)
   "Helm candidates transformer for lisp completion."
   (declare (special lgst-len))
   (loop for c in candidates
@@ -354,14 +356,16 @@ First call indent, second complete symbol, third complete fname."
               (helm-apropos-init 'boundp ,default)))
     (candidates-in-buffer)
     (action . (("Describe Variable" . helm-describe-variable)
-               ("Find Variable" . helm-find-variable)))))
+               ("Find Variable" . helm-find-variable)
+               ("Info lookup" . helm-info-lookup-symbol)
+               ("Set variable" . helm-set-variable)))))
 
 (defun helm-def-source--emacs-faces (&optional default)
   `((name . "Faces")
     (init . (lambda ()
               (helm-apropos-init 'facep ,default)))
     (candidates-in-buffer)
-    (filtered-candidate-transformer . (lambda (candidates source)
+    (filtered-candidate-transformer . (lambda (candidates _source)
                                         (loop for c in candidates
                                               collect (propertize c 'face (intern c)))))
     (action . (lambda (candidate)
@@ -384,7 +388,8 @@ First call indent, second complete symbol, third complete fname."
               (helm-apropos-init 'commandp ,default)))
     (candidates-in-buffer)
     (action . (("Describe Function" . helm-describe-function)
-               ("Find Function" . helm-find-function)))))
+               ("Find Function" . helm-find-function)
+               ("Info lookup" . helm-info-lookup-symbol)))))
 
 (defun helm-def-source--emacs-functions (&optional default)
   `((name . "Functions")
@@ -394,7 +399,19 @@ First call indent, second complete symbol, third complete fname."
                                    ,default)))
     (candidates-in-buffer)
     (action . (("Describe Function" . helm-describe-function)
-               ("Find Function" . helm-find-function)))))
+               ("Find Function" . helm-find-function)
+               ("Info lookup" . helm-info-lookup-symbol)))))
+
+(defun helm-info-lookup-symbol (candidate)
+  (let ((helm-execute-action-at-once-if-one t)
+        (helm-quit-if-no-candidate
+         `(lambda ()
+            (message "`%s' Not Documented as a symbol" ,candidate))))
+    (helm :sources '(helm-source-info-elisp
+                     helm-source-info-cl
+                     helm-source-info-eieio)
+          :buffer "*helm lookup*"
+          :input candidate)))
 
 ;;;###autoload
 (defun helm-apropos ()

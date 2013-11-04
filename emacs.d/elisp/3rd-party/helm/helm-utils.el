@@ -330,19 +330,22 @@ With a numeric prefix arg show only the ARG number of candidates."
           collect (buffer-substring-no-properties (point-at-bol)(point-at-eol))
           do (forward-line 1))))
 
-(defun helm-match-on-file-name (candidate)
-  "Return non-nil if `helm-pattern' match basename of filename CANDIDATE."
-  (string-match helm-pattern (file-name-nondirectory candidate)))
-
-(defun helm-match-on-directory-name (candidate)
-  "Return non-nil if `helm-pattern' match directory part of CANDIDATE."
-  (helm-aif (file-name-directory candidate)
-      (string-match helm-pattern it)))
-
-(defun helm-string-match (candidate)
-  "Return non-nil if `helm-pattern' match CANDIDATE.
-The match is done with `string-match'."
-  (string-match helm-pattern candidate))
+(defun helm-files-match-only-basename (candidate)
+  "Allow matching only basename of file when \" -b\" is added at end of pattern.
+If pattern contain one or more spaces, fallback to match-plugin
+even is \" -b\" is specified."
+  (let ((source (helm-get-current-source)))
+    (if (string-match "\\([^ ]*\\) -b\\'" helm-pattern)
+        (progn
+          (helm-attrset 'no-matchplugin nil source)
+          (string-match (match-string 1 helm-pattern)
+                        (helm-basename candidate)))
+        ;; Disable no-matchplugin by side effect.
+        (helm-aif (assq 'no-matchplugin source)
+            (setq source (delete it source)))
+        (string-match
+         (replace-regexp-in-string " -b\\'" "" helm-pattern)
+         candidate))))
 
 (defun helm-skip-entries (seq regexp-list)
   "Remove entries which matches one of REGEXP-LIST from SEQ."
@@ -437,7 +440,7 @@ from its directory."
                         (eq major-mode 'org-agenda-mode))
                       org-directory
                       (expand-file-name org-directory))
-                 default-directory)
+                 (with-current-buffer it default-directory))
            (cond ((or (file-remote-p sel)
                       (file-exists-p sel))
                   (expand-file-name sel))
@@ -452,7 +455,7 @@ from its directory."
   '("SCCS" "RCS" "CVS" "MCVS" ".svn" ".git" ".hg" ".bzr"
     "_MTN" "_darcs" "{arch}"))
 
-(defmacro* helm-walk-directory (directory &key path (directories t) match skip-subdirs)
+(defun* helm-walk-directory (directory &key path (directories t) match skip-subdirs)
   "Walk through DIRECTORY tree.
 Argument PATH can be one of basename, relative, or full, default to basename.
 Argument DIRECTORIES when non--nil (default) return also directories names,
@@ -461,38 +464,39 @@ Argument MATCH can be a predicate or a regexp.
 Argument SKIP-SUBDIRS when non--nil will skip `helm-walk-ignore-directories'
 unless it is given as a list of directories, in this case this list will be used
 instead of `helm-walk-ignore-directories'."
-  `(let (result
-         (fn (case ,path
+  (let* (result
+         (fn (case path
                (basename 'file-name-nondirectory)
                (relative 'file-relative-name)
                (full     'identity)
-               (t        'file-name-nondirectory))))
-     (labels ((ls-R (dir)
-                (unless (and ,skip-subdirs
-                             (member (helm-basename dir)
-                                     (if (listp ,skip-subdirs)
-                                         ,skip-subdirs
-                                         helm-walk-ignore-directories)))
-                  (loop with ls = (directory-files
-                                   dir t directory-files-no-dot-files-regexp)
-                        for f in ls
-                        if (file-directory-p f)
-                        do (progn (when ,directories
-                                    (push (funcall fn f) result))
-                                  ;; Don't recurse in directory symlink.
-                                  (unless (file-symlink-p f)
-                                    (ls-R f)))
-                        else do
-                        (if ,match
-                            (and (if (functionp ,match)
-                                     (funcall ,match f)
-                                     (and (stringp ,match)
-                                          (string-match
-                                           ,match (file-name-nondirectory f))))
-                                 (push (funcall fn f) result))
-                            (push (funcall fn f) result))))))
-       (ls-R ,directory)
-       (nreverse result))))
+               (t        'file-name-nondirectory)))
+         ls-R)
+    (setq ls-R (lambda (dir)
+                 (unless (and skip-subdirs
+                              (member (helm-basename dir)
+                                      (if (listp skip-subdirs)
+                                          skip-subdirs
+                                          helm-walk-ignore-directories)))
+                   (loop with ls = (directory-files
+                                    dir t directory-files-no-dot-files-regexp)
+                         for f in ls
+                         if (file-directory-p f)
+                         do (progn (when directories
+                                     (push (funcall fn f) result))
+                                   ;; Don't recurse in directory symlink.
+                                   (unless (file-symlink-p f)
+                                     (funcall ls-R f)))
+                         else do
+                         (if match
+                             (and (if (functionp match)
+                                      (funcall match f)
+                                      (and (stringp match)
+                                           (string-match
+                                            match (file-name-nondirectory f))))
+                                  (push (funcall fn f) result))
+                             (push (funcall fn f) result))))))
+       (funcall ls-R directory)
+       (nreverse result)))
 
 (defun helm-generic-sort-fn (s1 s2)
   "Sort predicate function for helm candidates.
@@ -749,9 +753,9 @@ directory, open this directory."
 
 (defun helm-action-line-goto (lineno-and-content)
   (apply #'helm-goto-file-line
-         (helm-interpret-value (helm-attr 'target-file))
          (append lineno-and-content
-                 (list (if (and (helm-attr-defined 'target-file)
+                 (list (helm-interpret-value (helm-attr 'target-file))
+                       (if (and (helm-attr-defined 'target-file)
                                 (not helm-in-persistent-action))
                            'find-file-other-window
                            'find-file)))))
@@ -770,7 +774,7 @@ directory, open this directory."
   (or (require feature nil t)
       (error "Need %s to use `%s'." feature function)))
 
-(defun helm-filtered-candidate-transformer-file-line (candidates source)
+(defun helm-filtered-candidate-transformer-file-line (candidates _source)
   (delq nil (mapcar 'helm-filtered-candidate-transformer-file-line-1
                     candidates)))
 
@@ -783,16 +787,15 @@ directory, open this directory."
                     (propertize filename 'face compilation-info-face)
                     (propertize lineno 'face compilation-line-face)
                     content)
-            (list (expand-file-name
+            (list (string-to-number lineno) content
+                  (expand-file-name
                    filename
                    (or (helm-interpret-value (helm-attr 'default-directory))
                        (and (helm-candidate-buffer)
                             (buffer-local-value
-                             'default-directory (helm-candidate-buffer)))))
-                  (string-to-number lineno) content)))))
+                             'default-directory (helm-candidate-buffer))))))))))
 
-(defun* helm-goto-file-line (file lineno content
-                                  &optional (find-file-function #'find-file))
+(defun* helm-goto-file-line (lineno &optional content file (find-file-function #'find-file))
   (helm-aif (helm-attr 'before-jump-hook)
       (funcall it))
   (when file (funcall find-file-function file))

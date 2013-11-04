@@ -40,6 +40,13 @@
     map)
   "Keymap for `helm-eshell-history'.")
 
+(defvar helm-esh-completion-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map helm-map)
+    (define-key map (kbd "TAB") 'helm-next-line)
+    map)
+  "Keymap for `helm-esh-pcomplete'.")
+
 (defvar helm-source-esh
   '((name . "Eshell completions")
     (init . (lambda ()
@@ -80,35 +87,44 @@ The function that call this should set `helm-ec-target' to thing at point."
              (pcomplete-autolist pcomplete-autolist)
              (pcomplete-suffix-list pcomplete-suffix-list)
              (table (pcomplete-completions))
-             (entry (condition-case nil
-                        ;; On Emacs24 `try-completion' return
-                        ;; pattern when more than one result.
-                        ;; Otherwise Emacs23 return nil, which
-                        ;; is wrong, in this case use pattern
-                        ;; to behave like Emacs24.
-                        (or (try-completion helm-pattern
-                                            (pcomplete-entries))
-                            helm-pattern)
-                      ;; In Emacs23 `pcomplete-entries' may fail
-                      ;; with error, so try this instead.
-                      (error
-                       nil
-                       (let ((fc (car (last
-                                       (pcomplete-parse-arguments)))))
-                         ;; Check if last arg require fname completion.
-                         (and (file-name-directory fc) fc))))))
-        (loop for i in (all-completions pcomplete-stub table)
-              for file-cand = (and entry
+             (entry (or (try-completion helm-pattern
+                                        (pcomplete-entries))
+                            helm-pattern)))
+        (loop ;; expand entry too to be able to compare it with file-cand.
+              with exp-entry = (and (stringp entry)
+                                    (not (string= entry ""))
+                                    (file-name-as-directory
+                                     (expand-file-name entry default-directory)))
+              for i in (all-completions pcomplete-stub table)
+              ;; Transform the related names to abs names.
+              for file-cand = (and exp-entry
                                    (if (file-remote-p i) i
                                        (expand-file-name
                                         i (file-name-directory entry))))
+              ;; Compare them to avoid dups.
+              for file-entry-p = (and (stringp exp-entry)
+                                      (stringp file-cand)
+                                      (file-equal-p exp-entry file-cand))
               if (and file-cand (or (file-remote-p file-cand)
-                                    (file-exists-p file-cand)))
+                                    (file-exists-p file-cand))
+                      (not file-entry-p))
               collect file-cand into ls
-              else collect i into ls
+              else
+              ;; Avoid adding entry here.
+              unless file-entry-p collect i into ls
               finally return
-              (if (and entry (not (string= entry "")) (file-exists-p entry))
-                  (append (list (expand-file-name entry default-directory)) ls)
+              (if (and exp-entry
+                       (file-directory-p exp-entry)
+                       ;; If the car of completion list is
+                       ;; an executable, probably we are in
+                       ;; command completion, so don't add a
+                       ;; possible file related entry here.
+                       (and ls (not (executable-find (car ls))))
+                       ;; Don't add entry if already in prompt.
+                       (not (file-equal-p exp-entry pcomplete-stub)))
+                  (append (list exp-entry)
+                          ;; Entry should not be here now but double check.
+                          (remove entry ls))
                   ls))))))
 
 ;;; Eshell history.
@@ -167,6 +183,7 @@ The function that call this should set `helm-ec-target' to thing at point."
              (with-helm-show-completion beg end
                (helm :sources 'helm-source-esh
                      :buffer "*helm pcomplete*"
+                     :keymap helm-esh-completion-map
                      :resume 'noresume
                      :input (and (stringp last)
                                  (helm-ff-set-pattern last))))))))

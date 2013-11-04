@@ -109,9 +109,8 @@ When disabled (nil) use the longest buffer-name length found."
     (define-key map (kbd "M-m")       'helm-toggle-all-marks)
     (define-key map (kbd "M-a")       'helm-mark-all)
     (define-key map (kbd "C-]")       'helm-toggle-buffers-details)
-    (when (locate-library "elscreen")
-      (define-key map (kbd "<C-tab>") 'helm-buffer-switch-to-elscreen))
-    (delq nil map))
+    (define-key map (kbd "C-c a")     'helm-buffers-toggle-show-hidden-buffers)
+    map)
   "Keymap for buffer sources in helm.")
 
 (defvar helm-buffers-ido-virtual-map
@@ -128,20 +127,24 @@ When disabled (nil) use the longest buffer-name length found."
 
 
 (defvar helm-buffers-list-cache nil)
+(defvar helm-buffer-max-len-mode nil)
 (defvar helm-source-buffers-list
   `((name . "Buffers")
     (init . (lambda ()
               ;; Issue #51 Create the list before `helm-buffer' creation.
               (setq helm-buffers-list-cache (helm-buffer-list))
-              (unless helm-buffer-max-length
-                (let ((result (loop for b in helm-buffers-list-cache
-                                    maximize (length b) into len-buf
-                                    maximize (length (with-current-buffer b
-                                                       (symbol-name major-mode)))
-                                    into len-mode
-                                    finally return (cons len-buf len-mode))))
-                (setq helm-buffer-max-length (car result)
-                      helm-buffer-max-len-mode (cdr result))))))
+              (let ((result (loop for b in helm-buffers-list-cache
+                                  maximize (length b) into len-buf
+                                  maximize (length (with-current-buffer b
+                                                     (symbol-name major-mode)))
+                                  into len-mode
+                                  finally return (cons len-buf len-mode))))
+                (unless helm-buffer-max-length
+                  (setq helm-buffer-max-length (car result)))
+                (unless helm-buffer-max-len-mode
+                  ;; If a new buffer is longer that this value
+                  ;; this value will be updated
+                  (setq helm-buffer-max-len-mode (cdr result))))))
     (candidates . helm-buffers-list-cache)
     (type . buffer)
     (match helm-buffer-match-major-mode)
@@ -278,17 +281,10 @@ See `ido-make-buffer-list' for more infos."
                    (format "(in `%s')" dir))
                'face 'helm-buffer-process)))))))
 
-(defvar helm-buffer-max-len-mode nil)
-(defun helm-highlight-buffers (buffers sources)
+(defun helm-highlight-buffers (buffers source)
   "Transformer function to highlight BUFFERS list.
 Should be called after others transformers i.e (boring buffers)."
-  (loop with max-mode-len = (or helm-buffer-max-len-mode
-                                (setq helm-buffer-max-len-mode
-                                      (loop for b in buffers maximize
-                                            (with-current-buffer b
-                                              (length
-                                               (symbol-name major-mode))))))
-        for i in buffers
+  (loop for i in buffers
         for (name size mode meta) = (if helm-buffer-details-flag
                                         (helm-buffer-details i 'details)
                                         (helm-buffer-details i))
@@ -298,7 +294,8 @@ Should be called after others transformers i.e (boring buffers)."
                                          (- (+ helm-buffer-max-length 3)
                                             (string-width name)) ? )))
         for len = (length mode)
-        for fmode = (concat (make-string (- (max max-mode-len len) len) ? )
+        when (> len helm-buffer-max-len-mode) do (setq helm-buffer-max-len-mode len)
+        for fmode = (concat (make-string (- (max helm-buffer-max-len-mode len) len) ? )
                             mode)
         ;; The max length of a number should be 1023.9X where X is the
         ;; units, this is 7 characters.
@@ -312,6 +309,13 @@ Should be called after others transformers i.e (boring buffers)."
     (setq helm-buffer-details-flag (not helm-buffer-details-flag))
     (helm-force-update (car (split-string (helm-get-selection nil t))))))
 
+(defun helm-buffers-sort-transformer (candidates _source)
+  (if (string= helm-pattern "")
+      candidates
+      (sort candidates
+            #'(lambda (s1 s2)
+                (< (string-width s1) (string-width s2))))))
+
 
 (defun helm-buffer-match-major-mode (candidate)
   "Match maybe buffer by major-mode.
@@ -324,7 +328,11 @@ before space matching pattern after space.
 If you give a pattern which doesn't match a major-mode, it will search buffer
 with name matching pattern."
   (let* ((cand (replace-regexp-in-string "^\\s-\\{1\\}" "" candidate))
-         (buf  (get-buffer cand)))
+         (buf  (get-buffer cand))
+         (match-mjm (lambda (str mjm)
+                      ;; Avoid matching all modes when entering only "mode".
+                      (and (not (string= str "mode"))
+                           (string-match str mjm)))))
     (when buf
       (with-current-buffer buf
         (let ((mjm   (symbol-name major-mode))
@@ -333,15 +341,15 @@ with name matching pattern."
                  (or (helm-buffers-match-inside cand split)
                      (string-match helm-pattern cand)))
                 ((string-match "\\s-$" helm-pattern)
-                 (string-match (car split) mjm))
+                 (funcall match-mjm (car split) mjm))
                 ((string-match "\\s-[@]" helm-pattern)
-                 (and (or (string-match (car split) mjm)
+                 (and (or (funcall match-mjm (car split) mjm)
                           (string-match (car split) cand))
                       (helm-buffers-match-inside cand (cdr split))))
                 ((string-match "\\s-" helm-pattern)
-                 (and (string-match (car split) mjm)
+                 (and (funcall match-mjm (car split) mjm)
                       (loop for i in (cdr split) always (string-match i cand))))
-                (t (or (string-match helm-pattern mjm)
+                (t (or (funcall match-mjm helm-pattern mjm)
                        (string-match helm-pattern cand)))))))))
 
 (defun helm-buffers-match-inside (candidate lst)
@@ -497,8 +505,9 @@ If REGEXP-FLAG is given use `query-replace-regexp'."
           (kill-buffer buffer))
         (kill-buffer buffer)))
   (helm-delete-current-selection)
-  (helm-force-update)
-  (when (helm-empty-source-p) (helm-next-source)))
+  (when (helm-empty-source-p) (helm-next-source))
+  (with-helm-temp-hook 'helm-after-persistent-action-hook
+    (helm-force-update)))
 
 (defun helm-buffers-list-persistent-action (candidate)
   (if current-prefix-arg
@@ -549,24 +558,38 @@ Can be used by any source that list buffers."
   (interactive)
   (helm-quit-and-execute-action 'helm-multi-occur-as-action))
 
+(defun helm-buffers-toggle-show-hidden-buffers ()
+  (interactive)
+  (let ((filter-attrs (helm-attr 'filtered-candidate-transformer
+                                 helm-source-buffers-list)))
+    (if (memq 'helm-shadow-boring-buffers filter-attrs)
+        (helm-attrset 'filtered-candidate-transformer
+                      (cons 'helm-skip-boring-buffers
+                            (remove 'helm-shadow-boring-buffers
+                                    filter-attrs))
+                      helm-source-buffers-list t)
+        (helm-attrset 'filtered-candidate-transformer
+                      (cons 'helm-shadow-boring-buffers
+                            (remove 'helm-skip-boring-buffers
+                                    filter-attrs))
+                      helm-source-buffers-list t))
+    (helm-force-update)))
+
 
 ;;; Candidate Transformers
 ;;
 ;;
-(defun helm-skip-boring-buffers (buffers sources)
+(defun helm-skip-boring-buffers (buffers source)
   (helm-skip-entries buffers helm-boring-buffer-regexp-list))
 
-(defun helm-shadow-boring-buffers (buffers)
+(defun helm-shadow-boring-buffers (buffers source)
   "Buffers matching `helm-boring-buffer-regexp' will be
 displayed with the `file-name-shadow' face if available."
   (helm-shadow-entries buffers helm-boring-buffer-regexp-list))
 
 (defun helm-revert-buffer (candidate)
   (with-current-buffer candidate
-    (when (or (buffer-modified-p)
-              (not (verify-visited-file-modtime
-                    (get-buffer candidate))))
-      (revert-buffer t t))))
+    (revert-buffer t t)))
 
 (defun helm-revert-marked-buffers (ignore)
   (mapc 'helm-revert-buffer (helm-marked-candidates)))
@@ -597,6 +620,7 @@ displayed with the `file-name-shadow' face if available."
                                          (helm-ediff-marked-buffers candidate t))))
       (persistent-help . "Show this buffer")
       (filtered-candidate-transformer helm-skip-boring-buffers
+                                      helm-buffers-sort-transformer
                                       helm-highlight-buffers))
   "Buffer or buffer name.")
 
