@@ -8,6 +8,8 @@
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+# v1.17 11/27,2013
+#       Add ruby-additional.el.
 # v1.16 3/15,2013
 #       Replace redo+.el to undo-tree.el for redo.
 # v1.15 1/18,2013
