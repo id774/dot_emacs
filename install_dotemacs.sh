@@ -109,7 +109,8 @@ byte_compile_all() {
       ruby-style.el \
       ruby-electric.el \
       rubydb2x.el \
-      rubydb3x.el
+      rubydb3x.el \
+      ruby-additional.el
     cd $TARGET/elisp/3rd-party
     emacs_batch_byte_compile \
       browse-kill-ring.el \
