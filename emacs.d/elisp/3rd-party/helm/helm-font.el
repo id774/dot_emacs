@@ -1,4 +1,4 @@
-;;; helm-font --- Font and ucs selection for Helm
+;;; helm-font --- Font and ucs selection for Helm -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -17,7 +17,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 
 (defvar helm-ucs-map
@@ -66,12 +66,12 @@
 (defvar helm-ucs-max-len 0)
 (defun helm-calculate-ucs-max-len ()
   "Calculate the length of longest `ucs-names' candidate."
-  (loop with count = 0
-        for (n . v) in (ucs-names)
-        for len = (length n)
-        if (> len count)
-        do (setq count len)
-        finally return count))
+  (cl-loop with count = 0
+           for (n . v) in (ucs-names)
+           for len = (length n)
+           if (> len count)
+           do (setq count len)
+           finally return count))
 
 (defun helm-ucs-init ()
   "Initialize an helm buffer with ucs symbols.
@@ -83,30 +83,30 @@ Only math* symbols are collected."
                         (get-buffer-create "*helm ucs*"))
     ;; `ucs-names' fn will not run again, data is cached in
     ;; var `ucs-names'.
-    (loop for (n . v) in (ucs-names)
-          for len = (length n)
-          for diff = (+ (- helm-ucs-max-len len) 2)
-          unless (string= "" n)
-          do (progn (insert (concat
-                             n ":"
-                             (make-string
-                              diff ? )))
-                    (if (fboundp 'ucs-insert)
-                        (ucs-insert v)
-                        ;; call `insert-char' with nil nil
-                        ;; to shutup byte compiler in 24.1.
-                        (insert-char v nil nil))
-                    (insert "\n")))))
+    (cl-loop for (n . v) in (ucs-names)
+             for len = (length n)
+             for diff = (+ (- helm-ucs-max-len len) 2)
+             unless (string= "" n)
+             do (progn (insert (concat
+                                n ":"
+                                (make-string
+                                 diff ? )))
+                       (if (fboundp 'ucs-insert)
+                           (ucs-insert v)
+                           ;; call `insert-char' with nil nil
+                           ;; to shutup byte compiler in 24.1.
+                           (insert-char v nil nil))
+                       (insert "\n")))))
 
-(defun helm-ucs-forward-char (candidate)
+(defun helm-ucs-forward-char (_candidate)
   (with-helm-current-buffer
     (forward-char 1)))
 
-(defun helm-ucs-backward-char (candidate)
+(defun helm-ucs-backward-char (_candidate)
   (with-helm-current-buffer
     (forward-char -1)))
 
-(defun helm-ucs-delete-backward (candidate)
+(defun helm-ucs-delete-backward (_candidate)
   (with-helm-current-buffer
     (delete-char -1)))
 

@@ -1,4 +1,4 @@
-;;; helm-yaoddmuse.el --- Helm extension for yaoddmuse
+;;; helm-yaoddmuse.el --- Helm extension for yaoddmuse -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -17,7 +17,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 
 (declare-function yaoddmuse-update-pagename "ext:yaoddmuse.el" (&optional unforced))
@@ -28,9 +28,9 @@
 (defvar helm-yaoddmuse-use-cache-file nil)
 (defvar helm-yaoddmuse-cache-file "~/.emacs.d/yaoddmuse-cache.el")
 (defvar helm-yaoddmuse-ew-cache nil)
+(defvar yaoddmuse-pages-hash)
 
 (defun helm-yaoddmuse-get-candidates ()
-  (declare (special yaoddmuse-pages-hash))
   (if helm-yaoddmuse-use-cache-file
       (ignore-errors
         (unless helm-yaoddmuse-ew-cache
@@ -114,15 +114,14 @@ http://www.emacswiki.org/emacs/download/yaoddmuse.el")
   "Fetch the list of files on emacswiki and create cache file.
 If load is non--nil load the file and feed `yaoddmuse-pages-hash'."
   (interactive)
-  (declare (special yaoddmuse-pages-hash))
   (yaoddmuse-update-pagename)
   (save-excursion
     (find-file helm-yaoddmuse-cache-file)
     (erase-buffer)
     (insert "(puthash \"EmacsWiki\" '(")
-    (loop for i in (gethash "EmacsWiki" yaoddmuse-pages-hash)
-          do
-          (insert (concat "(\"" (car i) "\") ")))
+    (cl-loop for i in (gethash "EmacsWiki" yaoddmuse-pages-hash)
+             do
+             (insert (concat "(\"" (car i) "\") ")))
     (insert ") yaoddmuse-pages-hash)\n")
     (save-buffer)
     (kill-buffer (current-buffer))
@@ -136,7 +135,7 @@ If load is non--nil load the file and feed `yaoddmuse-pages-hash'."
         (library-list (yaoddmuse-get-library-list)))
     (with-current-buffer helm-buffer
       ;; Insert library name.
-      (dolist (library library-list)
+      (cl-dolist (library library-list)
         (insert (format "%s\n" library)))
       ;; Sort lines.
       (sort-lines nil (point-min) (point-max)))))

@@ -1,4 +1,4 @@
-;;; helm-net.el --- helm browse url and search web.
+;;; helm-net.el --- helm browse url and search web. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -17,7 +17,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 (require 'url)
 (require 'xml)
@@ -100,25 +100,25 @@ Return an alist with elements like (data . number_results)."
   (let ((request (concat helm-google-suggest-url
                          (url-hexify-string input)))
         (fetch #'(lambda ()
-                   (loop
-                         with result-alist = (xml-get-children
-                                              (car (xml-parse-region
-                                                    (point-min) (point-max)))
-                                              'CompleteSuggestion)
-                         for i in result-alist
-                         for data = (cdr (caadr (assoc 'suggestion i)))
-                         for nqueries = (cdr (caadr (assoc 'num_queries i)))
-                         for lqueries = (length (helm-ggs-set-number-result
-                                                 nqueries))
-                         for ldata = (length data)
-                         do
-                         (progn
-                           (when (> ldata helm-ggs-max-length-real-flag)
-                             (setq helm-ggs-max-length-real-flag ldata))
-                           (when (> lqueries helm-ggs-max-length-num-flag)
-                             (setq helm-ggs-max-length-num-flag lqueries)))
-                         collect (cons data nqueries) into cont
-                         finally return cont))))
+                   (cl-loop
+                    with result-alist = (xml-get-children
+                                         (car (xml-parse-region
+                                               (point-min) (point-max)))
+                                         'CompleteSuggestion)
+                    for i in result-alist
+                    for data = (cdr (cl-caadr (assoc 'suggestion i)))
+                    for nqueries = (cdr (cl-caadr (assoc 'num_queries i)))
+                    for lqueries = (length (helm-ggs-set-number-result
+                                            nqueries))
+                    for ldata = (length data)
+                    do
+                    (progn
+                      (when (> ldata helm-ggs-max-length-real-flag)
+                        (setq helm-ggs-max-length-real-flag ldata))
+                      (when (> lqueries helm-ggs-max-length-num-flag)
+                        (setq helm-ggs-max-length-num-flag lqueries)))
+                    collect (cons data nqueries) into cont
+                    finally return cont))))
     (if helm-google-suggest-use-curl-p
         (with-temp-buffer
           (call-process "curl" nil t nil request)
@@ -130,36 +130,36 @@ Return an alist with elements like (data . number_results)."
 (defun helm-google-suggest-set-candidates (&optional request-prefix)
   "Set candidates with result and number of google results found."
   (let ((suggestions
-         (loop with suggested-results = (helm-google-suggest-fetch
-                                         (or (and request-prefix
-                                                  (concat request-prefix
-                                                          " " helm-pattern))
-                                             helm-pattern))
-               for (real . numresult) in suggested-results
-               ;; Prepare number of results with ","
-               for fnumresult = (helm-ggs-set-number-result numresult)
-               ;; Calculate number of spaces to add before fnumresult
-               ;; if it is smaller than longest result
-               ;; `helm-ggs-max-length-num-flag'.
-               ;; e.g 1,234,567
-               ;;       345,678
-               ;; To be sure it is aligned properly.
-               for nspaces = (if (< (length fnumresult)
-                                    helm-ggs-max-length-num-flag)
-                                 (- helm-ggs-max-length-num-flag
-                                    (length fnumresult))
-                                 0)
-               ;; Add now the spaces before fnumresult.
-               for align-fnumresult = (concat (make-string nspaces ? )
-                                              fnumresult)
-               for interval = (- helm-ggs-max-length-real-flag
-                                 (length real))
-               for spaces   = (make-string (+ 2 interval) ? )
-               for display = (format "%s%s(%s results)"
-                                     real spaces align-fnumresult)
-               collect (cons display real))))
-    (if (loop for (disp . dat) in suggestions
-              thereis (equal dat helm-pattern))
+         (cl-loop with suggested-results = (helm-google-suggest-fetch
+                                            (or (and request-prefix
+                                                     (concat request-prefix
+                                                             " " helm-pattern))
+                                                helm-pattern))
+                  for (real . numresult) in suggested-results
+                  ;; Prepare number of results with ","
+                  for fnumresult = (helm-ggs-set-number-result numresult)
+                  ;; Calculate number of spaces to add before fnumresult
+                  ;; if it is smaller than longest result
+                  ;; `helm-ggs-max-length-num-flag'.
+                  ;; e.g 1,234,567
+                  ;;       345,678
+                  ;; To be sure it is aligned properly.
+                  for nspaces = (if (< (length fnumresult)
+                                       helm-ggs-max-length-num-flag)
+                                    (- helm-ggs-max-length-num-flag
+                                       (length fnumresult))
+                                    0)
+                  ;; Add now the spaces before fnumresult.
+                  for align-fnumresult = (concat (make-string nspaces ? )
+                                                 fnumresult)
+                  for interval = (- helm-ggs-max-length-real-flag
+                                    (length real))
+                  for spaces   = (make-string (+ 2 interval) ? )
+                  for display = (format "%s%s(%s results)"
+                                        real spaces align-fnumresult)
+                  collect (cons display real))))
+    (if (cl-loop for (_disp . dat) in suggestions
+                 thereis (equal dat helm-pattern))
         suggestions
         ;; if there is no suggestion exactly matching the input then
         ;; prepend a Search on Google item to the list
@@ -172,15 +172,15 @@ Return an alist with elements like (data . number_results)."
   (if num
       (progn
         (and (numberp num) (setq num (number-to-string num)))
-        (loop for i in (reverse (split-string num "" t))
-              for count from 1
-              append (list i) into C
-              when (= count 3)
-              append (list ",") into C
-              and do (setq count 0)
-              finally return
-              (replace-regexp-in-string
-               "^," "" (mapconcat 'identity (reverse C) ""))))
+        (cl-loop for i in (reverse (split-string num "" t))
+                 for count from 1
+                 append (list i) into C
+                 when (= count 3)
+                 append (list ",") into C
+                 and do (setq count 0)
+                 finally return
+                 (replace-regexp-in-string
+                  "^," "" (mapconcat 'identity (reverse C) ""))))
       "?"))
 
 (defun helm-google-suggest-action (candidate)
@@ -219,14 +219,14 @@ Return an alist with elements like (data . number_results)."
                          (url-hexify-string input))))
     (with-current-buffer
         (url-retrieve-synchronously request)
-      (loop with result-alist =
-            (xml-get-children
-             (car (xml-parse-region
-                   (point-min) (point-max)))
-             'Result)
-            for i in result-alist
-            collect (caddr i)))))
-        
+      (cl-loop with result-alist =
+               (xml-get-children
+                (car (xml-parse-region
+                      (point-min) (point-max)))
+                'Result)
+               for i in result-alist
+               collect (cl-caddr i)))))
+
 (defun helm-yahoo-suggest-set-candidates ()
   "Set candidates with Yahoo results found."
   (let ((suggestions (helm-yahoo-suggest-fetch helm-input)))
@@ -239,7 +239,7 @@ Return an alist with elements like (data . number_results)."
 (defun helm-yahoo-suggest-action (candidate)
   "Default action to jump to a Yahoo suggested candidate."
   (helm-browse-url (concat helm-yahoo-suggest-search-url
-                             (url-hexify-string candidate))))
+                           (url-hexify-string candidate))))
 
 (defvar helm-source-yahoo-suggest
   '((name . "Yahoo Suggest")
@@ -274,7 +274,7 @@ Return an alist with elements like (data . number_results)."
     (,browse-url-xterm-program . browse-url-text-xterm))
   "*Alist of \(executable . function\) to try to find a suitable url browser.")
 
-(defun* helm-generic-browser (url name &rest args)
+(cl-defun helm-generic-browser (url name &rest args)
   "Browse URL with NAME browser."
   (let ((proc (concat name " " url)))
     (message "Starting %s..." name)
@@ -292,7 +292,7 @@ Return an alist with elements like (data . number_results)."
   (helm-generic-browser
    url helm-browse-url-chromium-program))
 
-(defun helm-browse-url-uzbl (url &optional ignore)
+(defun helm-browse-url-uzbl (url &optional _ignore)
   "Browse URL with uzbl browser."
   (interactive "sURL: ")
   (helm-generic-browser url helm-browse-url-uzbl-program "-u"))
@@ -300,9 +300,9 @@ Return an alist with elements like (data . number_results)."
 (defun helm-browse-url-default-browser (url &rest args)
   "Find the first available browser and ask it to load URL."
   (let ((default-browser-fn
-         (loop for (exe . fn) in helm-browse-url-default-browser-alist
-               thereis (and exe (executable-find exe)
-                            (and (fboundp fn) fn)))))
+         (cl-loop for (exe . fn) in helm-browse-url-default-browser-alist
+                  thereis (and exe (executable-find exe)
+                               (and (fboundp fn) fn)))))
     (if default-browser-fn
         (apply default-browser-fn url args)
         (error "No usable browser found"))))

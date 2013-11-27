@@ -1,4 +1,4 @@
-;;; helm-adaptative.el --- Adaptive Sorting of Candidates.
+;;; helm-adaptative.el --- Adaptive Sorting of Candidates. -*- lexical-binding: t -*-
 
 ;; Original Author: Tamas Patrovics
 
@@ -20,7 +20,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 (require 'helm)
 
 
@@ -144,7 +144,7 @@ Format: ((SOURCE-NAME (SELECTED-CANDIDATE (PATTERN . NUMBER-OF-USE) ...) ...) ..
           ;; truncate history if needed
           (if (> (length (cdr selection-info)) helm-adaptive-history-length)
               (setcdr selection-info
-                      (subseq (cdr selection-info) 0 helm-adaptive-history-length))))))))
+                      (cl-subseq (cdr selection-info) 0 helm-adaptive-history-length))))))))
 
 (defun helm-adaptative-maybe-load-history ()
   "Load `helm-adaptive-history-file' which contain `helm-adaptive-history'.
@@ -165,7 +165,7 @@ Returns nil if `helm-adaptive-history-file' doesn't exist."
     (write-region (point-min) (point-max) helm-adaptive-history-file nil
                   (unless arg 'quiet))))
 
-(defun helm-adaptive-sort (candidates _source)
+(defun helm-adaptive-sort (candidates source)
   "Sort the CANDIDATES for SOURCE by usage frequency.
 This is a filtered candidate transformer you can use with the
 `filtered-candidate-transformer' attribute."
@@ -178,10 +178,10 @@ This is a filtered candidate transformer you can use with the
                ;; pairs
                (mapcar (lambda (candidate-info)
                          (let ((count 0))
-                           (dolist (pattern-info (cdr candidate-info))
+                           (cl-dolist (pattern-info (cdr candidate-info))
                              (if (not (equal (car pattern-info)
                                              helm-pattern))
-                                 (incf count (cdr pattern-info))
+                                 (cl-incf count (cdr pattern-info))
 
                                  ;; if current pattern is equal to the previously
                                  ;; used one then this candidate has priority
@@ -189,7 +189,7 @@ This is a filtered candidate transformer you can use with the
                                  ;; it only has to compete with other candidates
                                  ;; which were also selected with the same pattern
                                  (setq count (+ 10000 (cdr pattern-info)))
-                                 (return)))
+                                 (cl-return)))
                            (cons (car candidate-info) count)))
                        (cdr source-info)))
               sorted)
@@ -201,12 +201,12 @@ This is a filtered candidate transformer you can use with the
                                           (> (cdr first) (cdr second)))))
 
                 ;; put those candidates first which have the highest usage count
-                (dolist (info usage)
-                  (when (member* (car info) candidates
-                                 :test 'helm-adaptive-compare)
+                (cl-dolist (info usage)
+                  (when (cl-member (car info) candidates
+                                   :test 'helm-adaptive-compare)
                     (push (car info) sorted)
-                    (setq candidates (remove* (car info) candidates
-                                              :test 'helm-adaptive-compare))))
+                    (setq candidates (cl-remove (car info) candidates
+                                                :test 'helm-adaptive-compare))))
 
                 ;; and append the rest
                 (append (reverse sorted) candidates nil))

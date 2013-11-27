@@ -1,4 +1,4 @@
-;;; helm-eval.el --- eval expressions from helm.
+;;; helm-eval.el --- eval expressions from helm. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -16,7 +16,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Code:
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 (require 'eldoc)
 
@@ -80,12 +80,9 @@ Should take one arg: the string to display."
                                                     (eval (read helm-pattern)))))
                                            (error "Error")))))
     (action . (("Copy result to kill-ring" . (lambda (candidate)
-                                               (with-current-buffer helm-buffer
-                                                 (let ((end (save-excursion
-                                                              (goto-char (point-max))
-                                                              (search-backward "\n")
-                                                              (point))))
-                                                   (kill-region (point) end)))))
+                                               (kill-new
+                                                (replace-regexp-in-string
+                                                 "\n" "" candidate))))
                ("copy sexp to kill-ring" . (lambda (candidate)
                                              (kill-new helm-input)))))))
 
@@ -113,9 +110,7 @@ Should take one arg: the string to display."
                                 (eldoc-get-fnsym-args-string
                                  (car info-fn) (cadr info-fn)))))
               (when doc (funcall helm-eldoc-in-minibuffer-show-fn doc)))))
-      (scan-error nil)
-      (beginning-of-buffer nil)
-      (error (message "Eldoc in minibuffer error: %S" err)))))
+      (error (message "Eldoc in minibuffer error: %S" err) nil))))
 
 (defun helm-show-info-in-mode-line (str)
   "Display string STR in mode-line."
@@ -149,11 +144,11 @@ Should take one arg: the string to display."
         :history 'read-expression-history
         :keymap helm-eval-expression-map))
 
+(defvar eldoc-idle-delay)
 ;;;###autoload
 (defun helm-eval-expression-with-eldoc ()
   "Preconfigured helm for `helm-source-evaluation-result' with `eldoc' support. "
   (interactive)
-  (declare (special eldoc-idle-delay))
   (let ((timer (run-with-idle-timer
                 eldoc-idle-delay 'repeat
                 'helm-eldoc-show-in-eval)))

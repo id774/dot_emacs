@@ -1,4 +1,4 @@
-;;; helm-bmkext.el --- Sources to filter bookmark-extensions bookmarks.
+;;; helm-bmkext.el --- Sources to filter bookmark-extensions bookmarks. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -21,7 +21,7 @@
 ;; http://julien.danjou.info/google-maps-el.html
 
 ;;; Code:
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 (require 'helm-bookmark)
 (require 'helm-adaptative)
@@ -33,14 +33,14 @@
 ;;
 (defun helm-bmkext-filter-setup-alist (fn &rest args)
   "Return a filtered `bookmark-alist' sorted alphabetically."
-  (loop
-        with alist = (if args
-                         (apply #'(lambda (x) (funcall fn x)) args)
-                         (funcall fn))
-        for i in alist
-        for b = (car i)
-        collect (propertize b 'location (bookmark-location b)) into sa
-        finally return (sort sa 'string-lessp)))
+  (cl-loop
+   with alist = (if args
+                    (apply #'(lambda (x) (funcall fn x)) args)
+                    (funcall fn))
+   for i in alist
+   for b = (car i)
+   collect (propertize b 'location (bookmark-location b)) into sa
+   finally return (sort sa 'string-lessp)))
 
 ;;;###autoload
 (defun helm-bmkext-run-edit ()
@@ -80,9 +80,9 @@
                        (helm-bookmark-get-bookmark-from-name (car contacts)))
                       (helm-aif (cdr contacts)
                           (let ((current-prefix-arg '(4)))
-                            (loop for bmk in it do
-                                  (bookmark-jump
-                                   (helm-bookmark-get-bookmark-from-name bmk))))))))
+                            (cl-loop for bmk in it do
+                                     (bookmark-jump
+                                      (helm-bookmark-get-bookmark-from-name bmk))))))))
                ("Send Mail"
                 . (lambda (candidate)
                     (let* ((contacts (helm-marked-candidates))
@@ -94,8 +94,8 @@
                           (addressbook-set-mail-buffer1 bmk))
                       (setq contacts (cdr contacts))
                       (when contacts
-                        (loop for bmk in contacts do
-                              (addressbook-set-mail-buffer1 bmk 'append))))))
+                        (cl-loop for bmk in contacts do
+                                 (addressbook-set-mail-buffer1 bmk 'append))))))
                ("Edit Bookmark"
                 . (lambda (candidate)
                     (let ((bmk (helm-bookmark-get-bookmark-from-name

@@ -1,4 +1,4 @@
-;;; helm-w3m.el --- W3m bookmark - helm interface.
+;;; helm-w3m.el --- W3m bookmark - helm interface. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -17,7 +17,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 (require 'helm-utils)
 (require 'helm-adaptative)
@@ -91,11 +91,11 @@ http://emacs-w3m.namazu.org/")
          (arg (and (eq fn 'w3m-browse-url) new-tab)))
     (funcall fn (helm-w3m-bookmarks-get-value elm) arg)))
 
-(defun helm-highlight-w3m-bookmarks (bookmarks source)
-  (loop for i in bookmarks
-        collect (propertize
-                 i 'face 'helm-w3m-bookmarks
-                 'help-echo (helm-w3m-bookmarks-get-value i))))
+(defun helm-highlight-w3m-bookmarks (bookmarks _source)
+  (cl-loop for i in bookmarks
+           collect (propertize
+                    i 'face 'helm-w3m-bookmarks
+                    'help-echo (helm-w3m-bookmarks-get-value i))))
 
 
 (defun helm-w3m-delete-bookmark (elm)

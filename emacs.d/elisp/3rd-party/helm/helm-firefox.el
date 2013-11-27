@@ -1,4 +1,4 @@
-;;; helm-firefox.el --- Firefox bookmarks
+;;; helm-firefox.el --- Firefox bookmarks -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -16,7 +16,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Code:
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 (require 'helm-utils)
 (require 'helm-adaptative)
@@ -80,18 +80,18 @@
                ("Copy Url"
                 . (lambda (candidate)
                     (let ((url (helm-firefox-bookmarks-get-value
-                               candidate))) 
+                                candidate))) 
                       (kill-new url)
                       (message "`%s' copied to kill-ring" url))))))))
 
 (defun helm-firefox-bookmarks-get-value (elm)
   (assoc-default elm helm-firefox-bookmarks-alist))
 
-(defun helm-highlight-firefox-bookmarks (bookmarks source)
-  (loop for i in bookmarks
-        collect (propertize
-                 i 'face '((:foreground "YellowGreen"))
-                 'help-echo (helm-firefox-bookmarks-get-value i))))
+(defun helm-highlight-firefox-bookmarks (bookmarks _source)
+  (cl-loop for i in bookmarks
+           collect (propertize
+                    i 'face '((:foreground "YellowGreen"))
+                    'help-echo (helm-firefox-bookmarks-get-value i))))
 
 ;;;###autoload
 (defun helm-firefox-bookmarks ()

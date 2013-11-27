@@ -1,4 +1,4 @@
-;;; helm-locate.el --- helm interface for locate.
+;;; helm-locate.el --- helm interface for locate. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -21,7 +21,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 
 
@@ -174,7 +174,7 @@ See `helm-locate-with-db' and `helm-locate'."
   "Setup `helm-locate-command' if not already defined."
   (unless helm-locate-command
     (setq helm-locate-command
-          (case system-type
+          (cl-case system-type
             (gnu/linux "locate %s -r %s")
             (berkeley-unix "locate %s %s")
             (windows-nt "es %s %s")
@@ -198,9 +198,9 @@ See also `helm-locate'."
                       (mapconcat 'identity
                                  ;; Remove eventually
                                  ;; marked directories by error.
-                                 (loop for i in db
-                                       unless (file-directory-p i)
-                                       collect i) ":"))
+                                 (cl-loop for i in db
+                                          unless (file-directory-p i)
+                                          collect i) ":"))
               helm-locate-command)
              helm-locate-command)))
     (setq helm-file-name-history (mapcar 'helm-basename file-name-history))
@@ -223,7 +223,7 @@ See also `helm-locate'."
         (start-process-shell-command
          "locate-process" helm-buffer
          (format helm-locate-command
-                 (case helm-locate-case-fold-search
+                 (cl-case helm-locate-case-fold-search
                    (smart (let ((case-fold-search nil))
                             (if (string-match "[A-Z]" helm-pattern)
                                 case-sensitive-flag
@@ -239,7 +239,7 @@ See also `helm-locate'."
                   (mapconcat 'identity (cdr args) " "))))
       (set-process-sentinel
        (get-buffer-process helm-buffer)
-       #'(lambda (process event)
+       #'(lambda (_process event)
            (if (string= event "finished\n")
                (with-helm-window
                  (setq mode-line-format
@@ -296,6 +296,7 @@ Do nothing when `helm-locate-command' is 'es'."
                 (no-matchplugin)
                 (delayed))))
     (or (helm :sources src
+              :prompt prompt
               :buffer "*helm locate read fname*"
               :resume 'noresume)
         (keyboard-quit))))

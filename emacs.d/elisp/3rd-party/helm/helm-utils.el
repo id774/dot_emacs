@@ -1,4 +1,4 @@
-;;; helm-utils.el --- Utilities Functions for helm.
+;;; helm-utils.el --- Utilities Functions for helm. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -17,7 +17,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 (require 'helm)
 (require 'compile) ; Fixme: Is this needed?
 (require 'dired)
@@ -64,7 +64,7 @@ and `helm-imenu-default-action'.")
 ;;
 ;;
 (unless (fboundp 'window-system)
-  (defun window-system (&optional arg)
+  (defun window-system (&optional _arg)
     window-system))
 
 (unless (fboundp 'make-composed-keymap)
@@ -81,16 +81,6 @@ PARENT if non-nil should be a keymap."
     `(keymap
       ,@(if (keymapp maps) (list maps) maps)
       ,@parent)))
-
-(unless (fboundp 'apply-partially)
-  (defun apply-partially (fun &rest args)
-    "Return a function that is a partial application of FUN to ARGS.
-ARGS is a list of the first N arguments to pass to FUN.
-The result is a new function which does the same as FUN, except that
-the first N arguments are fixed at the values with which this function
-was called."
-    (lexical-let ((fun fun) (args1 args))
-      (lambda (&rest args2) (apply fun (append args1 args2))))))
 
 (unless (fboundp 'assoc-default)
   (defun assoc-default (key alist &optional test default)
@@ -165,15 +155,15 @@ Return nil if DIR is not an existing directory."
       (if handler
           (funcall handler 'file-in-directory-p file dir)
           (when (file-directory-p dir)
-            (loop with f1 = (file-truename file)
-                  with f2 = (file-truename dir)
-                  with ls1 = (or (split-string f1 "/" t) (list "/"))
-                  with ls2 = (or (split-string f2 "/" t) (list "/"))
-                  for p = (string-match "^/" f1)
-                  for i in ls1 for j in ls2
-                  when (string= i j)
-                  concat (if p (concat "/" i) (concat i "/")) into root
-                  finally return (file-equal-p (file-truename root) f2)))))))
+            (cl-loop with f1 = (file-truename file)
+                     with f2 = (file-truename dir)
+                     with ls1 = (or (split-string f1 "/" t) (list "/"))
+                     with ls2 = (or (split-string f2 "/" t) (list "/"))
+                     for p = (string-match "^/" f1)
+                     for i in ls1 for j in ls2
+                     when (string= i j)
+                     concat (if p (concat "/" i) (concat i "/")) into root
+                     finally return (file-equal-p (file-truename root) f2)))))))
 
 
 ;; CUA workaround
@@ -195,10 +185,10 @@ Return nil if DIR is not an existing directory."
     (let ((printer-list (with-temp-buffer
                           (call-process "lpstat" nil t nil "-a")
                           (split-string (buffer-string) "\n"))))
-      (loop for p in printer-list
-            for printer = (car (split-string p))
-            when printer
-            collect printer))))
+      (cl-loop for p in printer-list
+               for printer = (car (split-string p))
+               when printer
+               collect printer))))
 
 ;; Shut up byte compiler in emacs24*.
 (defun helm-switch-to-buffer (buffer-or-name)
@@ -206,20 +196,19 @@ Return nil if DIR is not an existing directory."
   (with-no-warnings
     (switch-to-buffer buffer-or-name)))
 
-(defun* helm-position (item seq &key (test 'eq) all)
+(cl-defmacro helm-position (item seq &key (test 'eq) all)
   "A simple and faster replacement of CL `position'.
 Return position of first occurence of ITEM found in SEQ.
 Argument SEQ can be a string, in this case ITEM have to be a char.
 Argument ALL, if non--nil specify to return a list of positions of
 all ITEM found in SEQ."
   (let ((key (if (stringp seq) 'across 'in)))
-    (eval
-     `(loop for c ,key seq
-            for index from 0
-            when (funcall test c item)
-            if all collect index into ls
-            else return index
-            finally return ls))))
+    `(cl-loop for c ,key ,seq
+              for index from 0
+              when (funcall ,test c ,item)
+              if ,all collect index into ls
+              else return index
+              finally return ls)))
 
 (defun helm-substring (str width)
   "Return the substring of string STR from 0 to WIDTH.
@@ -230,32 +219,32 @@ Handle multibyte characters by moving by columns."
     (move-to-column width)
     (buffer-substring (point-at-bol) (point))))
 
-(defun* helm-substring-by-width (str width &optional (endstr "..."))
+(cl-defun helm-substring-by-width (str width &optional (endstr "..."))
   "Truncate string STR to end at column WIDTH.
 Similar to `truncate-string-to-width'.
 Add ENDSTR (default \"...\") at end of truncated STR.
 Add spaces at end if needed to reach WIDTH when STR is shorter than WIDTH."
-  (loop for ini-str = str
-        then (substring ini-str 0 (1- (length ini-str)))
-        for sw = (string-width ini-str)
-        when (<= sw width) return
-        (concat ini-str endstr (make-string (- width sw) ? ))))
+  (cl-loop for ini-str = str
+           then (substring ini-str 0 (1- (length ini-str)))
+           for sw = (string-width ini-str)
+           when (<= sw width) return
+           (concat ini-str endstr (make-string (- width sw) ? ))))
 
 (defun helm-string-multibyte-p (str)
   "Check if string STR contains multibyte characters."
-  (loop for c across str
-        thereis (> (char-width c) 1)))
+  (cl-loop for c across str
+           thereis (> (char-width c) 1)))
 
 (defun helm-get-pid-from-process-name (process-name)
   "Get pid from running process PROCESS-NAME."
-  (loop with process-list = (list-system-processes)
-        for pid in process-list
-        for process = (assoc-default 'comm (process-attributes pid))
-        when (and process (string-match process-name process))
-        return pid))
+  (cl-loop with process-list = (list-system-processes)
+           for pid in process-list
+           for process = (assoc-default 'comm (process-attributes pid))
+           when (and process (string-match process-name process))
+           return pid))
 
-(defun* helm-current-buffer-narrowed-p (&optional
-                                        (buffer helm-current-buffer))
+(cl-defun helm-current-buffer-narrowed-p (&optional
+                                          (buffer helm-current-buffer))
   "Check if BUFFER is narrowed.
 Default is `helm-current-buffer'."
   (with-current-buffer buffer
@@ -283,7 +272,7 @@ Animation is used unless NOANIM is non--nil."
   (goto-char (point-min))
   (helm-goto-char (point-at-bol lineno))
   (unless noanim
-    (helm-match-line-color-current-line)
+    (helm-highlight-current-line)
     (sit-for 0.3)
     (helm-match-line-cleanup)))
 
@@ -324,11 +313,11 @@ With a numeric prefix arg show only the ARG number of candidates."
   "Return the list of sources name for this helm session."
   (with-current-buffer helm-buffer
     (goto-char (point-min))
-    (loop with pos
-          while (setq pos (next-single-property-change (point) 'helm-header))
-          do (goto-char pos)
-          collect (buffer-substring-no-properties (point-at-bol)(point-at-eol))
-          do (forward-line 1))))
+    (cl-loop with pos
+             while (setq pos (next-single-property-change (point) 'helm-header))
+             do (goto-char pos)
+             collect (buffer-substring-no-properties (point-at-bol)(point-at-eol))
+             do (forward-line 1))))
 
 (defun helm-files-match-only-basename (candidate)
   "Allow matching only basename of file when \" -b\" is added at end of pattern.
@@ -349,21 +338,21 @@ even is \" -b\" is specified."
 
 (defun helm-skip-entries (seq regexp-list)
   "Remove entries which matches one of REGEXP-LIST from SEQ."
-  (loop for i in seq
-        unless (loop for regexp in regexp-list
-                     thereis (and (stringp i)
-                                  (string-match regexp i)))
-        collect i))
+  (cl-loop for i in seq
+           unless (cl-loop for regexp in regexp-list
+                           thereis (and (stringp i)
+                                        (string-match regexp i)))
+           collect i))
 
 (defun helm-shadow-entries (seq regexp-list)
   "Put shadow property on entries in SEQ matching a regexp in REGEXP-LIST."
   (let ((face 'italic))
-    (loop for i in seq
-          if (loop for regexp in regexp-list
-                   thereis (and (stringp i)
-                                (string-match regexp i)))
-          collect (propertize i 'face face)
-          else collect i)))
+    (cl-loop for i in seq
+             if (cl-loop for regexp in regexp-list
+                         thereis (and (stringp i)
+                                      (string-match regexp i)))
+             collect (propertize i 'face face)
+             else collect i)))
 
 (defun helm-stringify (str-or-sym)
   "Get string of STR-OR-SYM."
@@ -400,18 +389,18 @@ even is \" -b\" is specified."
 See `kill-new' for argument REPLACE."
   (kill-new (helm-stringify candidate) replace))
 
-(defun* helm-fast-remove-dups (seq &key (test 'eq))
+(cl-defun helm-fast-remove-dups (seq &key (test 'eq))
   "Remove duplicates elements in list SEQ.
 This is same as `remove-duplicates' but with memoisation.
 It is much faster, especially in large lists.
 A test function can be provided with TEST argument key.
 Default is `eq'."
-  (loop with cont = (make-hash-table :test test)
-        for elm in seq
-        unless (gethash elm cont)
-        do (puthash elm elm cont)
-        finally return
-        (loop for i being the hash-values in cont collect i)))
+  (cl-loop with cont = (make-hash-table :test test)
+           for elm in seq
+           unless (gethash elm cont)
+           do (puthash elm elm cont)
+           finally return
+           (cl-loop for i being the hash-values in cont collect i)))
 
 ;;;###autoload
 (defun helm-quit-and-find-file ()
@@ -455,7 +444,7 @@ from its directory."
   '("SCCS" "RCS" "CVS" "MCVS" ".svn" ".git" ".hg" ".bzr"
     "_MTN" "_darcs" "{arch}"))
 
-(defun* helm-walk-directory (directory &key path (directories t) match skip-subdirs)
+(cl-defun helm-walk-directory (directory &key path (directories t) match skip-subdirs)
   "Walk through DIRECTORY tree.
 Argument PATH can be one of basename, relative, or full, default to basename.
 Argument DIRECTORIES when non--nil (default) return also directories names,
@@ -465,7 +454,7 @@ Argument SKIP-SUBDIRS when non--nil will skip `helm-walk-ignore-directories'
 unless it is given as a list of directories, in this case this list will be used
 instead of `helm-walk-ignore-directories'."
   (let* (result
-         (fn (case path
+         (fn (cl-case path
                (basename 'file-name-nondirectory)
                (relative 'file-relative-name)
                (full     'identity)
@@ -477,26 +466,26 @@ instead of `helm-walk-ignore-directories'."
                                       (if (listp skip-subdirs)
                                           skip-subdirs
                                           helm-walk-ignore-directories)))
-                   (loop with ls = (directory-files
-                                    dir t directory-files-no-dot-files-regexp)
-                         for f in ls
-                         if (file-directory-p f)
-                         do (progn (when directories
+                   (cl-loop with ls = (directory-files
+                                       dir t directory-files-no-dot-files-regexp)
+                            for f in ls
+                            if (file-directory-p f)
+                            do (progn (when directories
+                                        (push (funcall fn f) result))
+                                      ;; Don't recurse in directory symlink.
+                                      (unless (file-symlink-p f)
+                                        (funcall ls-R f)))
+                            else do
+                            (if match
+                                (and (if (functionp match)
+                                         (funcall match f)
+                                         (and (stringp match)
+                                              (string-match
+                                               match (file-name-nondirectory f))))
                                      (push (funcall fn f) result))
-                                   ;; Don't recurse in directory symlink.
-                                   (unless (file-symlink-p f)
-                                     (funcall ls-R f)))
-                         else do
-                         (if match
-                             (and (if (functionp match)
-                                      (funcall match f)
-                                      (and (stringp match)
-                                           (string-match
-                                            match (file-name-nondirectory f))))
-                                  (push (funcall fn f) result))
-                             (push (funcall fn f) result))))))
-       (funcall ls-R directory)
-       (nreverse result)))
+                                (push (funcall fn f) result))))))
+    (funcall ls-R directory)
+    (nreverse result)))
 
 (defun helm-generic-sort-fn (s1 s2)
   "Sort predicate function for helm candidates.
@@ -511,10 +500,10 @@ that is sorting is done against real value of candidate."
                     (cond ((string-match r1 str) 4)
                           ((and (string-match " " helm-pattern)
                                 (string-match (concat "\\_<" (car lst)) str)
-                                (loop for r in (cdr lst)
-                                      always (string-match r str))) 3)
+                                (cl-loop for r in (cdr lst)
+                                         always (string-match r str))) 3)
                           ((and (string-match " " helm-pattern)
-                                (loop for r in lst always (string-match r str))) 2)
+                                (cl-loop for r in lst always (string-match r str))) 2)
                           ((string-match r2 str) 1)
                           (t 0))))
          (sc1 (funcall score str1 reg1 reg2 split))
@@ -559,16 +548,16 @@ KBSIZE if a floating point number, default value is 1024.0."
         (G (cons "G" (/ size (expt helm-default-kbsize 3))))
         (K (cons "K" (/ size helm-default-kbsize)))
         (B (cons "B" size)))
-    (loop with result = B
-          for (a . b) in
-          (loop for (x . y) in (list M G K B)
-                unless (< y 1) collect (cons x y))
-          when (< b (cdr result)) do (setq result (cons a b))
-          finally return (if (string= (car result) "B")
-                             (format "%s" size)
-                             (format "%.1f%s" (cdr result) (car result))))))
+    (cl-loop with result = B
+             for (a . b) in
+             (cl-loop for (x . y) in (list M G K B)
+                      unless (< y 1) collect (cons x y))
+             when (< b (cdr result)) do (setq result (cons a b))
+             finally return (if (string= (car result) "B")
+                                (format "%s" size)
+                                (format "%.1f%s" (cdr result) (car result))))))
 
-(defun* helm-file-attributes
+(cl-defun helm-file-attributes
     (file &key type links uid gid access-time modif-time
           status size mode gid-change inode device-num dired human-size
           mode-type mode-owner mode-group mode-other (string t))
@@ -598,9 +587,9 @@ If you want the same behavior as `files-attributes' ,
 \(but with return values in proplist\) use a nil value for STRING.
 However when STRING is non--nil, time and type value are different from what
 you have in `file-attributes'."
-  (let* ((all (destructuring-bind
-                    (type links uid gid access-time modif-time
-                          status size mode gid-change inode device-num)
+  (let* ((all (cl-destructuring-bind
+                  (type links uid gid access-time modif-time
+                        status size mode gid-change inode device-num)
                   (file-attributes file string)
                 (list :type        (if string
                                        (cond ((stringp type) "symlink") ; fname
@@ -627,53 +616,53 @@ you have in `file-attributes'."
                       :gid-change  gid-change
                       :inode       inode
                       :device-num  device-num)))
-         (modes (helm-split-mode-file-attributes (getf all :mode))))
-    (cond (type (getf all :type))
-          (links (getf all :links))
-          (uid   (getf all :uid))
-          (gid   (getf all :gid))
-          (access-time (getf all :access-time))
-          (modif-time (getf all :modif-time))
-          (status (getf all :status))
-          (size (getf all :size))
-          (mode (getf all :mode))
-          (gid-change (getf all :gid-change))
-          (inode (getf all :inode))
-          (device-num (getf all :device-num))
+         (modes (helm-split-mode-file-attributes (cl-getf all :mode))))
+    (cond (type (cl-getf all :type))
+          (links (cl-getf all :links))
+          (uid   (cl-getf all :uid))
+          (gid   (cl-getf all :gid))
+          (access-time (cl-getf all :access-time))
+          (modif-time (cl-getf all :modif-time))
+          (status (cl-getf all :status))
+          (size (cl-getf all :size))
+          (mode (cl-getf all :mode))
+          (gid-change (cl-getf all :gid-change))
+          (inode (cl-getf all :inode))
+          (device-num (cl-getf all :device-num))
           (dired
            (concat
-            (helm-split-mode-file-attributes (getf all :mode) t) " "
-            (number-to-string (getf all :links)) " "
-            (getf all :uid) ":"
-            (getf all :gid) " "
+            (helm-split-mode-file-attributes (cl-getf all :mode) t) " "
+            (number-to-string (cl-getf all :links)) " "
+            (cl-getf all :uid) ":"
+            (cl-getf all :gid) " "
             (if human-size
-                (helm-file-human-size (getf all :size))
-                (int-to-string (getf all :size))) " "
-            (getf all :modif-time)))
-          (human-size (helm-file-human-size (getf all :size)))
-          (mode-type (getf modes :mode-type))
-          (mode-owner (getf modes :user))
-          (mode-group (getf modes :group))
-          (mode-other (getf modes :other))
+                (helm-file-human-size (cl-getf all :size))
+                (int-to-string (cl-getf all :size))) " "
+                (cl-getf all :modif-time)))
+          (human-size (helm-file-human-size (cl-getf all :size)))
+          (mode-type (cl-getf modes :mode-type))
+          (mode-owner (cl-getf modes :user))
+          (mode-group (cl-getf modes :group))
+          (mode-other (cl-getf modes :other))
           (t (append all modes)))))
 
 (defun helm-split-mode-file-attributes (str &optional string)
   "Split mode file attributes STR into a proplist.
 If STRING is non--nil return instead a space separated string."
-  (loop with type = (substring str 0 1)
-        with cdr = (substring str 1)
-        for i across cdr
-        for count from 1
-        if (<= count 3)
-        concat (string i) into user
-        if (and (> count 3) (<= count 6))
-        concat (string i) into group
-        if (and (> count 6) (<= count 9))
-        concat (string i) into other
-        finally return
-        (if string
-            (mapconcat 'identity (list type user group other) " ")
-            (list :mode-type type :user user :group group :other other))))
+  (cl-loop with type = (substring str 0 1)
+           with cdr = (substring str 1)
+           for i across cdr
+           for count from 1
+           if (<= count 3)
+           concat (string i) into user
+           if (and (> count 3) (<= count 6))
+           concat (string i) into group
+           if (and (> count 6) (<= count 9))
+           concat (string i) into other
+           finally return
+           (if string
+               (mapconcat 'identity (list type user group other) " ")
+               (list :mode-type type :user user :group group :other other))))
 
 (defun helm-current-directory ()
   "Return current-directory name at point.
@@ -688,19 +677,17 @@ Useful in dired buffers when there is inserted subdirs."
 ;; Internal
 (defvar helm-match-line-overlay nil)
 
-(defun helm-match-line-color-current-line (&optional start end buf face)
+(defun helm-highlight-current-line (&optional start end buf face)
   "Highlight and underline current position"
   (let* ((start (or start (line-beginning-position)))
          (end (or end (1+ (line-end-position))))
          (args (list start end buf)))
     (if (not helm-match-line-overlay)
         (setq helm-match-line-overlay (apply 'make-overlay args))
-      (apply 'move-overlay helm-match-line-overlay args))
+        (apply 'move-overlay helm-match-line-overlay args))
     (overlay-put helm-match-line-overlay
                  'face (or face 'helm-selection-line))
     (recenter)))
-
-(defalias 'helm-persistent-highlight-point 'helm-match-line-color-current-line)
 
 (defun helm-match-line-cleanup ()
   (when helm-match-line-overlay
@@ -710,7 +697,7 @@ Useful in dired buffers when there is inserted subdirs."
 (defun helm-match-line-update ()
   (when helm-match-line-overlay
     (delete-overlay helm-match-line-overlay)
-    (helm-match-line-color-current-line)))
+    (helm-highlight-current-line)))
 
 (add-hook 'helm-cleanup-hook 'helm-match-line-cleanup)
 (add-hook 'helm-after-persistent-action-hook 'helm-match-line-update)
@@ -760,9 +747,7 @@ directory, open this directory."
                            'find-file-other-window
                            'find-file)))))
 
-(defun* helm-action-file-line-goto (file-line-content
-                                      &optional
-                                      (find-file-function #'find-file))
+(cl-defun helm-action-file-line-goto (file-line-content)
   (apply #'helm-goto-file-line
          (if (stringp file-line-content)
              ;; Case: filtered-candidate-transformer is skipped
@@ -795,7 +780,7 @@ directory, open this directory."
                             (buffer-local-value
                              'default-directory (helm-candidate-buffer))))))))))
 
-(defun* helm-goto-file-line (lineno &optional content file (find-file-function #'find-file))
+(cl-defun helm-goto-file-line (lineno &optional content file (find-file-function #'find-file))
   (helm-aif (helm-attr 'before-jump-hook)
       (funcall it))
   (when file (funcall find-file-function file))
@@ -807,7 +792,7 @@ directory, open this directory."
   (helm-aif (helm-attr 'after-jump-hook)
       (funcall it))
   (when helm-in-persistent-action
-    (helm-match-line-color-current-line)))
+    (helm-highlight-current-line)))
 
 (defun helm-find-file-as-root (candidate)
   (let ((buf (helm-basename candidate))
@@ -819,7 +804,7 @@ directory, open this directory."
                                        "::" (expand-file-name candidate))))
         (find-file (concat "/" helm-su-or-sudo "::" (expand-file-name candidate))))))
 
-(defun helm-find-many-files (ignore)
+(defun helm-find-many-files (_ignore)
   (mapc 'find-file (helm-marked-candidates)))
 
 (defun helm-goto-line-with-adjustment (line line-content)

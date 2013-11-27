@@ -1,4 +1,4 @@
-;;; helm-semantic.el --- Helm interface for Semantic
+;;; helm-semantic.el --- Helm interface for Semantic -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Daniel Hackney <dan@haxney.org>
 ;; Author: Daniel Hackney <dan@haxney.org>
@@ -22,40 +22,47 @@
 
 ;;; Code:
 
-(eval-when-compile
-  (require 'cl))
-
+(require 'cl-lib)
 (require 'semantic)
 (require 'helm-imenu)
 
-(defun helm-semantic-init-candidates (tags depth)
+(defun helm-semantic-init-candidates (tags depth &optional class)
   "Write the contents of TAGS to the current buffer."
-  (dolist (tag tags)
-    (when (listp tag)
-      (case (semantic-tag-class tag)
+  (let ((class class) cur-type)
+    (cl-dolist (tag tags)
+      (when (listp tag)
+        (cl-case (setq cur-type (semantic-tag-class tag))
+          ((function variable type)
+           (let ((spaces (make-string (* depth 2) ?\s))
+                 (type-p (eq cur-type 'type)))
+             (insert
+              (if (and class (not type-p))
+                  (format "%s%sClass(%s) "
+                          spaces (if (< depth 2) "" "├►") class)
+                  spaces)
+              ;; Save the tag for later
+              (propertize (semantic-format-tag-summarize tag nil t)
+                          'semantic-tag tag)
+              "\n")
+             (and type-p (setq class (car tag)))
+             ;; Recurse to children
+             (helm-semantic-init-candidates
+              (semantic-tag-components tag) (1+ depth) class)))
 
-        ((function variable type)
-         (insert
-          (make-string (* depth 2) ?\s)
-          ;; Save the tag for later
-          (propertize (semantic-format-tag-summarize tag nil t) 'semantic-tag tag)
-          "\n")
-         ;; Recurse to children
-         (helm-semantic-init-candidates
-          (semantic-tag-components tag) (1+ depth)))
-
-        ;; Don't do anything with packages or includes for now
-        ((package include))
-        ;; Catch-all
-        (t)))))
+          ;; Don't do anything with packages or includes for now
+          ((package include))
+          ;; Catch-all
+          (t))))))
 
 (defun helm-semantic-default-action (_candidate)
   ;; By default, helm doesn't pass on the text properties of the selection.
   ;; Fix this.
+  (helm-log-run-hook 'helm-goto-line-before-hook)
   (with-current-buffer helm-buffer
-    (skip-chars-forward " " (point-at-eol))
+    (when (looking-at " ")
+      (goto-char (next-single-property-change
+                  (point-at-bol) 'semantic-tag nil (point-at-eol)))) 
     (let ((tag (get-text-property (point) 'semantic-tag)))
-      (push-mark)
       (semantic-go-to-tag tag))))
 
 (defvar helm-source-semantic
@@ -68,7 +75,7 @@
     (get-line . buffer-substring)
     (persistent-action . (lambda (elm)
                            (helm-semantic-default-action elm)
-                           (helm-match-line-color-current-line)))
+                           (helm-highlight-current-line)))
     (persistent-help . "Show this entry")
     (action . helm-semantic-default-action)
     "Source to search tags using Semantic from CEDET."))
@@ -90,8 +97,7 @@ Fill in the symbol at point by default."
   (interactive)
   (let ((source (if (semantic-active-p)
                     'helm-source-semantic
-                  'helm-source-imenu)))
-    (push-mark)
+                    'helm-source-imenu)))
     (helm :sources source
           :buffer "*helm semantic/imenu*"
           :preselect (thing-at-point 'symbol))))

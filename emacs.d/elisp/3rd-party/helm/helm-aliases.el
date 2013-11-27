@@ -1,4 +1,4 @@
-;;; helm-aliases.el --- Helm aliases for helm obsoletes functions.
+;;; helm-aliases.el --- Helm aliases for helm obsoletes functions. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -17,7 +17,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 
 
 ;;; Helper functions to create aliases with old helm definitions
@@ -31,33 +31,33 @@
         (t nil)))
 
 (defun helm-check-conflicting-prefixes ()
-  (loop for s in (all-completions "helm-c-" obarray)
-        for rep = (replace-regexp-in-string "helm-c-" "helm-" s)
-        when (or (and (not (helm-alias-p (intern s))) (fboundp (intern rep)))
-                 (and (not (helm-alias-p (intern s))) (boundp (intern rep))))
-        collect rep))
+  (cl-loop for s in (all-completions "helm-c-" obarray)
+           for rep = (replace-regexp-in-string "helm-c-" "helm-" s)
+           when (or (and (not (helm-alias-p (intern s))) (fboundp (intern rep)))
+                    (and (not (helm-alias-p (intern s))) (boundp (intern rep))))
+           collect rep))
 
 (defun helm-collect-functions-with-bad-prefix ()
-  (loop for s in (all-completions "helm-c-" obarray)
-        for sym = (intern s)
-        when (and (not (helm-alias-p sym)) (fboundp sym))
-        collect s))
+  (cl-loop for s in (all-completions "helm-c-" obarray)
+           for sym = (intern s)
+           when (and (not (helm-alias-p sym)) (fboundp sym))
+           collect s))
 
 (defun helm-collect-vars-with-bad-prefix ()
-  (loop for s in (all-completions "helm-c-" obarray)
-        for sym = (intern s)
-        when (and (not (helm-alias-p sym)) (boundp sym))
-        collect s))
+  (cl-loop for s in (all-completions "helm-c-" obarray)
+           for sym = (intern s)
+           when (and (not (helm-alias-p sym)) (boundp sym))
+           collect s))
 
 (defun helm-insert-fn-aliases ()
-  (loop for s in (helm-collect-functions-with-bad-prefix)
-        for rep = (replace-regexp-in-string "helm-c-" "helm-" s)
-        do (insert (format "(defalias '%s '%s)\n(make-obsolete '%s '%s \"1.5.1\")\n" s rep s rep))))
+  (cl-loop for s in (helm-collect-functions-with-bad-prefix)
+           for rep = (replace-regexp-in-string "helm-c-" "helm-" s)
+           do (insert (format "(defalias '%s '%s)\n(make-obsolete '%s '%s \"1.5.1\")\n" s rep s rep))))
 
 (defun helm-insert-var-aliases ()
-  (loop for s in (helm-collect-vars-with-bad-prefix)
-        for rep = (replace-regexp-in-string "helm-c-" "helm-" s)
-        do (insert (format "(defvaralias '%s '%s)\n(make-obsolete-variable '%s '%s \"1.5.1\")\n" s rep s rep))))
+  (cl-loop for s in (helm-collect-vars-with-bad-prefix)
+           for rep = (replace-regexp-in-string "helm-c-" "helm-" s)
+           do (insert (format "(defvaralias '%s '%s)\n(make-obsolete-variable '%s '%s \"1.5.1\")\n" s rep s rep))))
 
 
 ;;; Alias old functions prefixed with "helm-c-"
@@ -549,6 +549,8 @@
 (make-obsolete 'helm-c-adaptive-save-history 'helm-adaptive-save-history "1.5.1")
 (defalias 'helm-c-get-first-line-documentation 'helm-get-first-line-documentation)
 (make-obsolete 'helm-c-get-first-line-documentation 'helm-get-first-line-documentation "1.5.1")
+(defalias 'helm-approximate-candidate-number 'helm-get-candidate-number)
+(make-obsolete 'helm-approximate-candidate-number 'helm-get-candidate-number "1.5.5")
 
 
 ;;; variables

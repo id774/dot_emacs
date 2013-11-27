@@ -23,7 +23,7 @@
 # Run it from this directory.
 
 TMP="/tmp/helm-cfg.el"
-LOADPATH=`dirname $0`
+LOADPATH=$(readlink -f $0 | xargs dirname)
 EMACS=emacs
 
 case $1 in
@@ -49,7 +49,8 @@ cat > $TMP <<EOF
 ;; - \`find-file'(C-x C-f)           =>\`helm-find-files'\n\
 ;; - \`occur'(M-s o)                 =>\`helm-occur'\n\
 ;; - \`list-buffers'(C-x C-b)        =>\`helm-buffers-list'\n\
-;; - \`completion-at-point'(M-tab)   =>\`helm-lisp-completion-at-point'\n\n\
+;; - \`completion-at-point'(M-tab)   =>\`helm-lisp-completion-at-point'\n\
+;; - \`dabbrev-expand'(M-/)          =>\`helm-dabbrev'\n\n\
 ;; Some others native emacs commands are \"helmized\" by \`helm-mode'.\n\
 ;; You will find embeded help for most helm commands with \`C-c ?'.\n\
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n\n"))
@@ -65,6 +66,7 @@ cat > $TMP <<EOF
 (define-key global-map [remap find-file] 'helm-find-files)
 (define-key global-map [remap occur] 'helm-occur)
 (define-key global-map [remap list-buffers] 'helm-buffers-list)
+(define-key global-map [remap dabbrev-expand] 'helm-dabbrev)
 (define-key lisp-interaction-mode-map [remap completion-at-point] 'helm-lisp-completion-at-point)
 (define-key emacs-lisp-mode-map       [remap completion-at-point] 'helm-lisp-completion-at-point)
 (add-hook 'kill-emacs-hook #'(lambda () (delete-file "$TMP")))

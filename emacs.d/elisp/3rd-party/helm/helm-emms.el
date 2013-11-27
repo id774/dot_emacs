@@ -1,4 +1,4 @@
-;;; helm-emms.el --- Emms for Helm.
+;;; helm-emms.el --- Emms for Helm. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -17,7 +17,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 
 (declare-function emms-streams "ext:emms-streams")
@@ -41,9 +41,9 @@
   :group 'helm-emms)
 
 
+(defvar emms-stream-list)
 (defun helm-emms-stream-edit-bookmark (elm)
   "Change the information of current emms-stream bookmark from helm."
-  (declare (special emms-stream-list))
   (let* ((cur-buf helm-current-buffer)
          (bookmark (assoc elm emms-stream-list))
          (name     (read-from-minibuffer "Description: "
@@ -64,36 +64,34 @@
         (emms-stream-quit)
         (helm-switch-to-buffer cur-buf)))))
 
-(defun helm-emms-stream-delete-bookmark (candidate)
+(defun helm-emms-stream-delete-bookmark (_candidate)
   "Delete emms-streams bookmarks from helm."
   (let* ((cands   (helm-marked-candidates))
-         (bmks    (loop for bm in cands collect
-                        (car (assoc bm emms-stream-list))))
+         (bmks    (cl-loop for bm in cands collect
+                           (car (assoc bm emms-stream-list))))
          (bmk-reg (mapconcat 'regexp-quote bmks "\\|^")))
     (when (y-or-n-p (format "Really delete radios\n -%s: ? "
                             (mapconcat 'identity bmks "\n -")))
       (save-window-excursion
         (emms-streams)
         (goto-char (point-min))
-        (loop while (re-search-forward bmk-reg nil t)
-              do (progn (forward-line 0)
-                        (emms-stream-delete-bookmark))
-              finally do (progn
-                           (emms-stream-save-bookmarks-file)
-                           (emms-stream-quit)))))))
+        (cl-loop while (re-search-forward bmk-reg nil t)
+                 do (progn (forward-line 0)
+                           (emms-stream-delete-bookmark))
+                 finally do (progn
+                              (emms-stream-save-bookmarks-file)
+                              (emms-stream-quit)))))))
 
 (defvar helm-source-emms-streams
   '((name . "Emms Streams")
     (init . (lambda ()
               (emms-stream-init)))
     (candidates . (lambda ()
-                    (declare (special emms-stream-list))
                     (mapcar 'car emms-stream-list)))
     (action . (("Play" . (lambda (elm)
-                           (declare (special emms-stream-list))
                            (let* ((stream (assoc elm emms-stream-list))
                                   (fn (intern (concat "emms-play-" (symbol-name (car (last stream))))))
-                                  (url (second stream)))
+                                  (url (cl-second stream)))
                              (funcall fn url))))
                ("Delete" . helm-emms-stream-delete-bookmark)
                ("Edit" . helm-emms-stream-edit-bookmark)))
@@ -119,13 +117,13 @@
 
 (defvar helm-emms-current-playlist nil)
 (defun helm-emms-files-modifier (candidates _source)
-  (loop for i in candidates
-        if (member (cdr i) helm-emms-current-playlist)
-        collect (cons (propertize (car i)
-                                  'face 'helm-emms-playlist)
-                      (cdr i)) into lis
-        else collect i into lis
-        finally return (reverse lis)))
+  (cl-loop for i in candidates
+           if (member (cdr i) helm-emms-current-playlist)
+           collect (cons (propertize (car i)
+                                     'face 'helm-emms-playlist)
+                         (cdr i)) into lis
+                         else collect i into lis
+                         finally return (reverse lis)))
 
 (defun helm-emms-play-current-playlist ()
   "Play current playlist."
@@ -137,22 +135,22 @@
     (init . (lambda ()
               (setq helm-emms-current-playlist
                     (with-current-emms-playlist
-                      (loop with cur-list = (emms-playlist-tracks-in-region
-                                             (point-min) (point-max))
-                            for i in cur-list
-                            for name = (assoc-default 'name i)
-                            when name
-                            collect name)))))
+                      (cl-loop with cur-list = (emms-playlist-tracks-in-region
+                                                (point-min) (point-max))
+                               for i in cur-list
+                               for name = (assoc-default 'name i)
+                               when name
+                               collect name)))))
     (candidates . (lambda ()
-                    (loop for v being the hash-values in emms-cache-db
-                          for name      = (assoc-default 'name v)
-                          for artist    = (or (assoc-default 'info-artist v) "unknown")
-                          for genre     = (or (assoc-default 'info-genre v) "unknown")
-                          for tracknum  = (or (assoc-default 'info-tracknumber v) "unknown")
-                          for song      = (or (assoc-default 'info-title v) "unknown")
-                          for info      = (concat artist " - " genre " - " tracknum ": " song)
-                          unless (string-match "^\\(http\\|mms\\):" name)
-                          collect (cons info name))))
+                    (cl-loop for v being the hash-values in emms-cache-db
+                             for name      = (assoc-default 'name v)
+                             for artist    = (or (assoc-default 'info-artist v) "unknown")
+                             for genre     = (or (assoc-default 'info-genre v) "unknown")
+                             for tracknum  = (or (assoc-default 'info-tracknumber v) "unknown")
+                             for song      = (or (assoc-default 'info-title v) "unknown")
+                             for info      = (concat artist " - " genre " - " tracknum ": " song)
+                             unless (string-match "^\\(http\\|mms\\):" name)
+                             collect (cons info name))))
     (filtered-candidate-transformer . helm-emms-files-modifier)
     (candidate-number-limit . 9999)
     (action . (("Play file" . emms-play-file)

@@ -1,4 +1,4 @@
-;;; helm-tags.el --- Helm for Etags and Ctags.
+;;; helm-tags.el --- Helm for Etags and Ctags. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -17,7 +17,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 
 
@@ -34,6 +34,12 @@
   "The limit level of directory to search tag file.
 Don't search tag file deeply if outside this value."
   :type  'number
+  :group 'helm-tags)
+
+(defcustom helm-etags-match-part-only t
+  "Whether to match only the tag part of CANDIDATE in
+helm-source-ctags-select."
+  :type 'boolean
   :group 'helm-tags)
 
 
@@ -70,17 +76,17 @@ Don't search tag file deeply if outside this value."
       (goto-char (point-min))
       (forward-line 2)
       (delete-region (point-min) (point))
-      (loop while (and (not (eobp)) (search-forward "\001" (point-at-eol) t))
-            for lineno-start = (point)
-            for lineno = (buffer-substring
-                          lineno-start
-                          (1- (search-forward "," (point-at-eol) t)))
-            do
-            (forward-line 0)
-            (insert (format "%5s:" lineno))
-            (search-forward "\177" (point-at-eol) t)
-            (delete-region (1- (point)) (point-at-eol))
-            (forward-line 1)))))
+      (cl-loop while (and (not (eobp)) (search-forward "\001" (point-at-eol) t))
+               for lineno-start = (point)
+               for lineno = (buffer-substring
+                             lineno-start
+                             (1- (search-forward "," (point-at-eol) t)))
+               do
+               (forward-line 0)
+               (insert (format "%5s:" lineno))
+               (search-forward "\177" (point-at-eol) t)
+               (delete-region (1- (point)) (point-at-eol))
+               (forward-line 1)))))
 
 (defvar helm-source-ctags
   '((name . "Exuberant ctags")
@@ -123,19 +129,19 @@ If not found in CURRENT-DIR search in upper directory."
                             (and (stringp tag-path)
                                  (file-regular-p tag-path)
                                  (file-readable-p tag-path))))))
-    (loop with count = 0
-          until (funcall file-exists? current-dir)
-          ;; Return nil if outside the value of
-          ;; `helm-etags-tag-file-search-limit'.
-          if (= count helm-etags-tag-file-search-limit)
-          do (return nil)
-          ;; Or search upper directories.
-          else
-          do (incf count)
-          (setq current-dir (expand-file-name (concat current-dir "../")))
-          finally return current-dir)))
+    (cl-loop with count = 0
+             until (funcall file-exists? current-dir)
+             ;; Return nil if outside the value of
+             ;; `helm-etags-tag-file-search-limit'.
+             if (= count helm-etags-tag-file-search-limit)
+             do (cl-return nil)
+             ;; Or search upper directories.
+             else
+             do (cl-incf count)
+             (setq current-dir (expand-file-name (concat current-dir "../")))
+             finally return current-dir)))
 
-(defun helm-etags-get-header-name (x)
+(defun helm-etags-get-header-name (_x)
   "Create header name for this helm etags session."
   (concat "Etags in "
           (with-helm-current-buffer
@@ -144,28 +150,28 @@ If not found in CURRENT-DIR search in upper directory."
 (defun helm-etags-create-buffer (file)
   "Create the `helm-buffer' based on contents of etags tag FILE."
   (let* ((tag-fname file)
-          max
-          (split (with-current-buffer (find-file-noselect tag-fname)
-                   (prog1
-                       (split-string (buffer-string) "\n" 'omit-nulls)
-                     (setq max (line-number-at-pos (point-max)))
-                     (kill-buffer))))
-          (progress-reporter (make-progress-reporter "Loading tag file..." 0 max)))
-     (loop
-           with fname
-           with cand
-           for i in split for count from 0
-           for elm = (unless (string-match "^\x0c" i)
-                       (helm-aif (string-match "\177" i)
-                           (substring i 0 it)
-                         i))
-           do (cond ((and elm (string-match "^\\([^,]+\\),[0-9]+$" elm))
-                     (setq fname (match-string 1 elm)))
-                    (elm (setq cand (concat fname ": " elm)))
-                    (t (setq cand nil)))
-           when cand do (progn
-                          (insert (concat cand "\n"))
-                          (progress-reporter-update progress-reporter count)))))
+         max
+         (split (with-current-buffer (find-file-noselect tag-fname)
+                  (prog1
+                      (split-string (buffer-string) "\n" 'omit-nulls)
+                    (setq max (line-number-at-pos (point-max)))
+                    (kill-buffer))))
+         (progress-reporter (make-progress-reporter "Loading tag file..." 0 max)))
+    (cl-loop
+     with fname
+     with cand
+     for i in split for count from 0
+     for elm = (unless (string-match "^\x0c" i)
+                 (helm-aif (string-match "\177" i)
+                     (substring i 0 it)
+                   i))
+     do (cond ((and elm (string-match "^\\([^,]+\\),[0-9]+$" elm))
+               (setq fname (match-string 1 elm)))
+              (elm (setq cand (concat fname ": " elm)))
+              (t (setq cand nil)))
+     when cand do (progn
+                    (insert (concat cand "\n"))
+                    (progress-reporter-update progress-reporter count)))))
 
 (defun helm-etags-init ()
   "Feed `helm-buffer' using `helm-etags-cache' or tag file.
@@ -188,6 +194,11 @@ If no entry in cache, create one."
             (add-to-list 'helm-etags-mtime-alist
                          (cons tagfile (helm-etags-mtime tagfile)))))))))
 
+(defun helm-etags-split-line (line)
+  (let ((regexp "\\`\\([a-zA-Z]?:?.*?\\): \\(.*\\)"))
+    (when (string-match regexp line)
+      (cl-loop for n from 1 to 2 collect (match-string n line)))))
+
 (defvar helm-source-etags-select
   `((name . "Etags")
     (header-name . helm-etags-get-header-name)
@@ -196,13 +207,15 @@ If no entry in cache, create one."
     (match-part . (lambda (candidate)
                     ;; Match only the tag part of CANDIDATE
                     ;; and not the filename.
-                    (cadr (split-string candidate ":"))))
+                    (if helm-etags-match-part-only
+                        (cadr (helm-etags-split-line candidate))
+                        candidate)))
     (mode-line . helm-etags-mode-line-string)
     (keymap . ,helm-etags-map)
     (action . helm-etags-default-action)
     (persistent-action . (lambda (candidate)
                            (helm-etags-default-action candidate)
-                           (helm-match-line-color-current-line))))
+                           (helm-highlight-current-line))))
   "Helm source for Etags.")
 
 (defvar find-tag-marker-ring)
@@ -211,7 +224,7 @@ If no entry in cache, create one."
   "Helm default action to jump to an etags entry."
   (require 'etags)
   (helm-log-run-hook 'helm-goto-line-before-hook)
-  (let* ((split (split-string candidate ": "))
+  (let* ((split (helm-etags-split-line candidate))
          (fname (expand-file-name
                  (car split) helm-etags-tag-file-dir))
          (elm   (cadr split)))

@@ -1,4 +1,4 @@
-;;; helm-sys.el --- System related functions for helm.
+;;; helm-sys.el --- System related functions for helm. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -17,7 +17,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 (require 'helm-utils)
 
@@ -64,10 +64,10 @@ A format string where %s will be replaced with `frame-width'."
 (defun helm-top-transformer (candidates _source)
   "Transformer for `helm-top'.
 Return empty string for non--valid candidates."
-  (loop for disp in candidates collect
-        (if (string-match "^ *[0-9]+" disp) disp (cons disp ""))))
+  (cl-loop for disp in candidates collect
+           (if (string-match "^ *[0-9]+" disp) disp (cons disp ""))))
 
-(defun helm-top-action-transformer (actions candidate)
+(defun helm-top-action-transformer (actions _candidate)
   "Action transformer for `top'.
 Show actions only on line starting by a PID."
   (let ((disp (helm-get-selection nil t)))
@@ -109,11 +109,11 @@ Show actions only on line starting by a PID."
 (defun helm-top-sort-transformer (candidates source)
   (helm-top-transformer
    (if helm-top-sort-fn
-       (loop for c in candidates
-             if (string-match "^ *[0-9]+" c) collect c into pid-cands
-             else collect c into header-cands
-             finally return (append (butlast header-cands)
-                                    (sort pid-cands helm-top-sort-fn)))
+       (cl-loop for c in candidates
+                if (string-match "^ *[0-9]+" c) collect c into pid-cands
+                else collect c into header-cands
+                finally return (append (butlast header-cands)
+                                       (sort pid-cands helm-top-sort-fn)))
        candidates)
    source))
 
@@ -202,12 +202,12 @@ Show actions only on line starting by a PID."
            (call-process "xrandr" nil (current-buffer) nil
                          "--screen" (helm-xrandr-screen) "-q")
            (goto-char 1)
-           (loop with modes = nil
-                 while (re-search-forward "   \\([0-9]+x[0-9]+\\)" nil t)
-                 for mode = (match-string 1)
-                 unless (member mode modes)
-                 collect mode into modes
-                 finally return modes))))
+           (cl-loop with modes = nil
+                    while (re-search-forward "   \\([0-9]+x[0-9]+\\)" nil t)
+                    for mode = (match-string 1)
+                    unless (member mode modes)
+                    collect mode into modes
+                    finally return modes))))
     (action
      ("Change Resolution"
       . (lambda (mode)

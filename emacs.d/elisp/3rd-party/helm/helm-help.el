@@ -1,4 +1,4 @@
-;;; helm-help.el --- Help messages for Helm.
+;;; helm-help.el --- Help messages for Helm. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -23,7 +23,7 @@
   :group 'helm)
 
 (defface helm-helper
-  '((t :inherit helm-header))
+    '((t :inherit helm-header))
   "Face for helm help string in minibuffer."
   :group 'helm-help)
 
@@ -125,14 +125,14 @@ text to be displayed in BUFNAME."
                  "[SPC,C-v,down:NextPage  b,M-v,up:PrevPage  C-s/r:Isearch Other:Exit]"
                  'face 'helm-helper))
         (scroll-error-top-bottom t))
-    (condition-case err
-        (loop for event = (read-key prompt) do
-              (case event
-                ((?\C-v ? down) (scroll-up-command helm-scroll-amount))
-                ((?\M-v ?b up)  (scroll-down-command helm-scroll-amount))
-                ((?\C-s)        (isearch-forward))
-                ((?\C-r)        (isearch-backward))
-                (t (return))))
+    (condition-case _err
+        (cl-loop for event = (read-key prompt) do
+                 (cl-case event
+                   ((?\C-v ? down) (scroll-up-command helm-scroll-amount))
+                   ((?\M-v ?b up)  (scroll-down-command helm-scroll-amount))
+                   ((?\C-s)        (isearch-forward))
+                   ((?\C-r)        (isearch-backward))
+                   (t (cl-return))))
       (beginning-of-buffer (message "Beginning of buffer"))
       (end-of-buffer       (message "End of Buffer")))))
 

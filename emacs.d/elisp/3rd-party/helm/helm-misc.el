@@ -1,4 +1,4 @@
-;;; helm-misc.el --- Various functions for helm
+;;; helm-misc.el --- Various functions for helm -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -16,7 +16,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Code:
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 
 
@@ -41,13 +41,13 @@
 
 
 ;;; Latex completion
+(defvar LaTeX-math-menu)
 (defun helm-latex-math-candidates ()
   "Collect candidates for latex math completion."
-  (declare (special LaTeX-math-menu))
-  (loop for i in (cddr LaTeX-math-menu)
-        for elm = (loop for s in i when (vectorp s)
-                        collect (cons (aref s 0) (aref s 1)))
-        append elm))
+  (cl-loop for i in (cddr LaTeX-math-menu)
+           for elm = (cl-loop for s in i when (vectorp s)
+                              collect (cons (aref s 0) (aref s 1)))
+           append elm))
 
 (defvar helm-source-latex-math
   '((name . "Latex Math Menu")
@@ -121,17 +121,17 @@ http://www.emacswiki.org/cgi-bin/wiki/download/linkd.el")
      . (lambda ()
          (ignore-errors
            (with-helm-current-buffer
-             (loop initially (goto-char (point-min))
-                   while (re-search-forward
-                          (format ee-anchor-format "\\([^\.].+\\)") nil t)
-                   for anchor = (match-string-no-properties 1)
-                   collect (cons (format "%5d:%s"
-                                         (line-number-at-pos (match-beginning 0))
-                                         (format ee-anchor-format anchor))
-                                 anchor))))))
+             (cl-loop initially (goto-char (point-min))
+                      while (re-search-forward
+                             (format ee-anchor-format "\\([^\.].+\\)") nil t)
+                      for anchor = (match-string-no-properties 1)
+                      collect (cons (format "%5d:%s"
+                                            (line-number-at-pos (match-beginning 0))
+                                            (format ee-anchor-format anchor))
+                                    anchor))))))
     (persistent-action . (lambda (item)
                            (ee-to item)
-                           (helm-match-line-color-current-line)))
+                           (helm-highlight-current-line)))
     (persistent-help . "Show this entry")
     (action . (("Goto link" . ee-to)))))
 
@@ -139,12 +139,12 @@ http://www.emacswiki.org/cgi-bin/wiki/download/linkd.el")
 (defun helm-jabber-online-contacts ()
   "List online Jabber contacts."
   (with-no-warnings
-    (let (jids)
-      (dolist (item (jabber-concat-rosters) jids)
-        (when (get item 'connected)
-          (push (if (get item 'name)
-                    (cons (get item 'name) item)
-                    (cons (symbol-name item) item)) jids))))))
+    (cl-loop for item in (jabber-concat-rosters)
+             when (get item 'connected)
+             collect
+             (if (get item 'name)
+                 (cons (get item 'name) item)
+                 (cons (symbol-name item) item)))))
 
 (defvar helm-source-jabber-contacts
   '((name . "Jabber Contacts")
@@ -158,14 +158,14 @@ http://www.emacswiki.org/cgi-bin/wiki/download/linkd.el")
 
 ;;; World time
 ;;
-(defun helm-time-zone-transformer (candidates sources)
-  (loop for i in candidates
-        collect
-        (cond ((string-match (format-time-string "%H:%M" (current-time)) i)
-               (propertize i 'face 'helm-time-zone-current))
-              ((string-match helm-time-zone-home-location i)
-               (propertize i 'face 'helm-time-zone-home))
-              (t i))))
+(defun helm-time-zone-transformer (candidates _source)
+  (cl-loop for i in candidates
+           collect
+           (cond ((string-match (format-time-string "%H:%M" (current-time)) i)
+                  (propertize i 'face 'helm-time-zone-current))
+                 ((string-match helm-time-zone-home-location i)
+                  (propertize i 'face 'helm-time-zone-home))
+                 (t i))))
 
 (defvar helm-source-time-world
   '((name . "Time World List")
@@ -214,9 +214,9 @@ It is added to `extended-command-history'.
                      (format "%s (%s)" name minibuffer-history-variable)))
     (candidates
      . (lambda ()
-         (let ((history (loop for i in
-                              (symbol-value minibuffer-history-variable)
-                              unless (string= "" i) collect i)))
+         (let ((history (cl-loop for i in
+                                 (symbol-value minibuffer-history-variable)
+                                 unless (string= "" i) collect i)))
            (if (consp (car history))
                (mapcar 'prin1-to-string history)
                history))))
@@ -272,14 +272,14 @@ It is added to `extended-command-history'.
     (candidate-number-limit)))
 
 (defun helm-stumpwm-commands-init ()
-    (with-current-buffer (helm-candidate-buffer 'global)
-      (save-excursion
-        (call-process "stumpish" nil (current-buffer) nil "commands"))
-      (while (re-search-forward "[ ]*\\([^ ]+\\)[ ]*\n?" nil t)
-        (replace-match "\n\\1\n"))
-      (delete-blank-lines)
-      (sort-lines nil (point-min) (point-max))
-      (goto-char (point-max))))
+  (with-current-buffer (helm-candidate-buffer 'global)
+    (save-excursion
+      (call-process "stumpish" nil (current-buffer) nil "commands"))
+    (while (re-search-forward "[ ]*\\([^ ]+\\)[ ]*\n?" nil t)
+      (replace-match "\n\\1\n"))
+    (delete-blank-lines)
+    (sort-lines nil (point-min) (point-max))
+    (goto-char (point-max))))
 
 (defun helm-stumpwm-commands-execute (candidate)
   (call-process "stumpish" nil nil nil  candidate))

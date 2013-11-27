@@ -1,4 +1,4 @@
-;;; helm-imenu.el --- Helm interface for Imenu
+;;; helm-imenu.el --- Helm interface for Imenu -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -17,7 +17,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 (require 'helm)
 (require 'imenu)
 
@@ -51,7 +51,7 @@
 (defun helm-imenu-create-candidates (entry)
   "Create candidates with ENTRY."
   (if (listp (cdr entry))
-      (mapcan
+      (cl-mapcan
        (lambda (sub)
          (if (consp (cdr sub))
              (mapcar
@@ -68,7 +68,7 @@
     (persistent-action . (lambda (elm)
                            (helm-imenu-default-action elm)
                            (unless (fboundp 'semantic-imenu-tag-overlay)
-                             (helm-match-line-color-current-line))))
+                             (helm-highlight-current-line))))
     (persistent-help . "Show this entry")
     (action . helm-imenu-default-action))
   "See (info \"(emacs)Imenu\")")
@@ -82,7 +82,7 @@
           (setq helm-cached-imenu-tick tick
                 helm-cached-imenu-candidates
                 (ignore-errors
-                  (mapcan
+                  (cl-mapcan
                    'helm-imenu-create-candidates
                    (setq helm-cached-imenu-alist
                          (let ((index (imenu--make-index-alist)))
@@ -99,7 +99,7 @@
   (helm-log-run-hook 'helm-goto-line-before-hook)
   (let ((path (split-string elm helm-imenu-delimiter))
         (alist helm-cached-imenu-alist))
-    (dolist (elm path)
+    (cl-dolist (elm path)
       (setq alist (assoc elm alist)))
     (imenu alist)))
 

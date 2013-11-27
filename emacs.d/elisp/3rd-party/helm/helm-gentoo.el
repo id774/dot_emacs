@@ -1,4 +1,4 @@
-;;; helm-gentoo.el --- Helm UI for gentoo portage.
+;;; helm-gentoo.el --- Helm UI for gentoo portage. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -16,7 +16,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Code:
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 
 (declare-function term-line-mode "term")
@@ -85,19 +85,17 @@
                               (setq helm-cache-world (helm-gentoo-get-world))))))))
 
 
-(defun* helm-gentoo-install (candidate &key action)
+(cl-defun helm-gentoo-install (_candidate &key action)
   (setq helm-external-commands-list nil)
   (ansi-term (getenv "SHELL") "Gentoo emerge")
   (term-line-mode)
-  (let ((command (case action
-                   ('install "sudo emerge -av ")
-                   ('uninstall "sudo emerge -avC ")
+  (let ((command (cl-case action
+                   (install "sudo emerge -av ")
+                   (uninstall "sudo emerge -avC ")
                    (t (error "Unknow action"))))
-        (elms (mapconcat 'identity (helm-marked-candidates) " "))
-        (beg (point)) end)
+        (elms (mapconcat 'identity (helm-marked-candidates) " ")))
     (goto-char (point-max))
-    (insert (concat command elms))
-    (setq end (point))
+    (insert (concat command elms)) 
     (term-char-mode) (term-send-input)))
 
 (defun helm-gentoo-default-action (elm command &rest args)
@@ -152,9 +150,9 @@
 (defun helm-gentoo-init-list ()
   "Initialize buffer with all packages in Portage."
   (let* ((portage-buf (get-buffer-create "*helm-gentoo*"))
-         (buf (helm-candidate-buffer 'portage-buf)))
+         (buf (helm-candidate-buffer portage-buf)))
     (with-current-buffer buf
-      (dolist (i helm-cache-gentoo)
+      (cl-dolist (i helm-cache-gentoo)
         (insert (concat i "\n"))))))
 
 (defun helm-gentoo-setup-cache ()
@@ -181,9 +179,9 @@
 (defun helm-gentoo-get-use ()
   "Initialize buffer with all use flags."
   (let* ((use-buf (get-buffer-create "*helm-gentoo-use*"))
-         (buf (helm-candidate-buffer 'use-buf)))
+         (buf (helm-candidate-buffer use-buf)))
     (with-current-buffer buf
-      (dolist (i helm-gentoo-use-flags)
+      (cl-dolist (i helm-gentoo-use-flags)
         (insert (concat i "\n"))))))
 
 
@@ -197,17 +195,17 @@
 
 (defun helm-gentoo-get-url (elm)
   "Return a list of urls from eix output."
-  (loop with url-list = (split-string
-                         (with-temp-buffer
-                           (call-process "eix" nil t nil
-                                         elm "--format" "<homepage>\n")
-                           (buffer-string)))
-        with all
-        for i in url-list
-        when (and (string-match "^http://.*" i)
-                  (not (member i all)))
-        collect i into all
-        finally return all))
+  (cl-loop with url-list = (split-string
+                            (with-temp-buffer
+                              (call-process "eix" nil t nil
+                                            elm "--format" "<homepage>\n")
+                              (buffer-string)))
+           for i in url-list
+           when (and (string-match "^http://.*" i)
+                     all
+                     (not (member i all)))
+           collect i into all
+           finally return all))
 
 (defun helm-gentoo-get-world ()
   "Return list of all installed package on your system."
@@ -226,19 +224,19 @@
 
 (defun helm-highlight-world (eix)
   "Highlight all installed package."
-  (loop for i in eix
-        if (member i helm-cache-world)
-        collect (propertize i 'face 'helm-gentoo-match)
-        else
-        collect i))
+  (cl-loop for i in eix
+           if (member i helm-cache-world)
+           collect (propertize i 'face 'helm-gentoo-match)
+           else
+           collect i))
 
 (defun helm-highlight-local-use (use-flags)
   (let ((local-uses (helm-gentoo-get-local-use)))
-    (loop for i in use-flags
-          if (member i local-uses)
-          collect (propertize i 'face 'helm-gentoo-match)
-          else
-          collect i)))
+    (cl-loop for i in use-flags
+             if (member i local-uses)
+             collect (propertize i 'face 'helm-gentoo-match)
+             else
+             collect i)))
 
 ;;;###autoload
 (defun helm-gentoo ()

@@ -1,4 +1,4 @@
-;;; helm-call-tree.el --- Helm interface of `simple-call-tree.el'.
+;;; helm-call-tree.el --- Helm interface of `simple-call-tree.el'. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -19,7 +19,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'helm)
 
 (declare-function simple-call-tree-analyze "ext:simple-call-tree.el" (&optional test))
@@ -51,7 +51,7 @@ http://www.emacswiki.org/cgi-bin/wiki/download/simple-call-tree.el")
       (helm-simple-call-tree-analyze-maybe)
       (let ((list (funcall function simple-call-tree-alist)))
         (with-current-buffer (helm-candidate-buffer 'local)
-          (dolist (entry list)
+          (cl-dolist (entry list)
             (let ((funcs (concat "  " (mapconcat #'identity (cdr entry) "\n  "))))
               (insert (car entry) message
                       (if (string= funcs "  ")
@@ -61,7 +61,7 @@ http://www.emacswiki.org/cgi-bin/wiki/download/simple-call-tree.el")
 
 (defun helm-simple-call-tree-functions-callers-init ()
   (helm-simple-call-tree-init-base 'simple-call-tree-invert
-                                     " is called by\n"))
+                                   " is called by\n"))
 
 (defun helm-simple-call-tree-candidates ()
   (with-current-buffer (helm-candidate-buffer)
@@ -78,10 +78,10 @@ http://www.emacswiki.org/cgi-bin/wiki/download/simple-call-tree.el")
                                              "" candidate)
                    "\n")))
     (setq helm-simple-call-tree-function-index -1))
-  (incf helm-simple-call-tree-function-index)
+  (cl-incf helm-simple-call-tree-function-index)
   (helm-simple-call-tree-find-definition candidate))
 
-(defun helm-simple-call-tree-find-definition (candidate)
+(defun helm-simple-call-tree-find-definition (_candidate)
   (find-function
    (intern
     (nth (mod helm-simple-call-tree-function-index

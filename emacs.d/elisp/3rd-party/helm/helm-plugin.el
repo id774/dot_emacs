@@ -1,4 +1,4 @@
-;;; helm-plugin.el --- Helm plugins
+;;; helm-plugin.el --- Helm plugins -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -17,7 +17,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 (require 'helm)
 (require 'helm-utils)
 
@@ -29,7 +29,8 @@
 ;;; Plug-in: `info-index'
 ;;
 ;;
-(defun* helm-info-init (&optional (file (helm-attr 'info-file)))
+(defvar Info-history)
+(cl-defun helm-info-init (&optional (file (helm-attr 'info-file)))
   ;; Allow reinit candidate buffer when using edebug.
   (helm-aif (and debug-on-error
                  (helm-candidate-buffer))
@@ -42,7 +43,7 @@
             (infobuf (current-buffer))
             s e
             (nodes (or (helm-attr 'index-nodes) (Info-index-nodes))))
-        (dolist (node nodes)
+        (cl-dolist (node nodes)
           (Info-goto-node node)
           (goto-char (point-min))
           (while (search-forward "\n* " nil t)
@@ -115,7 +116,7 @@
 (add-to-list 'helm-compile-source-functions 'helm-compile-source--candidates-file)
 
 (defun helm-p-candidates-file-init ()
-  (destructuring-bind (file &optional updating)
+  (cl-destructuring-bind (file &optional updating)
       (helm-mklist (helm-attr 'candidates-file))
     (setq file (helm-interpret-value file))
     (with-current-buffer (helm-candidate-buffer 'global)
@@ -194,42 +195,42 @@
             (arrange
              #'(lambda (headlines)
                  (unless (null headlines) ; FIX headlines empty bug!
-                   (loop with curhead = (make-vector
-                                         (1+ (loop for (_ . hierarchy) in headlines
-                                                   maximize hierarchy))
-                                         "")
-                         for ((str . pt) . hierarchy) in headlines
-                         do (aset curhead hierarchy str)
-                         collecting
-                         (cons
-                          (format "H%d:%s" (1+ hierarchy)
-                                  (mapconcat 'identity
-                                             (loop for i from 0 to hierarchy
-                                                   collecting (aref curhead i))
-                                             " / "))
-                          pt))))))
-          (if (listp regexp)
-              (funcall arrange
-                       (sort
-                        (loop for re in regexp
-                              for hierarchy from 0
-                              do (goto-char (point-min))
-                              appending
-                              (loop
-                                    while (re-search-forward re nil t)
-                                    collect (cons (funcall matched) hierarchy)))
-                        (lambda (a b) (> (cdar b) (cdar a)))))
-              (loop while (re-search-forward regexp nil t)
-                    collect (funcall matched)))))))
+                   (cl-loop with curhead = (make-vector
+                                            (1+ (cl-loop for (_ . hierarchy) in headlines
+                                                         maximize hierarchy))
+                                            "")
+                            for ((str . pt) . hierarchy) in headlines
+                            do (aset curhead hierarchy str)
+                            collecting
+                            (cons
+                             (format "H%d:%s" (1+ hierarchy)
+                                     (mapconcat 'identity
+                                                (cl-loop for i from 0 to hierarchy
+                                                         collecting (aref curhead i))
+                                                " / "))
+                             pt))))))
+        (if (listp regexp)
+            (funcall arrange
+                     (sort
+                      (cl-loop for re in regexp
+                               for hierarchy from 0
+                               do (goto-char (point-min))
+                               appending
+                               (cl-loop
+                                while (re-search-forward re nil t)
+                                collect (cons (funcall matched) hierarchy)))
+                      (lambda (a b) (> (cdar b) (cdar a)))))
+            (cl-loop while (re-search-forward regexp nil t)
+                     collect (funcall matched)))))))
 
 (defun helm-headline-make-candidate-buffer (regexp subexp)
   (with-current-buffer (helm-candidate-buffer 'local)
-    (loop for (content . pos) in (helm-headline-get-candidates regexp subexp)
-          do (insert
-              (format "%5d:%s\n"
-                      (with-helm-current-buffer
-                        (line-number-at-pos pos))
-                      content)))))
+    (cl-loop for (content . pos) in (helm-headline-get-candidates regexp subexp)
+             do (insert
+                 (format "%5d:%s\n"
+                         (with-helm-current-buffer
+                           (line-number-at-pos pos))
+                         content)))))
 
 (defun helm-headline-goto-position (pos recenter)
   (goto-char pos)

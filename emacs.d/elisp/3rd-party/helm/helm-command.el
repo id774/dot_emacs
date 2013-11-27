@@ -1,4 +1,4 @@
-;;; helm-command.el --- Helm execute-exended-command.
+;;; helm-command.el --- Helm execute-exended-command. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
@@ -17,7 +17,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 (require 'helm)
 (require 'helm-mode)
 (require 'helm-elisp)
@@ -27,9 +27,9 @@
   "Emacs command related Applications and libraries for Helm."
   :group 'helm)
 
-(defcustom helm-M-x-requires-pattern 2
+(defcustom helm-M-x-requires-pattern 0
   "Value of requires-pattern for `helm-M-x'.
-Set it to 0 to show all candidates on startup."
+Show all candidates on startup when 0 (default)."
   :group 'helm-command
   :type 'boolean)
 
@@ -37,6 +37,11 @@ Set it to 0 to show all candidates on startup."
   "`helm-M-x' Save command in `extended-command-history' even when it fail."
   :group 'helm-command
   :type  'boolean)
+
+(defcustom helm-M-x-reverse-history nil
+  "The history source of `helm-M-x' appear in second position when non--nil."
+  :group 'helm-command
+  :type 'boolean)
 
 
 ;;; Faces
@@ -49,29 +54,29 @@ Set it to 0 to show all candidates on startup."
 
 (defvar helm-M-x-input-history nil)
 
-(defun* helm-M-x-get-major-mode-command-alist (mode-map)
+(cl-defun helm-M-x-get-major-mode-command-alist (mode-map)
   "Return alist of MODE-MAP."
-  (loop for key being the key-seqs of mode-map using (key-bindings com)
-        for str-key  = (key-description key)
-        for ismenu   = (string-match "<menu-bar>" str-key)
-        unless ismenu collect (cons str-key com)))
+  (cl-loop for key being the key-seqs of mode-map using (key-bindings com)
+           for str-key  = (key-description key)
+           for ismenu   = (string-match "<menu-bar>" str-key)
+           unless ismenu collect (cons str-key com)))
 
 (defun helm-get-mode-map-from-mode (mode)
   "Guess the mode-map name according to MODE.
 Some modes don't use conventional mode-map name
 so we need to guess mode-map name. e.g python-mode ==> py-mode-map.
 Return nil if no mode-map found."
-  (loop ;; Start with a conventional mode-map name.
-        with mode-map    = (intern-soft (format "%s-map" mode))
-        with mode-string = (symbol-name mode)
-        with mode-name   = (replace-regexp-in-string "-mode" "" mode-string)
-        while (not mode-map)
-        for count downfrom (length mode-name)
-        ;; Return when no result after parsing entire string.
-        when (eq count 0) return nil
-        for sub-name = (substring mode-name 0 count)
-        do (setq mode-map (intern-soft (format "%s-map" (concat sub-name "-mode"))))
-        finally return mode-map))
+  (cl-loop ;; Start with a conventional mode-map name.
+   with mode-map    = (intern-soft (format "%s-map" mode))
+   with mode-string = (symbol-name mode)
+   with mode-name   = (replace-regexp-in-string "-mode" "" mode-string)
+   while (not mode-map)
+   for count downfrom (length mode-name)
+   ;; Return when no result after parsing entire string.
+   when (eq count 0) return nil
+   for sub-name = (substring mode-name 0 count)
+   do (setq mode-map (intern-soft (format "%s-map" (concat sub-name "-mode"))))
+   finally return mode-map))
 
 (defun helm-M-x-current-mode-map-alist ()
   "Return mode-map alist of current `major-mode'."
@@ -80,39 +85,36 @@ Return nil if no mode-map found."
       (helm-M-x-get-major-mode-command-alist (symbol-value map)))))
 
 
-(defun helm-M-x-transformer (candidates sources)
+(defun helm-M-x-transformer (candidates _source)
   "filtered-candidate-transformer to show bindings in emacs commands.
 Show global bindings and local bindings according to current `major-mode'."
   (with-helm-current-buffer
-    (loop with local-map = (helm-M-x-current-mode-map-alist)
-          for cand in candidates
-          for local-key  = (car (rassq cand local-map))
-          for key        = (substitute-command-keys (format "\\[%s]" cand))
-          collect
-          (cons (cond ((and (string-match "^M-x" key) local-key)
-                       (format "%s (%s)"
-                               cand (propertize
-                                     local-key
-                                     'face 'helm-M-x-key)))
-                      ((string-match "^M-x" key) cand)
-                      (t (format "%s (%s)"
-                                 cand (propertize
-                                       key
-                                       'face 'helm-M-x-key))))
-                cand) into ls
-          finally return
-          (sort ls #'helm-generic-sort-fn))))
+    (cl-loop with local-map = (helm-M-x-current-mode-map-alist)
+             for cand in candidates
+             for local-key  = (car (rassq cand local-map))
+             for key        = (substitute-command-keys (format "\\[%s]" cand))
+             collect
+             (cons (cond ((and (string-match "^M-x" key) local-key)
+                          (format "%s (%s)"
+                                  cand (propertize
+                                        local-key
+                                        'face 'helm-M-x-key)))
+                         ((string-match "^M-x" key) cand)
+                         (t (format "%s (%s)"
+                                    cand (propertize
+                                          key
+                                          'face 'helm-M-x-key))))
+                   cand) into ls
+                   finally return
+                   (sort ls #'helm-generic-sort-fn))))
 
 ;;;###autoload
 (defun helm-M-x ()
   "Preconfigured `helm' for Emacs commands.
 It is `helm' replacement of regular `M-x' `execute-extended-command'."
   (interactive)
-  (let* ((history (loop with hist
-                        for i in extended-command-history
-                        for com = (intern i)
-                        when (commandp com)
-                        collect i into hist finally return hist))
+  (let* ((history (cl-loop for i in extended-command-history
+                           when (commandp (intern i)) collect i))
          command sym-com in-help help-cand
          (pers-help #'(lambda (candidate)
                         (let ((hbuf (get-buffer (help-buffer))))
@@ -138,6 +140,7 @@ It is `helm' replacement of regular `M-x' `execute-extended-command'."
                    :persistent-action pers-help
                    :persistent-help "Describe this command"
                    :history history
+                   :reverse-history helm-M-x-reverse-history
                    :del-input nil
                    :mode-line helm-mode-line-string
                    :must-match t
