@@ -26,7 +26,6 @@
   (define-key esc-map "l" 'seq-downcase-backward-word))
 ;; smartchr
 (when (require 'smartchr)
-  (global-set-key (kbd "=") (smartchr '("=" " = " " == " " => ")))
   (global-set-key (kbd "{") (smartchr '("{" "{)" "{ `!!' }")))
   (global-set-key (kbd ">") (smartchr '(">" "=>" " => " " => '`!!''" " => \"`!!'\"")))
   (global-set-key (kbd "F") (smartchr '("F" "$" "$_" "$_->" "@$"))))
