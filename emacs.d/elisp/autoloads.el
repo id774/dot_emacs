@@ -349,18 +349,15 @@
   (global-set-key (kbd "C-c k") 'browse-kill-ring))
 
 ;; zsh like completion
-(cond
-  ((= emacs-major-version '23)
-    (progn
-      (when (require 'zlc)
-        (zlc-mode t)
-        (setq zlc-select-completion-immediately nil)
-        (let ((map minibuffer-local-map))
-          (define-key map (kbd "<down>")  'zlc-select-next-vertical)
-          (define-key map (kbd "<up>")    'zlc-select-previous-vertical)
-          (define-key map (kbd "<right>") 'zlc-select-next)
-          (define-key map (kbd "<left>")  'zlc-select-previous)
-        )))))
+(when (require 'zlc)
+  (zlc-mode t)
+  (setq zlc-select-completion-immediately nil)
+  (let ((map minibuffer-local-map))
+    (define-key map (kbd "<down>")  'zlc-select-next-vertical)
+    (define-key map (kbd "<up>")    'zlc-select-previous-vertical)
+    (define-key map (kbd "<right>") 'zlc-select-next)
+    (define-key map (kbd "<left>")  'zlc-select-previous)
+  ))
 
 ;; 自動保存
 (when (load-p "auto-save-buffers")
@@ -453,7 +450,7 @@
     (progn
       (when (require 'helm-config)
         (helm-mode 1)
-        (define-key global-map [remap find-file] 'helm-find-files)
+        ;; (define-key global-map [remap find-file] 'helm-find-files)
         (define-key global-map [remap occur] 'helm-occur)
         (define-key global-map [remap list-buffers] 'helm-buffers-list)
         (define-key lisp-interaction-mode-map [remap completion-at-point] 'helm-lisp-completion-at-point)
@@ -468,6 +465,9 @@
         (define-key helm-c-read-file-map (kbd "C-h") 'delete-backward-char)
         ;; TAB で任意補完
         (define-key helm-c-read-file-map (kbd "TAB") 'helm-execute-persistent-action)
+        ;; helm 有効時でも以下のコマンドはデフォルトのものを使用
+        (add-to-list 'helm-completing-read-handlers-alist '(find-file . nil))
+        (add-to-list 'helm-completing-read-handlers-alist '(write-file . nil))
     ))
   ((< emacs-major-version '24)
     (progn
