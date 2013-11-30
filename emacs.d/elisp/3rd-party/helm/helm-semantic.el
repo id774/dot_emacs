@@ -26,6 +26,8 @@
 (require 'semantic)
 (require 'helm-imenu)
 
+(declare-function pulse-momentary-highlight-one-line "pulse.el" (point &optional face))
+
 (defun helm-semantic-init-candidates (tags depth &optional class)
   "Write the contents of TAGS to the current buffer."
   (let ((class class) cur-type)
@@ -54,7 +56,7 @@
           ;; Catch-all
           (t))))))
 
-(defun helm-semantic-default-action (_candidate)
+(defun helm-semantic-default-action (_candidate &optional persistent)
   ;; By default, helm doesn't pass on the text properties of the selection.
   ;; Fix this.
   (helm-log-run-hook 'helm-goto-line-before-hook)
@@ -63,7 +65,9 @@
       (goto-char (next-single-property-change
                   (point-at-bol) 'semantic-tag nil (point-at-eol)))) 
     (let ((tag (get-text-property (point) 'semantic-tag)))
-      (semantic-go-to-tag tag))))
+      (semantic-go-to-tag tag)
+      (unless persistent
+        (pulse-momentary-highlight-one-line (point))))))
 
 (defvar helm-source-semantic
   '((name . "Semantic Tags")
@@ -72,9 +76,10 @@
                 (with-current-buffer (helm-candidate-buffer 'global)
                   (helm-semantic-init-candidates tags 0)))))
     (candidates-in-buffer)
+    (allow-dups)
     (get-line . buffer-substring)
     (persistent-action . (lambda (elm)
-                           (helm-semantic-default-action elm)
+                           (helm-semantic-default-action elm t)
                            (helm-highlight-current-line)))
     (persistent-help . "Show this entry")
     (action . helm-semantic-default-action)
@@ -95,12 +100,17 @@ If `semantic-mode' is active in the current buffer, then use
 semantic for generating tags, otherwise fall back to `imenu'.
 Fill in the symbol at point by default."
   (interactive)
-  (let ((source (if (semantic-active-p)
-                    'helm-source-semantic
-                    'helm-source-imenu)))
+  (let* ((source (if (semantic-active-p)
+                     'helm-source-semantic
+                     'helm-source-imenu))
+         (imenu-p (eq source 'helm-source-imenu))
+         (imenu-auto-rescan imenu-p)
+         (helm-execute-action-at-once-if-one
+          (and imenu-p
+               helm-imenu-execute-action-at-once-if-one)))
     (helm :sources source
           :buffer "*helm semantic/imenu*"
-          :preselect (thing-at-point 'symbol))))
+          :preselect (unless imenu-p (thing-at-point 'symbol)))))
 
 (provide 'helm-semantic)
 
