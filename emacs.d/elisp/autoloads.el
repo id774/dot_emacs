@@ -465,7 +465,7 @@
         (define-key helm-c-read-file-map (kbd "C-h") 'delete-backward-char)
         ;; TAB で任意補完
         (define-key helm-c-read-file-map (kbd "TAB") 'helm-execute-persistent-action)
-        ;; helm 有効時でも以下のコマンドはデフォルトのものを使用
+        ;; helm 有効時でも以下の関数はデフォルトのものを使用
         (add-to-list 'helm-completing-read-handlers-alist '(find-file . nil))
         (add-to-list 'helm-completing-read-handlers-alist '(write-file . nil))
     ))
