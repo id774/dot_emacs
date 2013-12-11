@@ -210,7 +210,8 @@
   :group 'auto-complete)
 
 (defcustom ac-non-trigger-commands
-  '(*table--cell-self-insert-command)
+  '(*table--cell-self-insert-command
+    electric-buffer-list)
   "Commands that can't be used as triggers of `auto-complete'."
   :type '(repeat symbol)
   :group 'auto-complete)
@@ -288,7 +289,7 @@ a prefix doen't contain any upper case letters."
   :group 'auto-complete)
 
 (defcustom ac-use-overriding-local-map nil
-  "Non-nil means `overriding-local-map' will be used to hack for overriding key events on auto-copletion."
+  "Non-nil means `overriding-local-map' will be used to hack for overriding key events on auto-completion."
   :type 'boolean
   :group 'auto-complete)
 
@@ -434,7 +435,7 @@ If there is no common part, this will be nil.")
     (define-key map "\C-\M-p" 'ac-quick-help-scroll-up)
 
     (dotimes (i 9)
-      (let ((symbol (intern (format "ac-complete-%d" (1+ i)))))
+      (let ((symbol (intern (format "ac-complete-select-%d" (1+ i)))))
         (fset symbol
               `(lambda ()
                  (interactive)
@@ -1173,7 +1174,7 @@ that have been made before in this function.  When `buffer-undo-list' is
           (setq buffer-undo-list
                 (nthcdr 2 buffer-undo-list)))
       (delete-region ac-point (point)))
-    (insert string)
+    (insert (substring-no-properties string))
     ;; Sometimes, possible when omni-completion used, (insert) added
     ;; to buffer-undo-list strange record about position changes.
     ;; Delete it here:
@@ -1382,9 +1383,16 @@ that have been made before in this function.  When `buffer-undo-list' is
   (interactive)
   (when (ac-menu-live-p)
     (ac-cancel-show-menu-timer)
-    (ac-cancel-quick-help-timer)
     (ac-show-menu)
-    (popup-isearch ac-menu :callback 'ac-isearch-callback)))
+    (if ac-use-quick-help
+        (let ((popup-menu-show-quick-help-function
+               (if (ac-quick-help-use-pos-tip-p)
+                   'ac-pos-tip-show-quick-help
+                 'popup-menu-show-quick-help)))
+          (popup-isearch ac-menu
+                         :callback 'ac-isearch-callback
+                         :help-delay ac-quick-help-delay))
+      (popup-isearch ac-menu :callback 'ac-isearch-callback))))
 
 
 
@@ -1424,7 +1432,8 @@ that have been made before in this function.  When `buffer-undo-list' is
 (defun ac-fuzzy-complete ()
   "Start fuzzy completion at current point."
   (interactive)
-  (when (require 'fuzzy nil t)
+  (if (not (require 'fuzzy nil t))
+      (message "Please install fuzzy.el if you use fuzzy completion")
     (unless (ac-menu-live-p)
       (ac-start))
     (let ((ac-match-function 'fuzzy-all-completions))
