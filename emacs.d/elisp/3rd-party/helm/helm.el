@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2007         Tamas Patrovics
 ;;               2008 ~ 2011  rubikitch <rubikitch@ruby-lang.org>
-;;               2011 ~ 2013  Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;;               2011 ~ 2014  Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This is a fork of anything.el wrote by Tamas Patrovics.
 
@@ -376,6 +376,7 @@ or when `helm-split-window-default-side' is set to 'same."
   :type 'boolean)
 
 (defcustom helm-sources-using-default-as-input '(helm-source-imenu
+                                                 helm-source-semantic
                                                  helm-source-info-elisp
                                                  helm-source-etags-select)
   "List of helm sources that need to use `helm-maybe-use-default-as-input'.
@@ -1476,7 +1477,10 @@ with \\<minibuffer-local-map>\\[next-history-element].
 When nil or not present `thing-at-point' will be used instead.
 If `helm-maybe-use-default-as-input' is non--nil display will be
 updated using :default arg as input unless :input is specified,
-which in this case will take precedence on :default.
+which in this case will take precedence on :default
+This is a string or a list, in this case the car of the list will
+be used as initial default input, but you will be able to cycle in this
+list with \\<minibuffer-local-map>\\[next-history-element].
 
 \:history
 
@@ -1588,10 +1592,14 @@ ANY-KEYMAP ANY-DEFAULT ANY-HISTORY See `helm'."
           ;; This is not needed in emacs-24.3+
           (cursor-in-echo-area t)
           (non-essential t)
+          (old--cua cua-mode)
           (helm-maybe-use-default-as-input
            (or helm-maybe-use-default-as-input ; it is let-bounded so use it.
                (cl-loop for s in (helm-normalize-sources any-sources)
                         thereis (memq s helm-sources-using-default-as-input)))))
+      ;; cua-mode overhide local helm bindings.
+      ;; disable this stupid thing if enabled.
+      (and cua-mode (cua-mode -1))
       (unwind-protect
            (condition-case _v
                (let (;; `helm-source-name' is non-nil
@@ -1626,8 +1634,8 @@ ANY-KEYMAP ANY-DEFAULT ANY-HISTORY See `helm'."
         (setq overriding-local-map old-overridding-local-map)
         (setq helm-alive-p nil)
         (setq helm-in-file-completion-p nil)
+        (and old--cua (cua-mode 1))
         (helm-log-save-maybe)))))
-
 
 
 ;;; Helm resume
@@ -1946,7 +1954,8 @@ For ANY-RESUME ANY-INPUT ANY-DEFAULT and ANY-SOURCES See `helm'."
                                             helm-source-filter))
                                 (helm-get-sources))))
   (setq helm-pattern (or (and helm-maybe-use-default-as-input
-                              (or any-default
+                              (or (if (listp any-default)
+                                      (car any-default) any-default)
                                   (with-helm-current-buffer
                                     (thing-at-point 'symbol))))
                          ""))
@@ -2311,6 +2320,24 @@ ARGS is (cand1 cand2 ...) or ((disp1 . real1) (disp2 . real2) ...)
       (helm-composed-funcall-with-source source it candidates source)
     candidates))
 
+(defmacro helm--maybe-process-filter-one-by-one-candidate (candidate source)
+  "Execute `filter-one-by-one' function(s) on CANDIDATE in SOURCE."
+  `(helm-aif (assoc-default 'filter-one-by-one ,source)
+       (if (listp it)
+           (cl-loop for f in it
+                    do (setq ,candidate (funcall f ,candidate)))
+           (setq ,candidate (funcall it ,candidate)))))
+
+(defun helm--initialize-one-by-one-candidates (candidates source)
+  "Process the CANDIDATES with the `filter-one-by-one' function in SOURCE.
+Return CANDIDATES when pattern is empty."
+  (helm-aif (and (string= helm-pattern "")
+                 (assoc-default 'filter-one-by-one source))
+      (cl-loop for cand in candidates
+               do (helm--maybe-process-filter-one-by-one-candidate cand source)
+               collect cand)
+    candidates))
+
 (defun helm-process-filtered-candidate-transformer-maybe
     (candidates source process-p)
   "Execute `filtered-candidate-transformer' function(s) on CANDIDATES in SOURCE.
@@ -2342,7 +2369,9 @@ When attribute `real-to-display' is present, execute its function on all maybe
 filtered CANDIDATES."
   (helm-process-real-to-display
    (helm-process-filtered-candidate-transformer-maybe
-    (helm-process-candidate-transformer candidates source) source process-p)
+    (helm-process-candidate-transformer
+     (helm--initialize-one-by-one-candidates candidates source) source)
+    source process-p)
    source))
 
 
@@ -2380,15 +2409,16 @@ Default function to match candidates according to `helm-pattern'."
                       #'helm-default-match-function)))
     (if (listp matchfns) matchfns (list matchfns))))
 
-(defmacro helm--accumulate-candidates (cand newmatches
+(defmacro helm--accumulate-candidates (candidate newmatches
                                        hash item-count limit source)
   "Add CAND into NEWMATCHES and use HASH to uniq NEWMATCHES.
 Argument ITEM-COUNT count the matches.
 if ITEM-COUNT reaches LIMIT, exit from inner loop."
-  `(unless (gethash ,cand ,hash)
+  `(unless (gethash ,candidate ,hash)
      (unless (assq 'allow-dups ,source)
-       (puthash ,cand t ,hash))
-     (push ,cand ,newmatches)
+       (puthash ,candidate t ,hash))
+     (helm--maybe-process-filter-one-by-one-candidate ,candidate source)
+     (push ,candidate ,newmatches)
      (cl-incf ,item-count)
      (when (= ,item-count ,limit) (cl-return))))
 
@@ -2431,16 +2461,16 @@ and `helm-pattern'."
           (cl-dolist (match matchfns)
             (let (newmatches)
               (cl-dolist (candidate cands)
-                (when (funcall match (helm-candidate-get-display candidate))
-                  (helm--accumulate-candidates
-                   candidate newmatches helm-match-hash item-count limit source)))
-              (setq matches (append matches (reverse newmatches)))
-              ;; Don't recompute matches already found by this match function
-              ;; with the next match function.
-              (setq cands (cl-loop for i in cands
-                                   unless (member i matches) collect i)))))
-      (error (helm-log-error "helm-match-from-candidates in source `%s': %s %s"
-                             (assoc-default 'name source) (car err) (cdr err))
+                (unless (gethash candidate helm-match-hash)
+                  (when (funcall match
+                                 (helm-candidate-get-display candidate))
+                    (helm--accumulate-candidates
+                     candidate newmatches
+                     helm-match-hash item-count limit source))))
+              (setq matches (append matches (nreverse newmatches))))))
+      (error (unless (eq (car err) 'invalid-regexp) ; Always ignore regexps errors.
+               (helm-log-error "helm-match-from-candidates in source `%s': %s %s"
+                               (assoc-default 'name source) (car err) (cdr err)))
              (setq matches nil)))
     matches))
 
@@ -2467,23 +2497,22 @@ and `helm-pattern'."
             (helm-get-cached-candidates source) matchfns limit source))
        source))))
 
-(defun helm-process-source (source)
-  "Display matched results from SOURCE according to its settings."
+(defun helm-render-source (source matches)
+  "Display MATCHES from SOURCE according to its settings."
   (helm-log-eval (assoc-default 'name source))
-  (let ((matches (helm-compute-matches source)))
-    (when matches
-      (helm-insert-header-from-source source)
-      (if (not (assq 'multiline source))
-          (mapc #'(lambda (m)
-                    (helm-insert-match m 'insert source))
-                matches)
-          (let ((start (point)) separate)
-            (cl-dolist (match matches)
-              (if separate
-                  (helm-insert-candidate-separator)
-                  (setq separate t))
-              (helm-insert-match match 'insert source))
-            (put-text-property start (point) 'helm-multiline t))))))
+  (when matches
+    (helm-insert-header-from-source source)
+    (if (not (assq 'multiline source))
+        (mapc #'(lambda (m)
+                  (helm-insert-match m 'insert source))
+              matches)
+      (let ((start (point)) separate)
+        (cl-dolist (match matches)
+          (if separate
+              (helm-insert-candidate-separator)
+            (setq separate t))
+          (helm-insert-match match 'insert source))
+        (put-text-property start (point) 'helm-multiline t)))))
 
 (defun helm-process-delayed-sources (delayed-sources &optional preselect source)
   "Process helm DELAYED-SOURCES.
@@ -2494,10 +2523,12 @@ when emacs is idle for `helm-idle-delay'."
     (helm-log-eval (mapcar (lambda (s)
                              (assoc-default 'name s))
                            delayed-sources))
-    (with-current-buffer helm-buffer
+    (with-current-buffer (helm-buffer-get)
       (save-excursion
         (goto-char (point-max))
-        (mapc 'helm-process-source delayed-sources)
+        (mapc (lambda (source)
+                (helm-render-source source (helm-compute-matches source)))
+              delayed-sources)
         (when (and (not (helm-empty-buffer-p))
                    ;; No selection yet.
                    (= (overlay-start helm-selection-overlay)
@@ -2530,18 +2561,37 @@ is done on whole `helm-buffer' and not on current source."
     (when helm-onewindow-p (delete-other-windows)))
   (with-current-buffer (helm-buffer-get)
     (set (make-local-variable 'helm-input-local) helm-pattern)
-    (erase-buffer)
-    (let (delayed-sources
-          normal-sources)
-      (unwind-protect ; Process normal sources and store delayed one's.
-           (cl-loop for source in (cl-remove-if-not 'helm-update-source-p
-                                                    (helm-get-sources))
-                    if (helm-delayed-source-p source)
-                    collect source into ds
-                    else collect source into ns and do
-                    (helm-process-source source)
-                    finally (setq delayed-sources ds
-                                  normal-sources ns))
+    (let (normal-sources
+          normal-sources-candidates
+          delayed-sources)
+      (unwind-protect
+          (progn
+            ;; Iterate over all the sources
+            (cl-loop for source in (cl-remove-if-not 'helm-update-source-p (helm-get-sources))
+                     if (helm-delayed-source-p source)
+                     ;; Delayed sources just get collected for later
+                     ;; processing
+                     collect source into ds
+                     else
+                     ;; Normal sources also get their matching
+                     ;; candidates collected here, before erasing the
+                     ;; current contents of the helm buffer, so that
+                     ;; their computation doesn't delay the redraw of
+                     ;; the helm buffer and doesn't trigger flicker
+                     collect source into ns and
+                     collect (helm-compute-matches source) into nsc
+                     ;; Export the variables from cl-loop
+                     finally (setq delayed-sources ds
+                                   normal-sources ns
+                                   normal-sources-candidates nsc))
+            ;;; Finally the helm buffer can be erased
+            (erase-buffer)
+            ;;; Render all the sources into the helm buffer using the
+            ;;; candidates calculated before the erase
+            (cl-loop for source in normal-sources
+                     for candidates in normal-sources-candidates
+                     do
+                     (helm-render-source source candidates)))
         (helm-log-eval
          (mapcar (lambda (s) (assoc-default 'name s)) delayed-sources))
         (cond ((and preselect delayed-sources normal-sources)
@@ -2593,7 +2643,7 @@ is done on whole `helm-buffer' and not on current source."
          ;; These incomplete regexps hang helm forever
          ;; so defer update. Maybe replace spaces quoted when using
          ;; match-plugin-mode.
-         (not (member (replace-regexp-in-string "\\s\\" "" helm-pattern)
+         (not (member (replace-regexp-in-string "\\s\\ " " " helm-pattern)
                       helm-update-blacklist-regexps)))))
 
 (defun helm-delayed-source-p (source)
@@ -2731,21 +2781,23 @@ after the source name by overlay."
   (cl-dolist (candidate (helm-transform-candidates
                          (helm-output-filter--collect-candidates
                           (split-string output-string "\n")
-                          (assoc 'incomplete-line source))
+                          (assoc 'incomplete-line source)
+                          source)
                          source t))
-    (if (assq 'multiline source)
-        (let ((start (point)))
-          (helm-insert-candidate-separator)
-          (helm-insert-match candidate 'insert-before-markers source)
-          (put-text-property start (point) 'helm-multiline t))
-        (helm-insert-match candidate 'insert-before-markers source))
-    (cl-incf (cdr (assoc 'item-count source)))
-    (when (>= (assoc-default 'item-count source) limit)
-      (helm-kill-async-process process)
-      (cl-return))))
+    (when candidate ; filter-one-by-one may return nil candidates.
+      (if (assq 'multiline source)
+          (let ((start (point)))
+            (helm-insert-candidate-separator)
+            (helm-insert-match candidate 'insert-before-markers source)
+            (put-text-property start (point) 'helm-multiline t))
+          (helm-insert-match candidate 'insert-before-markers source))
+      (cl-incf (cdr (assoc 'item-count source)))
+      (when (>= (assoc-default 'item-count source) limit)
+        (helm-kill-async-process process)
+        (cl-return)))))
 
-(defun helm-output-filter--collect-candidates (lines incomplete-line-info)
-  "Collect lines in LINES maybe completing the truncated first and last lines."
+(defun helm-output-filter--collect-candidates (lines incomplete-line-info source)
+  "Collect LINES maybe completing the truncated first and last lines."
   ;; The output of process may come in chunks of any size,
   ;; so the last line of LINES come truncated, this truncated line is
   ;; stored in INCOMPLETE-LINE-INFO and will be concated with the first
@@ -2753,13 +2805,16 @@ after the source name by overlay."
   ;; INCOMPLETE-LINE-INFO is an attribute of source which is created
   ;; with an empty string when the source is computed => (incomplete-line . "")
   (helm-log-eval (cdr incomplete-line-info))
-  (butlast ; The last line is the incomplete line, remove it.
-   (cl-loop for line in lines collect
-            (if (cdr incomplete-line-info) ; On start it is an empty string.
-                (prog1
-                    (concat (cdr incomplete-line-info) line)
-                  (setcdr incomplete-line-info nil))
-                line)
+  (butlast
+   (cl-loop for line in lines
+            ;; On start `incomplete-line-info' value is empty string.
+            for newline = (helm-aif (cdr incomplete-line-info)
+                              (prog1
+                                  (concat it line)
+                                (setcdr incomplete-line-info nil))
+                            line)
+            do (helm--maybe-process-filter-one-by-one-candidate newline source)
+            collect newline
             ;; Store last incomplete line (last chunk truncated)
             ;; until new output arrives.
             finally do (setcdr incomplete-line-info line))))
@@ -3547,13 +3602,14 @@ See also `helm-sources' docstring."
          (cl-loop with item-count = 0
                   while (funcall searcher pattern)
                   for cand = (funcall get-line-fn (point-at-bol) (point-at-eol))
-                  when (or
-                        ;; Always collect when cand is matched by searcher funcs
-                        ;; and match-part attr is not present.
-                        (not match-part-fn)
-                        ;; If match-part attr is present, collect only if PATTERN
-                        ;; match the part of CAND specified by the match-part func.
-                        (helm-search-match-part cand pattern match-part-fn))
+                  when (and (not (gethash cand helm-cib-hash))
+                            (or
+                             ;; Always collect when cand is matched by searcher funcs
+                             ;; and match-part attr is not present.
+                             (not match-part-fn)
+                             ;; If match-part attr is present, collect only if PATTERN
+                             ;; match the part of CAND specified by the match-part func.
+                             (helm-search-match-part cand pattern match-part-fn)))
                   do (helm--accumulate-candidates
                       cand newmatches helm-cib-hash item-count limit source)
                   unless (helm-point-is-moved

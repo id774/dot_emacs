@@ -1,6 +1,6 @@
 ;;; helm-grep.el --- Helm Incremental Grep. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2014 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -85,6 +85,11 @@ See `helm-grep-default-command' for format specs and infos about ack-grep."
   "zgrep -a -n%cH -e %p %f"
   "Default command for Zgrep.
 See `helm-grep-default-command' for infos on format specs."
+  :group 'helm-grep
+  :type  'string)
+
+(defcustom helm-ack-grep-executable "ack-grep"
+  "Default ack-grep command."
   :group 'helm-grep
   :type  'string)
 
@@ -293,13 +298,13 @@ It is intended to use as a let-bound variable, DON'T set this globaly.")
 
 (cl-defun helm-grep-use-ack-p (&key where)
   (cl-case where
-    (default (string= (helm-grep-command) "ack-grep"))
-    (recursive (string= (helm-grep-command t) "ack-grep"))
-    (strict (and (string= (helm-grep-command t) "ack-grep")
-                 (string= (helm-grep-command) "ack-grep")))
+    (default (string= (helm-grep-command) helm-ack-grep-executable))
+    (recursive (string= (helm-grep-command t) helm-ack-grep-executable))
+    (strict (and (string= (helm-grep-command t) helm-ack-grep-executable)
+                 (string= (helm-grep-command) helm-ack-grep-executable)))
     (t (and (not (string= (helm-grep-command) "git-grep"))
-            (or (string= (helm-grep-command) "ack-grep")
-                (string= (helm-grep-command t) "ack-grep"))))))
+            (or (string= (helm-grep-command) helm-ack-grep-executable)
+                (string= (helm-grep-command t) helm-ack-grep-executable))))))
 
 (defun helm-grep-init (only-files &optional include zgrep)
   "Start an asynchronous grep process in ONLY-FILES list."
@@ -673,7 +678,7 @@ Special commands:
 (defun helm-grep-hack-types ()
   "Return a list of known ack-grep types."
   (with-temp-buffer
-    (call-process "ack-grep" nil t nil
+    (call-process helm-ack-grep-executable nil t nil
                   "--help" "types")
     (goto-char (point-min))
     (cl-loop while (re-search-forward
@@ -827,7 +832,7 @@ in recurse, search being made on `helm-zgrep-file-extension-regexp'."
             (header-name . (lambda (name)
                              (concat name "(C-c ? Help)")))
             (candidates-process . helm-grep-collect-candidates)
-            (filtered-candidate-transformer helm-grep-cand-transformer)
+            (filter-one-by-one . helm-grep-filter-one-by-one)
             (candidate-number-limit . 9999)
             (no-matchplugin)
             (nohighlight)
@@ -895,25 +900,34 @@ in recurse, search being made on `helm-zgrep-file-extension-regexp'."
     ;; may contain a ":".
     (cl-loop for n from 1 to 3 collect (match-string n line))))
 
+(defun helm-grep--filter-candidate-1 (candidate &optional dir)
+  (let* ((root   (or dir (and helm-grep-default-directory-fn
+                              (funcall helm-grep-default-directory-fn))))
+         (split  (helm-grep-split-line candidate))
+         (fname  (if (and root split)
+                     (expand-file-name (car split) root)
+                     (car-safe split)))
+         (lineno (nth 1 split))
+         (str    (nth 2 split)))
+    (when (and fname lineno str)
+      (cons (concat (propertize (file-name-nondirectory fname)
+                                'face 'helm-grep-file
+                                'help-echo fname) ":"
+                                (propertize lineno 'face 'helm-grep-lineno) ":"
+                                (helm-grep-highlight-match str))
+            candidate))))
+
+(defun helm-grep-filter-one-by-one (candidate)
+  "`filter-one-by-one' transformer function for `helm-do-grep'."
+  (helm-grep--filter-candidate-1 candidate))
+  
 (defun helm-grep-cand-transformer (candidates _source)
-  "Filtered candidate transformer function for `helm-do-grep'."
+  "`filtered-candidate-transformer' function for `helm-do-grep'."
   (cl-loop with root = (and helm-grep-default-directory-fn
                             (funcall helm-grep-default-directory-fn))
            for i in candidates
-           for split  = (and i (helm-grep-split-line i))
-           for fname  = (if (and root split)
-                            (expand-file-name (car split) root)
-                            (car-safe split))
-           for lineno = (nth 1 split)
-           for str    = (nth 2 split)
-           when (and fname lineno str)
-           collect
-           (cons (concat (propertize (file-name-nondirectory fname)
-                                     'face 'helm-grep-file
-                                     'help-echo fname) ":"
-                                     (propertize lineno 'face 'helm-grep-lineno) ":"
-                                     (helm-grep-highlight-match str))
-                 i)))
+           for cand = (helm-grep--filter-candidate-1 i root)
+           when cand collect cand))
 
 (defun helm-grep-highlight-match (str &optional multi-match)
   "Highlight in string STR all occurences matching `helm-pattern'."
@@ -1051,7 +1065,7 @@ If a prefix arg is given run grep on all buffers ignoring non--file-buffers."
         (candidates-process
          . (lambda ()
              (funcall helm-pdfgrep-default-function helm-pdfgrep-targets)))
-        (filtered-candidate-transformer helm-grep-cand-transformer)
+        (filter-one-by-one . helm-grep-filter-one-by-one)
         (candidate-number-limit . 9999)
         (no-matchplugin)
         (nohighlight)

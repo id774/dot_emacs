@@ -1,6 +1,6 @@
 ;;; helm-mode.el --- Enable helm completion everywhere. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2014 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -74,9 +74,10 @@ See `helm-case-fold-search' for more info."
   :group 'helm-mode
   :type 'symbol)
 
-(defcustom helm-mode-handle-completion-in-region nil
-  "[EXPERIMENTAL] Whether to replace or not `completion-in-region-function'.
-This enable support for `completing-read-multiple' when non--nil."
+(defcustom helm-mode-handle-completion-in-region t
+  "Whether to replace or not `completion-in-region-function'.
+This enable support for `completing-read-multiple' and `completion-at-point'
+when non--nil."
   :group 'helm-mode
   :type 'boolean)
 
@@ -215,6 +216,7 @@ If COLLECTION is an `obarray', a TEST should be needed. See `obarray'."
                                  (name "Helm Completions")
                                  candidates-in-buffer
                                  exec-when-only-one
+                                 quit-when-no-cand
                                  (volatile t)
                                  sort
                                  (fc-transformer 'helm-cr-default-transformer)
@@ -388,6 +390,7 @@ that use `helm-comp-read' See `helm-M-x' for example."
                                    (append src '((volatile)))
                                    src))))
            (helm-execute-action-at-once-if-one exec-when-only-one)
+           (helm-quit-if-no-candidate quit-when-no-cand)
            result)
       (when reverse-history (setq src-list (nreverse src-list)))
       (setq result (helm
@@ -739,8 +742,8 @@ Keys description:
                                                          (funcall ',test i)) ; Test ok
                                                 collect i)
                                        (helm-find-files-get-candidates ',must-match)))))
-                      (filtered-candidate-transformer
-                       helm-find-files-transformer)
+                      (filtered-candidate-transformer . helm-ff-sort-candidates)
+                      (filter-one-by-one . helm-ff-filter-candidate-one-by-one)
                       (keymap . ,cmap)
                       (no-delay-on-input)
                       (persistent-action . ,persistent-action)
@@ -860,14 +863,67 @@ Keys description:
 Can be used as value for `completion-in-region-function'."
   (cl-declare (special require-match prompt))
   (let* ((enable-recursive-minibuffers t)
-         (input (buffer-substring start end))
-         (result (helm-comp-read prompt
-                                 (all-completions input collection predicate)
-                                 :initial-input input
-                                 :must-match require-match)))
+         (input (buffer-substring-no-properties start end))
+         (current-command (or (helm-this-command) this-command))
+         (str-command (symbol-name current-command))
+         (buf-name (format "*helm-mode-%s*" str-command))
+         (require-match (or (and (boundp 'require-match) require-match)
+                            minibuffer-completion-confirm
+                            ;; If prompt have not been propagated here, that's
+                            ;; probably mean we have no prompt and we are in
+                            ;; completion-at-point or friend, so use a non--nil
+                            ;; value for require-match.
+                            (not (boundp 'prompt))))
+         (data (all-completions input collection predicate))
+         (file-comp-p (helm-mode--in-file-completion-p input (car data)))
+         ;; Completion-at-point and friends have no prompt.
+         (result (helm-comp-read (or (and (boundp 'prompt) prompt) "Pattern: ")
+                                 (if file-comp-p
+                                     (cl-loop for f in data unless
+                                              (string-match "\\`\\.\\{1,2\\}/\\'" f)
+                                              collect f)
+                                     data)
+                                 :name str-command
+                                 :initial-input
+                                 (cond ((and file-comp-p
+                                             (not (string-match "/\\'" input)))
+                                        (concat (helm-basename input)
+                                                (unless (string= input "") " ")))
+                                       ((string-match "/\\'" input) nil)
+                                       ((or (null require-match)
+                                            (stringp require-match))
+                                        input)
+                                       (t (concat input " ")))
+                                  :buffer buf-name
+                                  :exec-when-only-one t
+                                  :quit-when-no-cand
+                                  #'(lambda ()
+                                      ;; Delay message to overwrite "Quit".
+                                      (run-with-timer
+                                       0.01 nil
+                                       #'(lambda ()
+                                           (message "[No matches]")))
+                                            t) ; exit minibuffer immediately.
+                                  :must-match require-match)))
     (when result
-      (delete-region start end)
+      (delete-region (if (and file-comp-p
+                              (save-excursion
+                                (re-search-backward
+                                 "~?/"
+                                 (previous-single-property-change
+                                  (point) 'read-only) t)))
+                         (match-end 0) start)
+                     end)
       (insert result))))
+
+(defun helm-mode--in-file-completion-p (target candidate)
+  (when (and candidate target)
+    (or (string-match "/\\'" candidate)
+        (if (string-match "~?/" target)
+            (file-exists-p (expand-file-name candidate (helm-basedir target)))
+            (file-exists-p (expand-file-name
+                            candidate (with-helm-current-buffer
+                                        default-directory)))))))
 
 (when (boundp 'completion-in-region-function)
   (defconst helm--old-completion-in-region-function completion-in-region-function))

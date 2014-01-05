@@ -1,6 +1,6 @@
 ;;; helm-net.el --- helm browse url and search web. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2014 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 (require 'xml)
 (require 'browse-url)
 
+
 (defgroup helm-net nil
   "Net related applications and libraries for Helm."
   :group 'helm)
@@ -201,8 +202,7 @@ Return an alist with elements like (data . number_results)."
                     (funcall helm-google-suggest-default-function)))
     (action . (("Google Search" . helm-google-suggest-action)))
     (volatile)
-    (requires-pattern . 3)
-    (delayed)))
+    (requires-pattern . 3)))
 
 (defun helm-google-suggest-emacs-lisp ()
   "Try to emacs lisp complete with google suggestions."
@@ -246,8 +246,7 @@ Return an alist with elements like (data . number_results)."
     (candidates . helm-yahoo-suggest-set-candidates)
     (action . (("Yahoo Search" . helm-yahoo-suggest-action)))
     (volatile)
-    (requires-pattern . 3)
-    (delayed)))
+    (requires-pattern . 3)))
 
 
 ;;; Web browser functions.
@@ -271,7 +270,8 @@ Return an alist with elements like (data . number_results)."
     (,browse-url-galeon-program . browse-url-galeon)
     (,browse-url-netscape-program . browse-url-netscape)
     (,browse-url-mosaic-program . browse-url-mosaic)
-    (,browse-url-xterm-program . browse-url-text-xterm))
+    (,browse-url-xterm-program . browse-url-text-xterm)
+    ("emacs" . eww-browse-url))
   "*Alist of \(executable . function\) to try to find a suitable url browser.")
 
 (cl-defun helm-generic-browser (url name &rest args)
@@ -301,8 +301,7 @@ Return an alist with elements like (data . number_results)."
   "Find the first available browser and ask it to load URL."
   (let ((default-browser-fn
          (cl-loop for (exe . fn) in helm-browse-url-default-browser-alist
-                  thereis (and exe (executable-find exe)
-                               (and (fboundp fn) fn)))))
+                  thereis (and exe (executable-find exe) (fboundp fn) fn))))
     (if default-browser-fn
         (apply default-browser-fn url args)
         (error "No usable browser found"))))

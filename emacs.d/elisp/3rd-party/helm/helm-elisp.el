@@ -1,6 +1,6 @@
 ;;; helm-elisp.el --- Elisp symbols completion for helm. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2014 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -414,6 +414,7 @@ First call indent, second complete symbol, third complete fname."
     (helm :sources '(helm-source-info-elisp
                      helm-source-info-cl
                      helm-source-info-eieio)
+          :resume 'noresume
           :buffer "*helm lookup*"
           :input candidate)))
 

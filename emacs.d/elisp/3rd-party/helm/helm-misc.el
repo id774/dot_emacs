@@ -1,6 +1,6 @@
 ;;; helm-misc.el --- Various functions for helm -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2014 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -179,17 +179,42 @@ http://www.emacswiki.org/cgi-bin/wiki/download/linkd.el")
 
 ;;; LaCarte
 ;;
-(defvar helm-source-lacarte
-  '((name . "Lacarte")
+;;
+(defun helm-create-lacarte-source (name &optional maps)
+  "Create lacarte source named NAME for MAPS.
+MAPS is like in `lacarte-get-overall-menu-item-alist'.
+See
+    http://www.emacswiki.org/cgi-bin/wiki/download/lacarte.el"
+  `((name . ,name)
     (init . (lambda () (require 'lacarte)))
     (candidates . (lambda ()
                     (with-helm-current-buffer
-                      (delete '(nil) (lacarte-get-overall-menu-item-alist)))))
+                      (delete '(nil) (lacarte-get-overall-menu-item-alist ,@maps)))))
+    (candidate-transformer . helm-lacarte-candidate-transformer)
     (candidate-number-limit . 9999)
-    (action . helm-call-interactively))
-  "Needs lacarte.el.
+    (type . command)))
 
-http://www.emacswiki.org/cgi-bin/wiki/download/lacarte.el")
+(defun helm-lacarte-candidate-transformer (cands)
+  (mapcar (lambda (cand)
+          (let* ((item (car cand))
+                 (match (string-match "[^>] \\((.*)\\)$" item)))
+            (when match
+              (put-text-property (match-beginning 1) (match-end 1)
+                                 'face 'helm-M-x-key item))
+            cand))
+          cands))
+
+(defvar helm-source-lacarte (helm-create-lacarte-source "Lacarte")
+  "Helm interface for lacarte.el.
+See
+    http://www.emacswiki.org/cgi-bin/wiki/download/lacarte.el")
+
+;;;###autoload
+(defun helm-browse-menubar ()
+  "Helm interface to the menubar using lacarte.el."
+  (interactive)
+  (require 'lacarte)
+  (helm :sources 'helm-source-lacarte :buffer "*helm lacarte*"))
 
 (defun helm-call-interactively (cmd-or-name)
   "Execute CMD-OR-NAME as Emacs command.

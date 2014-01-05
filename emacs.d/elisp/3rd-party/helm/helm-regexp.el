@@ -1,6 +1,6 @@
 ;;; helm-regexp.el --- In buffer regexp searching and replacement for helm. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2014 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -287,7 +287,7 @@ Same as `helm-m-occur-goto-line' but go in new frame."
               (helm-attrset 'delayed helm-m-occur-idle-delay
                             helm-source-moccur)))
     (candidates-in-buffer)
-    (filtered-candidate-transformer . helm-m-occur-transformer)
+    (filter-one-by-one . helm-m-occur-filter-one-by-one)
     (get-line . helm-m-occur-get-line)
     (nohighlight)
     (migemo)
@@ -305,26 +305,25 @@ Same as `helm-m-occur-goto-line' but go in new frame."
     (delayed . ,helm-m-occur-idle-delay))
   "Helm source for multi occur.")
 
-(defun helm-m-occur-transformer (candidates _source)
-  "Transformer function for `helm-source-moccur'."
+(defun helm-m-occur-filter-one-by-one (candidate)
+  "`filter-one-by-one' function for `helm-source-moccur'."
   (require 'helm-grep)
-  (cl-loop for i in candidates
-           for split = (helm-grep-split-line i)
-           for buf = (car split)
-           for lineno = (nth 1 split)
-           for str = (nth 2 split)
-           collect (cons (concat (propertize
-                                  buf
-                                  'face 'helm-moccur-buffer
-                                  'help-echo (buffer-file-name
-                                              (get-buffer buf))
-                                  'buffer-name buf)
-                                 ":"
-                                 (propertize lineno 'face 'helm-grep-lineno)
-                                 ":"
-                                 (helm-grep-highlight-match
-                                  str helm-occur-match-plugin-mode))
-                         i)))
+  (let* ((split  (helm-grep-split-line candidate))
+         (buf    (car split))
+         (lineno (nth 1 split))
+         (str    (nth 2 split)))
+    (cons (concat (propertize
+                   buf
+                   'face 'helm-moccur-buffer
+                   'help-echo (buffer-file-name
+                               (get-buffer buf))
+                   'buffer-name buf)
+                  ":"
+                  (propertize lineno 'face 'helm-grep-lineno)
+                  ":"
+                  (helm-grep-highlight-match
+                   str helm-occur-match-plugin-mode))
+          candidate)))
 
 (defun helm-multi-occur-1 (buffers &optional input)
   "Main function to call `helm-source-moccur' with BUFFERS list."
@@ -458,18 +457,22 @@ With a prefix arg, reverse the behavior of
 The prefix arg can be set before calling
 `helm-multi-occur-from-isearch' or during the buffer selection."
   (interactive "p")
-  (let ((helm-moccur-always-search-in-current
-         (if (or current-prefix-arg
-                 helm-current-prefix-arg)
-             (not helm-moccur-always-search-in-current)
-             helm-moccur-always-search-in-current))
+  (let (buf-list
+        helm-moccur-always-search-in-current
         (input (if isearch-regexp
                    isearch-string
                    (regexp-quote isearch-string))))
     (isearch-exit)
-    (helm-multi-occur-1
-     (helm-comp-read "Buffers: " (helm-buffer-list) :marked-candidates t)
-     input)))
+    (setq buf-list (helm-comp-read "Buffers: "
+                                   (helm-buffer-list)
+                                   :name "Occur in buffer(s)"
+                                   :marked-candidates t))
+    (setq helm-moccur-always-search-in-current
+          (if (or current-prefix-arg
+                 helm-current-prefix-arg)
+              (not helm-moccur-always-search-in-current)
+              helm-moccur-always-search-in-current))
+    (helm-multi-occur-1 buf-list input)))
 
 
 (provide 'helm-regexp)

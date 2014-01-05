@@ -1,6 +1,6 @@
 ;;; helm-semantic.el --- Helm interface for Semantic -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2013 Daniel Hackney <dan@haxney.org>
+;; Copyright (C) 2012 ~ 2014 Daniel Hackney <dan@haxney.org>
 ;; Author: Daniel Hackney <dan@haxney.org>
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -89,8 +89,10 @@
 (defun helm-semantic ()
   "Preconfigured `helm' for `semantic'."
   (interactive)
-  (helm :sources 'helm-source-semantic
-        :buffer "*helm semantic*"))
+  (let ((str (thing-at-point 'symbol)))
+    (helm :sources 'helm-source-semantic
+          :default (list (concat "\\_<" str "\\_>") str)
+          :buffer "*helm semantic*")))
 
 ;;;###autoload
 (defun helm-semantic-or-imenu ()
@@ -104,11 +106,13 @@ Fill in the symbol at point by default."
                      'helm-source-semantic
                      'helm-source-imenu))
          (imenu-p (eq source 'helm-source-imenu))
+         (str (thing-at-point 'symbol))
          (imenu-auto-rescan imenu-p)
          (helm-execute-action-at-once-if-one
           (and imenu-p
                helm-imenu-execute-action-at-once-if-one)))
     (helm :sources source
+          :default (list (concat "\\_<" str "\\_>") str)
           :buffer "*helm semantic/imenu*"
           :preselect (unless imenu-p (thing-at-point 'symbol)))))
 

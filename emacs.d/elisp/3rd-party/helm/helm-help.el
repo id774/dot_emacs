@@ -1,6 +1,6 @@
 ;;; helm-help.el --- Help messages for Helm. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2013 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2014 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -160,6 +160,12 @@ text to be displayed in BUFNAME."
 Completion:
 
 You can enter a partial name of major-mode (e.g lisp, sh) to narrow down buffers.
+To specify the major-mode, prefix it with \"*\" e.g \"*lisp\".
+If you want to match all buffers but the ones with a specific major-mode (negation),
+prefix the major-mode with \"!\" e.g \"*!lisp\".
+If you want to specify more than one major-mode, separate them with \",\",
+e.g \"*!lisp,!sh,!fun\" will list all buffers but the ones in lisp-mode, sh-mode and
+fundamental-mode.
 Enter then a space and a pattern to narrow down to buffers matching this pattern.
 If you enter a space and a pattern prefixed by \"@\" helm will search for text matching
 this pattern INSIDE the buffer (i.e not in the name of buffer).
@@ -169,14 +175,18 @@ matching \"@pattern\" but will not search inside.
 e.g
 
 if I enter in pattern prompt:
-\"lisp ^helm @moc\"
+\"*lisp ^helm @moc\"
 helm will narrow down the list by selecting only buffers that are in lisp mode, start by helm
 and match \"moc\" in their contents.
 
 if I enter in pattern prompt:
-\"lisp ^helm moc\"
+\"*lisp ^helm moc\"
 Notice there is no \"@\" this time
 helm will look for lisp mode buffers starting by \"helm\" and have \"moc\" in their name.
+
+if I enter in pattern prompt:
+\"*!lisp !helm\"
+helm will narrow down to buffers that are not in \"lisp\" mode and that do not match \"helm\"
 
 Creating buffers
 
@@ -249,6 +259,7 @@ Italic     => A non--file buffer.
 - When you want to delete backward characters to e.g creating a new file or directory,
   autoupdate may keep updating to an existent directory
   preventing you to do so, in this case just hit C-<backspace> and then <backspace>.
+  NOTE: On a terminal C-<backspace> may not work, use in this case C-c <backspace>.
 
 - You can create a new directory an a new file at the same time, just write the path in prompt
   and press <RET>.
@@ -320,7 +331,14 @@ Italic     => A non--file buffer.
 ;;
 ;;
 (defvar helm-read-file-name-help-message
-  "== Helm read file name Map ==\
+  "== Helm read file name ==\
+
+\nTips:
+\n- When you want to delete backward characters to e.g creating a new file or directory,
+  autoupdate may keep updating to an existent directory
+  preventing you to do so, in this case just hit C-<backspace> and then <backspace>.
+  NOTE: On a terminal C-<backspace> may not work, use in this case C-c <backspace>.
+
 \nSpecific commands for helm-read-file-name:
 \\<helm-read-file-map>
 \\[helm-find-files-down-one-level]\t\t->Go down precedent directory.
@@ -481,6 +499,9 @@ You can save your results in a grep-mode buffer, see below.
 \\[helm-bookmark-run-jump-other-window]\t\t->Jump other window.
 \\[helm-bookmark-run-delete]\t\t->Delete bookmark.
 \\[helm-bmkext-run-edit]\t\t->Edit bookmark (only for bmkext).
+\\[helm-bmkext-run-sort-by-frequency]\t\t->Sort by frequency (only for bmkext).
+\\[helm-bmkext-run-sort-by-last-visit]\t\t->Sort by last visited (only for bmkext).
+\\[helm-bmkext-run-sort-alphabetically]\t\t->Sort alphabetically (only for bmkext).
 \\[helm-bookmark-toggle-filename]\t\t->Toggle bookmark location visibility.
 \\[helm-bookmark-help]\t\t->Run this help.
 \n== Helm Map ==
@@ -1216,6 +1237,18 @@ HELM-ATTRIBUTE should be a symbol."
 
 (helm-document-attribute 'allow-dups "optional"
   "  Allow helm collecting duplicates candidates.")
+
+(helm-document-attribute 'filter-one-by-one "optional"
+  "  A transformer function that treat candidates one by one.
+  It is called with one arg the candidate.
+  It is faster than `filtered-candidate-transformer' or `candidates-transformer',
+  but should be used only in sources that recompute constantly their candidates,
+  e.g `helm-source-find-files'.
+  Filtering happen early and candidates are treated
+  one by one instead of re-looping on the whole list.
+  If used with `filtered-candidate-transformer' or `candidates-transformer'
+  these functions should treat the candidates transformed by the `filter-one-by-one'
+  function in consequence.")
 
 (provide 'helm-help)
 
