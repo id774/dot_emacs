@@ -546,7 +546,7 @@ It should be used when candidate list don't need to rebuild dynamically."
                                     init hist default inherit-input-method
                                     name buffer t)))
 
-(cl-defun helm-completing-read-default
+(cl-defun helm--completing-read-default
     (prompt collection &optional
             predicate require-match
             initial-input hist def
@@ -587,7 +587,7 @@ See documentation of `completing-read' and `all-completions' for details."
       ;; a nil value, so we exit from here, disable `helm-mode'
       ;; and run the command again with it original behavior.
       ;; `helm-mode' will be restored on exit.
-      (cl-return-from helm-completing-read-default
+      (cl-return-from helm--completing-read-default
         (unwind-protect
              (progn
                (helm-mode -1)
@@ -745,7 +745,6 @@ Keys description:
                       (filtered-candidate-transformer . helm-ff-sort-candidates)
                       (filter-one-by-one . helm-ff-filter-candidate-one-by-one)
                       (keymap . ,cmap)
-                      (no-delay-on-input)
                       (persistent-action . ,persistent-action)
                       (candidate-number-limit . 9999)
                       (persistent-help . ,persistent-help)
@@ -779,9 +778,10 @@ Keys description:
        (identity helm-pattern))
      (keyboard-quit))))
 
-(cl-defun helm-generic-read-file-name
+(cl-defun helm--generic-read-file-name
     (prompt &optional dir default-filename mustmatch initial predicate)
-  "An helm replacement of `read-file-name'."
+  "Generic helm replacement of `read-file-name'.
+Don't use it directly, use instead `helm-read-file-name' in your programs."
   (let* ((init (or initial dir default-directory))
          (current-command (or (helm-this-command) this-command))
          (str-command (symbol-name current-command))
@@ -812,7 +812,7 @@ Keys description:
     (when (and def-com (> (length (help-function-arglist def-com)) 8))
       (setq def-com 'incompatible))
     (unless (or (not entry) def-com)
-      (cl-return-from helm-generic-read-file-name
+      (cl-return-from helm--generic-read-file-name
         (unwind-protect
              (progn
                (helm-mode -1)
@@ -854,7 +854,7 @@ Keys description:
                        :test predicate))))
       (helm-mode 1)
       (ido-mode (if ido-state 1 -1))
-      ;; Same comment as in `helm-completing-read-default'.
+      ;; Same comment as in `helm--completing-read-default'.
       (setq this-command current-command))
     fname))
 
@@ -919,6 +919,7 @@ Can be used as value for `completion-in-region-function'."
 (defun helm-mode--in-file-completion-p (target candidate)
   (when (and candidate target)
     (or (string-match "/\\'" candidate)
+        (string-match "/\\'" target)
         (if (string-match "~?/" target)
             (file-exists-p (expand-file-name candidate (helm-basedir target)))
             (file-exists-p (expand-file-name
@@ -955,8 +956,8 @@ Note: This mode is incompatible with Emacs23."
              "`helm-mode' not available, upgrade to Emacs-24")
   (if helm-mode
       (progn
-        (setq completing-read-function 'helm-completing-read-default
-              read-file-name-function  'helm-generic-read-file-name)
+        (setq completing-read-function 'helm--completing-read-default
+              read-file-name-function  'helm--generic-read-file-name)
         (when (and (boundp 'completion-in-region-function)
                    helm-mode-handle-completion-in-region)
           (setq completion-in-region-function #'helm--completion-in-region))

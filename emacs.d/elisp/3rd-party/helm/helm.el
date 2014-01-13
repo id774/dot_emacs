@@ -385,17 +385,6 @@ will be used as input."
   :group 'helm
   :type '(repeat (choice symbol)))
 
-(defcustom helm-never-delay-on-input t
-  "Globally disable the use of `while-no-input' in all sources when non--nil.
-This can be done individually by source adding the attribute
-`no-delay-on-input' in source. This have no effect on async source
-that are not using `while-no-input'.
-It is disabled by default because it is not supported on some system
-like \"Mac Osx\" but it is a good idea to enable it if
-supported by your system. Known to works fine on GNU/Linux and Windows."
-  :group 'helm
-  :type 'boolean)
-
 (defcustom helm-delete-minibuffer-contents-from-point nil
   "When non--nil, `helm-delete-minibuffer-contents' delete region from `point'.
 Otherwise (default) delete `minibuffer-contents'."
@@ -418,6 +407,12 @@ you want this mode enabled definitely."
 (defcustom helm-truncate-lines nil
   "Truncate long lines when non--nil.
 See `truncate-lines'."
+  :group 'helm
+  :type 'boolean)
+
+(defcustom helm-move-to-line-cycle-in-source nil
+  "Move to end or beginning of source when reaching top or bottom of source.
+This happen when using `helm-next/previous-line'."
   :group 'helm
   :type 'boolean)
 
@@ -2236,16 +2231,7 @@ Helm plug-ins are realized by this function."
                          ;; It may return a process or a list of candidates.
                          (if candidate-proc
                              (helm-interpret-value candidate-proc source)
-                             (if (or helm-force-updating-p
-                                     helm-never-delay-on-input
-                                     ;; Avoid using `while-no-input' with tramp.
-                                     (file-remote-p helm-pattern)
-                                     (assoc 'no-delay-on-input source))
-                                 (helm-interpret-value candidate-fn source)
-                                 (let ((result (helm-while-no-input
-                                                 (helm-interpret-value
-                                                  candidate-fn source))))
-                                   (and (listp result) result))))
+                             (helm-interpret-value candidate-fn source))
                        (error (helm-log "Error: %S" err) nil))))
     (when (and (processp candidates) (not candidate-proc))
       (warn "Candidates function `%s' should be called in a `candidates-process' attribute"
@@ -2514,7 +2500,7 @@ and `helm-pattern'."
           (helm-insert-match match 'insert source))
         (put-text-property start (point) 'helm-multiline t)))))
 
-(defun helm-process-delayed-sources (delayed-sources &optional preselect source)
+(cl-defun helm-process-delayed-sources (delayed-sources &optional preselect source)
   "Process helm DELAYED-SOURCES.
 Move selection to string or regexp PRESELECT if non--nil.
 This function is called in `helm-process-delayed-sources-timer'
@@ -2526,9 +2512,13 @@ when emacs is idle for `helm-idle-delay'."
     (with-current-buffer (helm-buffer-get)
       (save-excursion
         (goto-char (point-max))
-        (mapc (lambda (source)
-                (helm-render-source source (helm-compute-matches source)))
-              delayed-sources)
+        (helm-while-no-input
+          (cl-loop with matches = (cl-loop for src in delayed-sources
+                                           collect (helm-compute-matches src))
+                   unless matches do (cl-return)
+                   for src in delayed-sources
+                   for mtc in matches
+                   do (helm-render-source src mtc)))
         (when (and (not (helm-empty-buffer-p))
                    ;; No selection yet.
                    (= (overlay-start helm-selection-overlay)
@@ -2565,7 +2555,7 @@ is done on whole `helm-buffer' and not on current source."
           normal-sources-candidates
           delayed-sources)
       (unwind-protect
-          (progn
+           (helm-while-no-input
             ;; Iterate over all the sources
             (cl-loop for source in (cl-remove-if-not 'helm-update-source-p (helm-get-sources))
                      if (helm-delayed-source-p source)
@@ -3079,30 +3069,49 @@ Key arg DIRECTION can be one of:
         (helm-maybe-update-keymap)
         (helm-log-run-hook 'helm-move-selection-after-hook)))))
 
+(defun helm-move--previous-multi-line-fn ()
+  (forward-line -1)
+  (helm-skip-header-and-separator-line 'previous)
+  (let ((header-pos (helm-get-previous-header-pos))
+        (separator-pos (helm-get-previous-candidate-separator-pos)))
+    (when header-pos
+      (goto-char (if (or (null separator-pos)
+                         (< separator-pos header-pos))
+                     header-pos
+                     separator-pos))
+      (forward-line 1))))
+
 (defun helm-move--previous-line-fn ()
   (if (not (helm-pos-multiline-p))
       (forward-line -1)
-      (forward-line -1)
-      (helm-skip-header-and-separator-line 'previous)
-      (let ((header-pos (helm-get-previous-header-pos))
-            (separator-pos (helm-get-previous-candidate-separator-pos)))
-        (when header-pos
-          (goto-char (if (or (null separator-pos)
-                             (< separator-pos header-pos))
-                         header-pos
-                         separator-pos))
-          (forward-line 1)))))
+      (helm-move--previous-multi-line-fn))
+  (when (and helm-move-to-line-cycle-in-source
+             (helm-pos-header-line-p))
+    (forward-line 1)
+    (helm-move--end-of-source)
+    (and (save-excursion (forward-line -1) (helm-pos-multiline-p))
+         (helm-move--previous-multi-line-fn))))
+
+(defun helm-move--next-multi-line-fn ()
+  (let ((header-pos (helm-get-next-header-pos))
+        (separator-pos (helm-get-next-candidate-separator-pos)))
+    (cond ((and separator-pos
+                (or (null header-pos) (< separator-pos header-pos)))
+           (goto-char separator-pos))
+          (header-pos
+           (goto-char header-pos)))))
 
 (defun helm-move--next-line-fn ()
   (if (not (helm-pos-multiline-p))
       (forward-line 1)
-      (let ((header-pos (helm-get-next-header-pos))
-            (separator-pos (helm-get-next-candidate-separator-pos)))
-        (cond ((and separator-pos
-                    (or (null header-pos) (< separator-pos header-pos)))
-               (goto-char separator-pos))
-              (header-pos
-               (goto-char header-pos))))))
+      (helm-move--next-multi-line-fn))
+  (when (and helm-move-to-line-cycle-in-source
+             (or (save-excursion (and (helm-pos-multiline-p)
+                                      (goto-char (overlay-end
+                                                  helm-selection-overlay))
+                                      (helm-end-of-source-p t)))
+                 (helm-end-of-source-p t)))
+    (helm-move--beginning-of-source)))
 
 (defun helm-move--previous-page-fn ()
   (condition-case nil
@@ -3119,6 +3128,14 @@ Key arg DIRECTION can be one of:
 
 (defun helm-move--end-of-buffer-fn ()
   (goto-char (point-max)))
+
+(defun helm-move--end-of-source ()
+  (goto-char (or (helm-get-next-header-pos) (point-max)))
+  (when (helm-pos-header-line-p) (forward-line -2)))
+
+(defun helm-move--beginning-of-source ()
+  (goto-char (helm-get-previous-header-pos))
+  (forward-line 1))
 
 (defun helm-move--previous-source-fn ()
   (forward-line -1)
@@ -3141,16 +3158,22 @@ Key arg DIRECTION can be one of:
       (error (helm-log "%S" err)))))
 
 ;;;###autoload
-(defun helm-previous-line ()
+(defun helm-previous-line (&optional arg)
   "Move selection to the previous line."
-  (interactive)
-  (helm-move-selection-common :where 'line :direction 'previous))
+  (interactive "p")
+  ;; Be sure to not use this in non--interactives calls.
+  (let ((helm-move-to-line-cycle-in-source
+         (and helm-move-to-line-cycle-in-source arg)))
+    (helm-move-selection-common :where 'line :direction 'previous)))
 
 ;;;###autoload
-(defun helm-next-line ()
+(defun helm-next-line (&optional arg)
   "Move selection to the next line."
-  (interactive)
-  (helm-move-selection-common :where 'line :direction 'next))
+  (interactive "p")
+  ;; Be sure to not use this in non--interactives calls.
+  (let ((helm-move-to-line-cycle-in-source
+         (and helm-move-to-line-cycle-in-source arg)))
+    (helm-move-selection-common :where 'line :direction 'next)))
 
 ;;;###autoload
 (defun helm-previous-page ()
