@@ -33,6 +33,9 @@
 (line-number-mode t)
 (column-number-mode t)
 
+;; デフォルトでインデントをスペースに
+(setq-default tab-width 4 indent-tabs-mode nil)
+
 ;; 画像展開
 (auto-image-file-mode)
 
