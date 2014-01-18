@@ -418,6 +418,11 @@
 ;; タブを 4 に
 (load-p "tab4")
 
+;; fuzzy-format
+(require 'fuzzy-format)
+(setq fuzzy-format-default-indent-tabs-mode nil)
+(global-fuzzy-format-mode t)
+
 ;; タブ, 全角スペース、改行直前の半角スペースを表示する
 (load-p "jaspace-mode")
 ;;(setq jaspace-alternate-jaspace-string "□")
