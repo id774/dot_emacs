@@ -24,7 +24,6 @@
 (require 'cl-lib)
 (require 'helm)
 (require 'helm-bookmark)
-(require 'helm-adaptative)
 
 (declare-function bookmark-get-filename "bookmark" (bookmark-name-or-record))
 (declare-function bmkext-bmenu-maybe-sort "ext:bookmark-extensions.el" (&optional alist))
@@ -82,7 +81,8 @@
 (defun helm-bmkext-run-edit ()
   "Run `bmkext-edit-bookmark' from keyboard."
   (interactive)
-  (helm-quit-and-execute-action 'bmkext-edit-bookmark))
+  (with-helm-alive-p
+    (helm-quit-and-execute-action 'bmkext-edit-bookmark)))
 
 
 ;;; Addressbook.

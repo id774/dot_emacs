@@ -106,13 +106,13 @@ when non--nil."
 ;;; Helm `completing-read' replacement
 ;;
 ;;
-;;;###autoload
 (defun helm-cr-empty-string ()
   "Return empty string."
   (interactive)
-  (helm-quit-and-execute-action
-   #'(lambda (_candidate)
-       (identity ""))))
+  (with-helm-alive-p
+    (helm-quit-and-execute-action
+     #'(lambda (_candidate)
+         (identity "")))))
 
 (defun helm-comp-read-get-candidates (collection &optional test sort-fn alistp)
   "Convert COLLECTION to list removing elements that don't match TEST.
@@ -691,8 +691,9 @@ Keys description:
          (helm-mp-highlight-delay nil)
          ;; Be sure we don't erase the underlying minibuffer if some.
          (helm-ff-auto-update-initial-value
-          (and helm-ff-auto-update-initial-value
-               (not (minibuffer-window-active-p (minibuffer-window)))))
+          (unless (null helm-ff-auto-update-flag)
+            (and helm-ff-auto-update-initial-value
+                 (not (minibuffer-window-active-p (minibuffer-window))))))
          helm-full-frame
          (hist (and history (helm-comp-read-get-candidates
                              history nil nil alistp)))
@@ -716,6 +717,7 @@ Keys description:
                                                helm-find-files-doc-header)))
                       (mode-line . helm-read-file-name-mode-line-string)
                       (candidates . ,hist)
+                      (keymap . ,cmap)
                       (persistent-action . ,persistent-action)
                       (persistent-help . ,persistent-help)
                       (action . ,action-fn))

@@ -52,6 +52,7 @@
     (define-key map (kbd "C-c ?")    'helm-moccur-help)
     (define-key map (kbd "C-c o")    'helm-m-occur-run-goto-line-ow)
     (define-key map (kbd "C-c C-o")  'helm-m-occur-run-goto-line-of)
+    (define-key map (kbd "C-x C-s")  'helm-grep-run-save-buffer)
     (when helm-m-occur-use-ioccur-style-keys
       (define-key map (kbd "<right>")  'helm-m-occur-run-persistent-action)
       (define-key map (kbd "<left>")   'helm-m-occur-run-default-action))
@@ -217,7 +218,7 @@ arg METHOD can be one of buffer, buffer-other-window, buffer-other-frame."
 
 (defun helm-m-occur-run-persistent-action ()
   (interactive)
-  (when helm-alive-p
+  (with-helm-alive-p
     (helm-execute-persistent-action)))
 
 (defun helm-m-occur-goto-line (candidate)
@@ -245,18 +246,19 @@ Same as `helm-m-occur-goto-line' but go in new frame."
 (defun helm-m-occur-run-goto-line-ow ()
   "Run goto line other window action from `helm-source-moccur'."
   (interactive)
-  (when helm-alive-p
+  (with-helm-alive-p
     (helm-quit-and-execute-action 'helm-m-occur-goto-line-ow)))
 
 (defun helm-m-occur-run-goto-line-of ()
   "Run goto line new frame action from `helm-source-moccur'."
   (interactive)
-  (when helm-alive-p
+  (with-helm-alive-p
     (helm-quit-and-execute-action 'helm-m-occur-goto-line-of)))
 
 (defun helm-m-occur-run-default-action ()
   (interactive)
-  (helm-quit-and-execute-action 'helm-m-occur-goto-line))
+  (with-helm-alive-p
+    (helm-quit-and-execute-action 'helm-m-occur-goto-line)))
 
 ;;;###autoload
 (define-minor-mode helm-occur-match-plugin-mode
@@ -275,9 +277,7 @@ Same as `helm-m-occur-goto-line' but go in new frame."
   `((name . "Moccur")
     (init . (lambda ()
               (require 'helm-grep)
-              (helm-m-occur-init)
-              (helm-attrset 'delayed helm-m-occur-idle-delay
-                            helm-source-moccur)))
+              (helm-m-occur-init)))
     (candidates-in-buffer)
     (filter-one-by-one . helm-m-occur-filter-one-by-one)
     (get-line . helm-m-occur-get-line)

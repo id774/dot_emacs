@@ -439,8 +439,10 @@ WHERE can be one of other-window, elscreen, other-frame."
                                    helm-buffer)
                              (get-text-property (point-at-bol) 'help-echo))
                            (car split)))
-         (tramp-method (file-remote-p helm-ff-default-directory 'method))
-         (tramp-host   (file-remote-p helm-ff-default-directory 'host))
+         (tramp-method (file-remote-p (or helm-ff-default-directory
+                                          default-directory) 'method))
+         (tramp-host   (file-remote-p (or helm-ff-default-directory
+                                          default-directory) 'host))
          (tramp-prefix (concat "/" tramp-method ":" tramp-host ":"))
          (fname        (if tramp-host
                            (concat tramp-prefix loc-fname) loc-fname)))
@@ -494,7 +496,9 @@ With a prefix arg record CANDIDATE in `mark-ring'."
 (defun helm-goto-next-or-prec-file (n &optional type)
   "Go to next or precedent candidate file in helm grep/etags buffers.
 If N is positive go forward otherwise go backward."
-  (let* ((sel (helm-get-selection nil t))
+  (let* ((sel (if (eq major-mode 'helm-grep-mode)
+                  (buffer-substring (point-at-bol) (point-at-eol))
+                  (helm-get-selection nil t)))
          (current-line-list  (if (eq type 'etags)
                                  (split-string sel ": +" t)
                                  (helm-grep-split-line sel)))
@@ -548,36 +552,37 @@ If N is positive go forward otherwise go backward."
     (with-helm-window
       (helm-goto-next-or-prec-file 1 etagp))))
 
-;;;###autoload
 (defun helm-grep-run-persistent-action ()
   "Run grep persistent action from `helm-do-grep-1'."
   (interactive)
-  (helm-attrset 'jump-persistent 'helm-grep-persistent-action)
-  (helm-execute-persistent-action 'jump-persistent))
+  (with-helm-alive-p
+    (helm-attrset 'jump-persistent 'helm-grep-persistent-action)
+    (helm-execute-persistent-action 'jump-persistent)))
 
-;;;###autoload
 (defun helm-grep-run-default-action ()
   "Run grep default action from `helm-do-grep-1'."
   (interactive)
-  (helm-quit-and-execute-action 'helm-grep-action))
+  (with-helm-alive-p
+    (helm-quit-and-execute-action 'helm-grep-action)))
 
-;;;###autoload
 (defun helm-grep-run-other-window-action ()
   "Run grep goto other window action from `helm-do-grep-1'."
   (interactive)
-  (helm-quit-and-execute-action 'helm-grep-other-window))
+  (with-helm-alive-p
+    (helm-quit-and-execute-action 'helm-grep-other-window)))
 
-;;;###autoload
 (defun helm-grep-run-other-frame-action ()
   "Run grep goto other frame action from `helm-do-grep-1'."
   (interactive)
-  (helm-quit-and-execute-action 'helm-grep-other-frame))
+  (with-helm-alive-p
+    (helm-quit-and-execute-action 'helm-grep-other-frame)))
 
 ;;;###autoload
 (defun helm-grep-run-save-buffer ()
   "Run grep save results action from `helm-do-grep-1'."
   (interactive)
-  (helm-quit-and-execute-action 'helm-grep-save-results))
+  (with-helm-alive-p
+    (helm-quit-and-execute-action 'helm-grep-save-results)))
 
 
 ;;; helm-grep-mode

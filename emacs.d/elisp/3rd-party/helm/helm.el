@@ -672,6 +672,7 @@ when `helm' is keyboard-quitted.")
 (defvar helm-marked-candidates nil
   "Marked candadates.  List of \(source . real\) pair.")
 (defvar helm-in-file-completion-p nil)
+(defvar helm--mode-line-display-prefarg nil)
 
 
 ;; Utility: logging
@@ -903,6 +904,14 @@ not `exit-minibuffer' or unwanted functions."
   "Execute BODY at end of `helm-update'."
   (declare (indent 0) (debug t))
   `(with-helm-temp-hook 'helm-after-update-hook ,@body))
+
+(defmacro with-helm-alive-p (&rest body)
+  "Return error when BODY run ouside helm context."
+  (declare (indent 0) (debug t))
+  `(progn
+     (if helm-alive-p
+         (progn ,@body)
+         (error "Running helm command outside of context"))))
 
 (cl-defun helm-attr (attribute-name
                      &optional (src (helm-get-current-source)) compute)
@@ -2113,6 +2122,15 @@ This can be useful for e.g writing quietly a complex regexp."
        ad-do-it
     (setq helm-suspend-update-flag nil)))
 
+;; Use this once `defadvice' will be made obsolete.
+;; (defun helm--advice-tramp-read-passwd (old--fn &rest args)
+;;   ;; Suspend update when prompting for a tramp password.
+;;   (setq helm-suspend-update-flag t)
+;;   (unwind-protect
+;;        (apply old--fn args)
+;;     (setq helm-suspend-update-flag nil)))
+;; (advice-add 'tramp-read-passwd :around #'helm--advice-tramp-read-passwd)
+
 (defun helm-maybe-update-keymap ()
   "Handle differents keymaps in multiples sources.
 This function is meant to be run in `helm-move-selection-after-hook'.
@@ -2453,7 +2471,8 @@ and `helm-pattern'."
                     (helm--accumulate-candidates
                      candidate newmatches
                      helm-match-hash item-count limit source))))
-              (setq matches (append matches (nreverse newmatches))))))
+              ;; filter-one-by-one may return nil candidates, so delq them if some.
+              (setq matches (nconc matches (nreverse (delq nil newmatches)))))))
       (error (unless (eq (car err) 'invalid-regexp) ; Always ignore regexps errors.
                (helm-log-error "helm-match-from-candidates in source `%s': %s %s"
                                (assoc-default 'name source) (car err) (cdr err)))
@@ -2574,10 +2593,10 @@ is done on whole `helm-buffer' and not on current source."
                      finally (setq delayed-sources ds
                                    normal-sources ns
                                    normal-sources-candidates nsc))
-            ;;; Finally the helm buffer can be erased
+            ;; Finally the helm buffer can be erased
             (erase-buffer)
-            ;;; Render all the sources into the helm buffer using the
-            ;;; candidates calculated before the erase
+            ;; Render all the sources into the helm buffer using the
+            ;; candidates calculated before the erase
             (cl-loop for source in normal-sources
                      for candidates in normal-sources-candidates
                      do
@@ -2616,6 +2635,9 @@ is done on whole `helm-buffer' and not on current source."
              (max helm-idle-delay helm-input-idle-delay 0.01) nil
              'helm-process-delayed-sources delayed-sources preselect source)))
         (helm-log "end update")))))
+
+;; Update keymap after updating.
+(add-hook 'helm-after-update-hook 'helm-maybe-update-keymap)
 
 (defun helm-update-source-p (source)
   "Whether SOURCE need updating or not."
@@ -2817,7 +2839,6 @@ after the source name by overlay."
           (helm-skip-noncandidate-line 'next)
           (helm-mark-current-line)
           (helm-display-mode-line src)
-          (helm-maybe-update-keymap)
           (helm-log-run-hook 'helm-after-update-hook)))))
 
 (defun helm-process-deferred-sentinel-hook (process event file)
@@ -2922,22 +2943,23 @@ If action buffer is selected, back to the helm buffer."
   (interactive)
   (helm-log-run-hook 'helm-select-action-hook)
   (setq helm-saved-selection (helm-get-selection))
-  (cond ((get-buffer-window helm-action-buffer 'visible)
-         (set-window-buffer (get-buffer-window helm-action-buffer)
-                            helm-buffer)
-         (kill-buffer helm-action-buffer)
-         (helm-set-pattern helm-input 'noupdate))
-        (helm-saved-selection
-         (setq helm-saved-current-source (helm-get-current-source))
-         (let ((actions (helm-get-action)))
-           (if (functionp actions)
-               (message "Sole action: %s" actions)
-               (helm-show-action-buffer actions)
-               (helm-delete-minibuffer-contents)
-               ;; Make `helm-pattern' differs from the previous value.
-               (setq helm-pattern 'dummy)
-               (helm-check-minibuffer-input))))
-        (t (message "No Actions available"))))
+  (with-selected-frame (with-helm-window (selected-frame))
+    (cond ((get-buffer-window helm-action-buffer 'visible)
+           (set-window-buffer (get-buffer-window helm-action-buffer)
+                              helm-buffer)
+           (kill-buffer helm-action-buffer)
+           (helm-set-pattern helm-input 'noupdate))
+          (helm-saved-selection
+           (setq helm-saved-current-source (helm-get-current-source))
+           (let ((actions (helm-get-action)))
+             (if (functionp actions)
+                 (message "Sole action: %s" actions)
+                 (helm-show-action-buffer actions)
+                 (helm-delete-minibuffer-contents)
+                 ;; Make `helm-pattern' differs from the previous value.
+                 (setq helm-pattern 'dummy)
+                 (helm-check-minibuffer-input))))
+          (t (message "No Actions available")))))
 
 (defun helm-show-action-buffer (actions)
   (with-current-buffer (get-buffer-create helm-action-buffer)
@@ -2988,7 +3010,7 @@ Possible value of DIRECTION are 'next or 'previous."
                            (not (eq (point-at-bol) (point-min))))
                       -1 1))))
 
-(defun helm-display-mode-line (source)
+(defun helm-display-mode-line (source &optional force)
   "Setup mode-line and header-line for `helm-buffer'."
   (set (make-local-variable 'helm-mode-line-string)
        (helm-interpret-value (or (and (listp source) ; Check if source is empty.
@@ -3001,6 +3023,12 @@ Possible value of DIRECTION are 'next or 'previous."
         (setq mode-line-format
               `(" " mode-line-buffer-identification " "
                     (line-number-mode "L%l") " " ,follow
+                    (:eval (when ,helm--mode-line-display-prefarg
+                             (let ((arg (prefix-numeric-value (or prefix-arg
+                                                                  current-prefix-arg))))
+                               (unless (= arg 1)
+                                 (propertize (format "[prefarg:%s] " arg)
+                                             'face '((:foreground "green")))))))
                     (:eval (helm-show-candidate-number
                             (when (listp helm-mode-line-string)
                               (car-safe helm-mode-line-string))))
@@ -3016,7 +3044,8 @@ Possible value of DIRECTION are 'next or 'previous."
                         (assoc-default 'header-line source)) source))
            (hlend (make-string (max 0 (- (window-width) (length hlstr))) ? )))
       (setq header-line-format
-            (propertize (concat " " hlstr hlend) 'face 'helm-header)))))
+            (propertize (concat " " hlstr hlend) 'face 'helm-header))))
+  (when force (force-mode-line-update)))
 
 (defun helm-show-candidate-number (&optional name)
   "Used to display candidate number in mode-line.
