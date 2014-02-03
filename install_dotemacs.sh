@@ -8,6 +8,8 @@
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+# v1.18 2/4,2014
+#       Explicit specification sudo.
 # v1.17 11/27,2013
 #       Add ruby-additional.el.
 # v1.16 3/15,2013
@@ -221,6 +223,7 @@ setup_environment() {
 
     test -n "$3" || SUDO=sudo
     test -n "$3" && SUDO=
+    test "$3" = "sudo" && SUDO=sudo
     GITHUB=$TARGET/elisp/3rd-party
     DOT_EMACS=$HOME/dot_emacs
 }
