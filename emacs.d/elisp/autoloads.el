@@ -500,6 +500,9 @@
 (when (require 'highlight-unique-symbol)
   (highlight-unique-symbol t))
 
+;; Kill Ring を保存する
+(require 'savekill)
+
 ;; 表示設定をロードする
 (load-p "faces")
 

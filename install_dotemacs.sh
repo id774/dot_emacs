@@ -142,6 +142,7 @@ byte_compile_all() {
       scss-mode.el \
       haml-mode.el \
       sass-mode.el \
+      savekill.el \
       smartchr.el \
       sequential-command.el \
       wb-line-number.el \
