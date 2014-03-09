@@ -26,9 +26,7 @@
 (load-p "paredit-settings")
 
 ;; auto-async-byte-compile
-(when (load-p "auto-async-byte-compile")
-  (setq auto-async-byte-compile-exclude-files-regexp "/junk/")
-  (add-hook 'emacs-lisp-mode-hook 'enable-auto-async-byte-compile-mode))
+(load-p "auto-async-settings")
 
 ;; timidity-mode : TiMidity++ emacs front-end
 (when (autoload-p 'timidity "timidity" "TiMidity++" 'interactive))
@@ -477,10 +475,11 @@
 (when (require 'highlight-unique-symbol)
   (highlight-unique-symbol t))
 
+;; Perl 風の正規表現
+(load-p "foreign-regexp-settings")
+
 ;; Kill Ring を保存する
 (require 'savekill)
-
-(load-p "foreign-regexp-settings")
 
 ;; web-mode
 ;; http://web-mode.org/
