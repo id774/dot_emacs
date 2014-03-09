@@ -163,8 +163,7 @@ byte_compile_all() {
       physical-line.el \
       proxy.el \
       tab4.el \
-      utils.el \
-      web-mode-settings.el
+      utils.el
 }
 
 slink_elisp() {
