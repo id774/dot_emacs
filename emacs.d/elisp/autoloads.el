@@ -503,6 +503,10 @@
 ;; Kill Ring を保存する
 (require 'savekill)
 
+;; web-mode
+;; http://web-mode.org/
+(load-p "web-mode-settings")
+
 ;; 表示設定をロードする
 (load-p "faces")
 

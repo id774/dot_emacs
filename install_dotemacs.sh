@@ -145,6 +145,7 @@ byte_compile_all() {
       savekill.el \
       smartchr.el \
       sequential-command.el \
+      web-mode.el \
       wb-line-number.el \
       zencoding-mode.el
     cd $TARGET/elisp
@@ -162,7 +163,8 @@ byte_compile_all() {
       physical-line.el \
       proxy.el \
       tab4.el \
-      utils.el
+      utils.el \
+      web-mode-settings.el
 }
 
 slink_elisp() {
