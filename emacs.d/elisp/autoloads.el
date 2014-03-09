@@ -10,12 +10,7 @@
 (setq default-major-mode 'text-mode)
 
 ;; オートコンプリート
-(when (load-p "auto-complete")
-  (global-auto-complete-mode t)
-  (add-hook 'ruby-mode-hook
-    (lambda ()
-      (make-local-variable 'ac-ignore-case)
-      (setq ac-ignore-case nil))))
+(load-p "auto-complete-settings")
 
 ;; 同じキーバインド連打でラクをする
 (load-p "smartchr-settings")
@@ -28,11 +23,7 @@
 (load-p "open-junk-file")
 
 ;; paredit
-(when (load-p "paredit")
-  (add-hook 'emacs-lisp-mode-hook 'enable-paredit-mode)
-  (add-hook 'lisp-interaction-mode-hook 'enable-paredit-mode)
-  (add-hook 'lisp-mode-hook 'enable-paredit-mode)
-  (add-hook 'ielm-mode-hook 'enable-paredit-mode))
+(load-p "paredit-settings")
 
 ;; auto-async-byte-compile
 (when (load-p "auto-async-byte-compile")
