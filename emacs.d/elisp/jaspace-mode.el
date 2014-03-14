@@ -5,7 +5,12 @@
                                 (list 'php-mode
                                       'yaml-mode
                                       'javascript-mode
+                                      'scala-mode
+                                      'scheme-mode
+                                      'lisp-mode
                                       'ruby-mode
+                                      'python-mode
+                                      'latex-mode
                                       'text-mode
                                       'fundamental-mode))))
   (when (boundp 'jaspace-alternate-jaspace-string)
