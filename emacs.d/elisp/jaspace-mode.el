@@ -6,6 +6,7 @@
                                       'yaml-mode
                                       'javascript-mode
                                       'scala-mode
+                                      'erlang-mode
                                       'scheme-mode
                                       'lisp-mode
                                       'ruby-mode
