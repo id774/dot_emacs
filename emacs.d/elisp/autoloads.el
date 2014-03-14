@@ -32,7 +32,7 @@
 (when (autoload-p 'timidity "timidity" "TiMidity++" 'interactive))
 
 ;; Lang modes
-(load-p "land-mode")
+(load-p "lang-mode")
 
 ;; anything-git-files
 (when (require 'anything-git-files)
