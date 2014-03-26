@@ -4,6 +4,7 @@
     (setq jaspace-modes (append jaspace-modes
                                 (list 'php-mode
                                       'yaml-mode
+                                      'haml-mode
                                       'javascript-mode
                                       'scala-mode
                                       'erlang-mode
