@@ -46,6 +46,22 @@ This is used in macro `with-helm-show-completion'."
   :group 'helm-elisp
   :type  'integer)
 
+(defcustom helm-lisp-quoted-function-list
+  '(funcall apply mapc cl-mapc mapcar cl-mapcar
+    callf callf2 cl-callf cl-callf2 fset
+    fboundp fmakunbound symbol-function)
+  "List of function where quoted function completion happen.
+e.g give only function names after \(funcall '."
+  :group 'helm-elisp
+  :type '(repeat (choice symbol)))
+  
+(defcustom helm-lisp-unquoted-function-list
+  '(function defadvice)
+    "List of function where unquoted function completion happen.
+e.g give only function names after \(function ."
+  :group 'helm-elisp
+  :type '(repeat (choice symbol)))
+
 
 ;;; Faces
 ;;
@@ -126,19 +142,42 @@ If `helm-turn-on-show-completion' is nil just do nothing."
 ;;; Lisp symbol completion.
 ;;
 ;;
-(defun helm-lisp-completion-predicate-at-point (beg)
+(defun helm-lisp-completion--predicate-at-point (beg)
   ;; Return a predicate for `all-completions'.
-  (save-excursion
-    (goto-char beg)
-    (if (or (not (eq (char-before) ?\()) ; no paren before str.
-            ;; Looks like we are in a let statement.
-            (condition-case nil
-                (progn (up-list -2) (forward-char 1)
-                       (eq (char-after) ?\())
-              (error nil)))
-        (lambda (sym)
-          (or (boundp sym) (fboundp sym) (symbol-plist sym)))
-        #'fboundp)))
+  (let ((fn-sym-p (lambda ()
+                    (or
+                     (and (eq (char-before) ?\ )
+                          (save-excursion
+                            (skip-syntax-backward " " (point-at-bol))
+                            (memq (symbol-at-point)
+                                  helm-lisp-unquoted-function-list)))
+                     (and (eq (char-before) ?\')
+                          (save-excursion
+                            (forward-char -1)
+                            (eq (char-before) ?\#)))))))
+    (save-excursion
+      (goto-char beg)
+      (if (or
+           ;; Complete on all symbols in non--lisp modes (logs mail etc..)
+           (not (memq major-mode '(emacs-lisp-mode
+                                   lisp-interaction-mode
+                                   inferior-emacs-lisp-mode)))
+           (not (or (funcall fn-sym-p)
+                    (and (eq (char-before) ?\')
+                         (save-excursion
+                           (forward-char (if (funcall fn-sym-p) -2 -1))
+                           (skip-syntax-backward " " (point-at-bol))
+                           (memq (symbol-at-point)
+                                 helm-lisp-quoted-function-list)))
+                    (eq (char-before) ?\())) ; no paren before str.
+           ;; Looks like we are in a let statement.
+           (condition-case nil
+               (progn (up-list -2) (forward-char 1)
+                      (eq (char-after) ?\())
+             (error nil)))
+          (lambda (sym)
+            (or (boundp sym) (fboundp sym) (symbol-plist sym)))
+          #'fboundp))))
 
 (defun helm-thing-before-point (&optional limits regexp)
   "Return symbol name before point.
@@ -188,7 +227,7 @@ Return a cons \(beg . end\)."
   (let* ((target     (helm-thing-before-point))
          (beg        (car (helm-bounds-of-thing-before-point)))
          (end        (point))
-         (pred       (and beg (helm-lisp-completion-predicate-at-point beg)))
+         (pred       (and beg (helm-lisp-completion--predicate-at-point beg)))
          (loc-vars   (and (fboundp 'lisp--local-variables)
                           (ignore-errors
                             (mapcar #'symbol-name (lisp--local-variables)))))
@@ -215,6 +254,7 @@ Return a cons \(beg . end\)."
                                   helm-lisp-completion--cache)))
                       (candidates-in-buffer)
                       (persistent-action . helm-lisp-completion-persistent-action)
+                      (nomark)
                       (persistent-help . "Show brief doc in mode-line")
                       (filtered-candidate-transformer . helm-lisp-completion-transformer)
                       (action . (lambda (candidate)
@@ -359,6 +399,7 @@ First call indent, second complete symbol, third complete fname."
     (init . (lambda ()
               (helm-apropos-init 'boundp ,default)))
     (candidates-in-buffer)
+    (nomark)
     (action . (("Describe Variable" . helm-describe-variable)
                ("Find Variable" . helm-find-variable)
                ("Info lookup" . helm-info-lookup-symbol)
@@ -369,6 +410,7 @@ First call indent, second complete symbol, third complete fname."
     (init . (lambda ()
               (helm-apropos-init 'facep ,default)))
     (candidates-in-buffer)
+    (nomark)
     (filtered-candidate-transformer . (lambda (candidates _source)
                                         (cl-loop for c in candidates
                                                  collect (propertize c 'face (intern c)))))
@@ -379,6 +421,7 @@ First call indent, second complete symbol, third complete fname."
   `((name . "Helm attributes")
     (candidates . (lambda ()
                     (mapcar 'symbol-name helm-attributes)))
+    (nomark)
     (action . (lambda (candidate)
                 (let (special-display-buffer-names
                       special-display-regexps
@@ -391,6 +434,7 @@ First call indent, second complete symbol, third complete fname."
     (init . (lambda ()
               (helm-apropos-init 'commandp ,default)))
     (candidates-in-buffer)
+    (nomark)
     (action . (("Describe Function" . helm-describe-function)
                ("Find Function" . helm-find-function)
                ("Info lookup" . helm-info-lookup-symbol)))))
@@ -401,6 +445,7 @@ First call indent, second complete symbol, third complete fname."
               (helm-apropos-init #'(lambda (x) (and (fboundp x)
                                                     (not (commandp x))))
                                  ,default)))
+    (nomark)
     (candidates-in-buffer)
     (action . (("Describe Function" . helm-describe-function)
                ("Find Function" . helm-find-function)
@@ -443,6 +488,7 @@ First call indent, second complete symbol, third complete fname."
     (candidates . helm-advice-candidates)
     (action ("Toggle Enable/Disable" . helm-advice-toggle))
     (persistent-action . helm-advice-persistent-action)
+    (nomark)
     (multiline)
     (persistent-help . "Describe function / C-u C-z: Toggle advice")))
 
@@ -500,6 +546,7 @@ First call indent, second complete symbol, third complete fname."
   '((name . "Elisp libraries (Scan)")
     (init . (helm-locate-library-scan-init))
     (candidates-in-buffer)
+    (nomark)
     (action . (("Find library"
                 . (lambda (candidate)
                     (find-file (find-library-name candidate))))
@@ -587,9 +634,11 @@ First call indent, second complete symbol, third complete fname."
   "Sexp.")
 
 (define-helm-type-attribute 'timer
-    '((real-to-display . helm-timer-real-to-display)
-      (action
-       ("Cancel Timer" . cancel-timer)
+    '((action
+       ("Cancel Timer" . (lambda (_timer)
+                           (let ((mkd (helm-marked-candidates)))
+                             (cl-loop for timer in mkd
+                                      do (cancel-timer timer)))))
        ("Describe Function" . (lambda (tm) (describe-function (timer--function tm))))
        ("Find Function" . (lambda (tm) (find-function (timer--function tm)))))
       (persistent-action . (lambda (tm) (describe-function (timer--function tm))))
@@ -603,21 +652,35 @@ First call indent, second complete symbol, third complete fname."
 (defvar helm-source-absolute-time-timers
   '((name . "Absolute Time Timers")
     (candidates . timer-list)
+    (filtered-candidate-transformer
+     . (lambda (candidates _source)
+         (cl-loop for timer in candidates
+                  collect (cons (helm-elisp--format-timer timer) timer))))
+    (allow-dups)
+    (volatile)
     (type . timer)))
 
 (defvar helm-source-idle-time-timers
   '((name . "Idle Time Timers")
     (candidates . timer-idle-list)
+    (allow-dups)
+    (volatile)
+    (filtered-candidate-transformer
+     . (lambda (candidates _source)
+         (cl-loop for timer in candidates
+                  collect (cons (helm-elisp--format-timer timer) timer))))
     (type . timer)))
 
-(defun helm-timer-real-to-display (timer)
-  (format "%s repeat=%5S %s(%s)"
+(defun helm-elisp--format-timer (timer)
+  (format "%s repeat=%s %s(%s)"
           (let ((time (timer--time timer)))
             (if (timer--idle-delay timer)
                 (format-time-string "idle-for=%5s" time)
                 (format-time-string "%m/%d %T" time)))
-          (timer--repeat-delay timer)
-          (timer--function timer)
+          (or (timer--repeat-delay timer) "nil")
+          (mapconcat 'identity (split-string
+                                (prin1-to-string (timer--function timer))
+                                "\n") " ")
           (mapconcat 'prin1-to-string (timer--args timer) " ")))
 
 ;;;###autoload

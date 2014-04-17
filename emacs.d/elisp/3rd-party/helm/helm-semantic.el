@@ -37,6 +37,8 @@
           ((function variable type)
            (let ((spaces (make-string (* depth 2) ?\s))
                  (type-p (eq cur-type 'type)))
+             (unless (and (> depth 0) (not type-p))
+               (setq class nil))
              (insert
               (if (and class (not type-p))
                   (format "%s%sClass(%s) "
@@ -69,9 +71,17 @@
       (unless persistent
         (pulse-momentary-highlight-one-line (point))))))
 
+(defun helm-semantic--maybe-set-needs-update ()
+  (with-helm-current-buffer
+    (let ((tick (buffer-modified-tick)))
+      (unless (eq helm-cached-imenu-tick tick)
+        (setq helm-cached-imenu-tick tick)
+        (semantic-parse-tree-set-needs-update)))))
+
 (defvar helm-source-semantic
   '((name . "Semantic Tags")
     (init . (lambda ()
+              (helm-semantic--maybe-set-needs-update)
               (let ((tags (semantic-fetch-tags)))
                 (with-current-buffer (helm-candidate-buffer 'global)
                   (helm-semantic-init-candidates tags 0)))))
@@ -92,6 +102,7 @@
   (let ((str (thing-at-point 'symbol)))
     (helm :sources 'helm-source-semantic
           :default (list (concat "\\_<" str "\\_>") str)
+          :candidate-number-limit 9999
           :buffer "*helm semantic*")))
 
 ;;;###autoload
@@ -114,6 +125,7 @@ Fill in the symbol at point by default."
     (helm :sources source
           :default (list (concat "\\_<" str "\\_>") str)
           :buffer "*helm semantic/imenu*"
+          :candidate-number-limit 9999
           :preselect (unless imenu-p (thing-at-point 'symbol)))))
 
 (provide 'helm-semantic)

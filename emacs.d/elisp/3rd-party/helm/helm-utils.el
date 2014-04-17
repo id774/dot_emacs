@@ -411,8 +411,9 @@ from its directory."
    (lambda (f)
      (if (file-exists-p f)
          (helm-find-files-1 (file-name-directory f)
-                            (if helm-ff-transformer-show-only-basename
-                                (helm-basename f) f))
+                            (regexp-quote
+                             (if helm-ff-transformer-show-only-basename
+                                 (helm-basename f) f)))
          (helm-find-files-1 f)))
    (let* ((sel       (helm-get-selection))
           (grep-line (and (stringp sel)
@@ -669,19 +670,22 @@ Useful in dired buffers when there is inserted subdirs."
       (dired-current-directory)
       default-directory))
 
-(defmacro with-helm-display-marked-candidates (buf candidates &rest body)
+(defmacro with-helm-display-marked-candidates (buffer-or-name candidates &rest body)
   (declare (indent 0) (debug t))
-  `(unwind-protect
-        (with-temp-buffer-window ,buf
-          '(display-buffer-below-selected
-            (window-height . fit-window-to-buffer))
-          (lambda (window _ignore)
-            (with-selected-window window
-              ,@body))
-          (dired-format-columns-of-files ,candidates)) 
-          ;; (save-excursion
-          ;;   (insert (mapconcat (lambda (f) (format "- %s\n" f)) ,candidates ""))))
-     (quit-window 'kill (get-buffer-window ,buf))))
+  (let ((buffer (make-symbol "buffer"))
+        (window (make-symbol "window")))
+    `(let* ((,buffer (temp-buffer-window-setup ,buffer-or-name))
+            ,window)
+       (unwind-protect
+            (with-current-buffer ,buffer
+              (dired-format-columns-of-files ,candidates)
+              (select-window
+               (setq ,window (temp-buffer-window-show
+                              ,buffer
+                              '(display-buffer-below-selected
+                                (window-height . fit-window-to-buffer)))))
+              (progn ,@body))
+         (quit-window 'kill ,window)))))
 
 ;;; Persistent Action Helpers
 ;;
@@ -890,27 +894,19 @@ See `helm-find-files-persistent-action' for usage."
 the entire symbol."
   (interactive)
   (with-helm-current-buffer
-    ;; Start to initial point if C-w have never been hit.
-    (if (or helm-yank-point
-            (not helm-yank-symbol-first))
-        (progn
-          (unless helm-yank-point (setq helm-yank-point (point)))
-          (save-excursion
-            (goto-char helm-yank-point)
-            (forward-word 1)
-            (helm-insert-in-minibuffer (buffer-substring-no-properties
-                                        helm-yank-point (point)))
-            (setq helm-yank-point (point))))
-        (let* ((sym (symbol-at-point))
-               (str (and sym
-                         (symbol-name sym))))
-          (if str
-              (progn
-                (helm-insert-in-minibuffer str)
-                (setq helm-yank-point (cdr (bounds-of-thing-at-point 'symbol)))
-                (goto-char helm-yank-point))
-              (setq helm-yank-point (point))
-              (helm-yank-text-at-point))))))
+    (let ((fwd-fn (if helm-yank-symbol-first
+                      'forward-symbol 'forward-word)))
+      ;; Start to initial point if C-w have never been hit.
+      (unless helm-yank-point (setq helm-yank-point (point)))
+      (save-excursion
+        (goto-char helm-yank-point)
+        (funcall fwd-fn 1)
+        (helm-insert-in-minibuffer
+         (replace-regexp-in-string
+          "\\`\n" ""
+          (buffer-substring-no-properties
+           helm-yank-point (point))))
+        (setq helm-yank-point (point))))))
 
 (defun helm-reset-yank-point ()
   (setq helm-yank-point nil))

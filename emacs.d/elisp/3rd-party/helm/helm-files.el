@@ -128,16 +128,6 @@ and `helm-read-file-map' for this take effect."
   :group 'helm-files
   :type 'boolean)
 
-(defcustom helm-ff-ido-style-backspace t
-  "Use backspace to navigate with `helm-find-files'.
-You will have to restart Emacs or reeval `helm-find-files-map'
-and `helm-read-file-map' for this to take effect."
-  :group 'helm-files
-  :type '(choice
-          (const :tag "Do not use ido-style backspace")
-          (const :tag "Always Use ido-style backspace in find-file" 'always)
-          (const :tag "Use ido-style backspace while auto-updating" t)))
-
 (defcustom helm-ff-history-max-length 100
   "Number of elements shown in `helm-find-files' history."
   :group 'helm-files
@@ -340,8 +330,6 @@ WARNING: Setting this to nil is unsafe and can cause deletion of a whole tree."
     (when helm-ff-lynx-style-map
       (define-key map (kbd "<left>")      'helm-find-files-down-one-level)
       (define-key map (kbd "<right>")     'helm-execute-persistent-action))
-    (when helm-ff-ido-style-backspace
-      (define-key map (kbd "<backspace>") 'helm-ff-backspace))
     (delq nil map))
   "Keymap for `helm-find-files'.")
 
@@ -400,7 +388,9 @@ Don't set it directly, use instead `helm-ff-auto-update-initial-value'.")
     (init . (lambda ()
               (setq helm-ff-auto-update-flag
                     helm-ff-auto-update-initial-value)
-              (set (make-local-variable 'helm-in-file-completion-p) t)))
+              (with-helm-temp-hook 'helm-after-initialize-hook
+                (with-helm-buffer  
+                  (set (make-local-variable 'helm-in-file-completion-p) t))))) 
     (candidates . helm-find-files-get-candidates)
     (filtered-candidate-transformer . helm-ff-sort-candidates)
     (filter-one-by-one . helm-ff-filter-candidate-one-by-one)
@@ -408,6 +398,7 @@ Don't set it directly, use instead `helm-ff-auto-update-initial-value'.")
     (persistent-help . "Hit1 Expand Candidate, Hit2 or (C-u) Find file")
     (mode-line . helm-ff-mode-line-string)
     (volatile)
+    (keymap . ,helm-find-files-map)
     (nohighlight)
     (candidate-number-limit . 9999)
     (action-transformer . helm-find-files-action-transformer)
@@ -419,20 +410,20 @@ Don't set it directly, use instead `helm-ff-auto-update-initial-value'.")
            ,(and (locate-library "elscreen")
                  '("Find file in Elscreen"  . helm-elscreen-find-file))
            ("Checksum File" . helm-ff-checksum)
-           ("Complete at point `M-tab'"
+           ("Complete at point `C-c i'"
             . helm-insert-file-name-completion-at-point)
-           ("Insert as org link" . helm-files-insert-as-org-link)
-           ("Find shell command" . helm-ff-find-sh-command)
+           ("Insert as org link `C-c @'" . helm-files-insert-as-org-link)
+           ("Find shell command `C-c /'" . helm-ff-find-sh-command)
            ("Open file externally `C-c C-x, C-u to choose'"
             . helm-open-file-externally)
            ("Open file with default tool" . helm-open-file-with-default-tool)
-           ("Grep File(s) `M-g s, C-u Recurse'" . helm-find-files-grep)
+           ("Grep File(s) `C-s, C-u Recurse'" . helm-find-files-grep)
            ("Zgrep File(s) `M-g z, C-u Recurse'" . helm-ff-zgrep)
            ("Switch to Eshell `M-e'" . helm-ff-switch-to-eshell)
-           ("Etags `M-., C-u tap, C-u C-u reload tag file'" . helm-ff-etags-select)
-           ("Eshell command on file(s) `M-!, C-u run on all marked at once.'"
+           ("Etags `M-., C-u reload tag file'" . helm-ff-etags-select)
+           ("Eshell command on file(s) `M-!, C-u take all marked as arguments.'"
             . helm-find-files-eshell-command-on-file)
-           ("Find file as root" . helm-find-file-as-root)
+           ("Find file as root `C-x @'" . helm-find-file-as-root)
            ("Find file in hex dump" . hexl-find-file)
            ("Ediff File `C-='" . helm-find-files-ediff-files)
            ("Ediff Merge File `C-c ='" . helm-find-files-ediff-merge-files)
@@ -471,14 +462,19 @@ for current buffer."
   "Generic function for creating actions from `helm-source-find-files'.
 ACTION must be an action supported by `helm-dired-action'."
   (let* ((ifiles (mapcar 'expand-file-name ; Allow modify '/foo/.' -> '/foo'
-                         (helm-marked-candidates)))
+                         (helm-marked-candidates :with-wildcard t)))
          (cand   (helm-get-selection)) ; Target
          (prompt (format "%s %s file(s) to: "
                          (capitalize (symbol-name action))
                          (length ifiles)))
+         (helm-always-two-windows t)
+         (helm-reuse-last-window-split-state t)
+         (helm-split-window-default-side
+          (eq helm-split-window-default-side 'same))
+         helm-split-window-in-side-p
          (parg   helm-current-prefix-arg)
          helm-display-source-at-screen-top ; prevent setting window-start.
-         helm-ff-auto-update-flag
+         helm-ff-auto-update-initial-value
          (dest   (with-helm-display-marked-candidates
                    helm-marked-buffer-name
                    (mapcar #'(lambda (f)
@@ -518,21 +514,21 @@ ACTION must be an action supported by `helm-dired-action'."
 
 (defun helm-find-files-byte-compile (_candidate)
   "Byte compile elisp files from `helm-find-files'."
-  (let ((files    (helm-marked-candidates))
+  (let ((files    (helm-marked-candidates :with-wildcard t))
         (parg     helm-current-prefix-arg))
     (cl-loop for fname in files
              do (byte-compile-file fname parg))))
 
 (defun helm-find-files-load-files (_candidate)
   "Load elisp files from `helm-find-files'."
-  (let ((files    (helm-marked-candidates)))
+  (let ((files    (helm-marked-candidates :with-wildcard t)))
     (cl-loop for fname in files
              do (load fname))))
 
 (defun helm-find-files-ediff-files-1 (candidate &optional merge)
   "Generic function to ediff/merge files in `helm-find-files'."
   (let* ((bname  (helm-basename candidate))
-         (marked (helm-marked-candidates))
+         (marked (helm-marked-candidates :with-wildcard t))
          (prompt (if merge "Ediff Merge `%s' With File: "
                      "Ediff `%s' With File: "))
          (fun    (if merge 'ediff-merge-files 'ediff-files))
@@ -557,15 +553,18 @@ ACTION must be an action supported by `helm-dired-action'."
 
 (defun helm-find-files-grep (_candidate)
   "Default action to grep files from `helm-find-files'."
-  (helm-do-grep-1 (helm-marked-candidates) helm-current-prefix-arg))
+  (apply 'run-with-timer 0.01 nil
+         #'helm-do-grep-1
+         (helm-marked-candidates :with-wildcard t)
+         helm-current-prefix-arg))
 
 (defun helm-ff-zgrep (_candidate)
   "Default action to zgrep files from `helm-find-files'."
-  (helm-ff-zgrep-1 (helm-marked-candidates) helm-current-prefix-arg))
+  (helm-ff-zgrep-1 (helm-marked-candidates :with-wildcard t) helm-current-prefix-arg))
 
 (defun helm-ff-pdfgrep (_candidate)
   "Default action to pdfgrep files from `helm-find-files'."
-  (let ((cands (cl-loop for file in (helm-marked-candidates)
+  (let ((cands (cl-loop for file in (helm-marked-candidates :with-wildcard t)
                         if (or (string= (file-name-extension file) "pdf")
                                (string= (file-name-extension file) "PDF"))
                         collect file))
@@ -621,7 +620,7 @@ will not be loaded first time you use this."
   (when (or eshell-command-aliases-list
             (y-or-n-p "Eshell is not loaded, run eshell-command without alias anyway? "))
     (and eshell-command-aliases-list (eshell-read-aliases-list))
-    (let* ((cand-list (helm-marked-candidates))
+    (let* ((cand-list (helm-marked-candidates :with-wildcard t))
            (default-directory (or helm-ff-default-directory
                                   ;; If candidate is an url *-ff-default-directory is nil
                                   ;; so keep value of default-directory.
@@ -704,7 +703,7 @@ See `helm-find-files-eshell-command-on-file-1' for more info."
 (defun helm-ff-serial-rename-action (method)
   "Rename all marked files to `helm-ff-default-directory' with METHOD.
 See `helm-ff-serial-rename-1'."
-  (let* ((cands     (helm-marked-candidates))
+  (let* ((cands     (helm-marked-candidates :with-wildcard t))
          (def-name  (car cands))
          (name      (read-string "NewName: "
                                  (replace-regexp-in-string
@@ -813,22 +812,6 @@ Rename only file of current directory, and copy files coming from
 other directories.
 See `helm-ff-serial-rename-1'."
   (helm-ff-serial-rename-action 'copy))
-
-(defun helm-ff-backspace (_arg)
-  "Call global backspace or `helm-find-files-down-one-level'.
-If sitting at the end of a file directory ending with \"/\"
-and `helm-ff-auto-update-flag' is turned off,
-run `helm-find-files-down-one-level', otherwise run the global command
-bounded to <backspace>."
-  (interactive "P")
-  (cond
-    ((and (looking-back "[/\\]")
-          (or helm-ff-auto-update-flag
-              (eq helm-ff-ido-style-backspace 'always)))
-     (call-interactively 'helm-find-files-down-one-level))
-    (t (call-interactively
-        (lookup-key (current-global-map)
-                    (read-kbd-macro "DEL"))))))
 
 (defun helm-ff-toggle-auto-update (_candidate)
   (setq helm-ff-auto-update-flag (not helm-ff-auto-update-flag))
@@ -1026,7 +1009,7 @@ Same as `dired-do-print' but for helm."
             (not helm-ff-printer-list))
     (setq helm-ff-printer-list
           (helm-ff-find-printers)))
-  (let* ((file-list (helm-marked-candidates))
+  (let* ((file-list (helm-marked-candidates :with-wildcard t))
          (len (length file-list))
          (printer-name (if helm-ff-printer-list
                            (helm-comp-read
@@ -1087,7 +1070,7 @@ The checksum is copied to kill-ring."
         (not helm-ff-transformer-show-only-basename))
   (let ((target (if helm-ff-transformer-show-only-basename
                     (helm-basename candidate) candidate)))
-    (helm-force-update target)))
+    (helm-force-update (regexp-quote target))))
 
 (defun helm-ff-run-toggle-basename ()
   (interactive)
@@ -1158,7 +1141,7 @@ If prefix numeric arg is given go ARG level down."
                (setq helm-ff-last-expanded helm-pattern))
               ((and cur-cand (file-exists-p cur-cand))
                (setq helm-ff-last-expanded cur-cand)))
-        (helm-set-pattern new-pattern)
+        (helm-set-pattern new-pattern helm-suspend-update-flag)
         (with-helm-after-update-hook (helm-ff-retrieve-last-expanded))
         (helm-check-minibuffer-input)))))
 
@@ -1262,7 +1245,12 @@ expand to this directory."
            (input (cond ((string= match "/./") default-directory)
                         ((string= helm-pattern "/../") "/")
                         (t (expand-file-name
-                            (helm-substitute-in-filename helm-pattern))))))
+                            (helm-substitute-in-filename helm-pattern)
+                            ;; [Windows] On UNC paths "/" expand to current machine,
+                            ;; so use the root of current Drive. (i.e "C:/")
+                            (and (memq system-type '(windows-nt ms-dos))
+                                 (getenv "SystemDrive")) ; nil on Unix.
+                            )))))
       (if (file-directory-p input)
           (setq helm-ff-default-directory
                 (setq input (file-name-as-directory input)))
@@ -1278,12 +1266,13 @@ On windows system substitute from start up to \"/[a-z]:/\"."
   (with-temp-buffer
     (insert fname)
     (goto-char (point-min))
+    (skip-chars-forward "//") ;; Avoid infloop in UNC paths Issue #424
     (if (re-search-forward "~/\\|//\\|/[[:alpha:]]:/" nil t)
         (let ((match (match-string 0)))
-          (if (or (string= match "//")
-                  (string-match-p "/[[:alpha:]]:/" match))
-              (goto-char (1+ (match-beginning 0)))
-              (goto-char (match-beginning 0)))
+          (goto-char (if (or (string= match "//")
+                             (string-match-p "/[[:alpha:]]:/" match))
+                         (1+ (match-beginning 0))
+                         (match-beginning 0)))
           (buffer-substring-no-properties (point) (point-at-eol)))
         fname)))
 
@@ -1336,13 +1325,18 @@ purpose."
   (let ((methods (mapcar 'car tramp-methods))
         (reg "\\`/\\([^[/:]+\\|[^/]+]\\):.*:")
         cur-method tramp-name)
+    ;; In some rare cases tramp can return a nil input,
+    ;; so be sure pattern is a string for safety (Issue #476).
+    (unless pattern (setq pattern ""))
     (cond ((string= pattern "") "")
+          ((string-match pattern "\\`[.]\\{1,2\\}/\\'")
+           (expand-file-name pattern))
           ((string-match ".*\\(~?/?[.]\\{1\\}/\\)\\'" pattern)
            (expand-file-name default-directory))
           ((and (string-match ".*\\(~//\\|//\\)\\'" pattern)
                 (not (string-match helm-ff-url-regexp helm-pattern)))
            (expand-file-name "/")) ; Expand to "/" or "c:/"
-          ((string-match "\\`~/\\|.*/~/\\'" pattern)
+          ((string-match "\\`\\(~/\\|.*/~/\\)\\'" pattern)
            (expand-file-name "~/"))
           ;; Match "/method:maybe_hostname:"
           ((and (string-match reg pattern)
@@ -1372,7 +1366,7 @@ purpose."
           ;; `helm-ff-auto-update-flag' is enabled to avoid quick expansion.
           ((and (file-accessible-directory-p pattern)
                 helm-ff-auto-update-flag)
-           (file-name-as-directory pattern))
+           (file-name-as-directory (expand-file-name pattern)))
           ;; Return PATTERN unchanged.
           (t pattern))))
 
@@ -1548,18 +1542,23 @@ Note that only directories are saved here."
 
 (defun helm-files-save-file-name-history (&optional force)
   "Save selected file to `file-name-history'."
-  (let ((helm-file-completion-sources (append helm-files-save-history-extra-sources
-                                              helm-file-completion-sources)))
+  (let ((helm-file-completion-sources
+         (append helm-files-save-history-extra-sources
+                 helm-file-completion-sources)))
     (when (or force (helm-file-completion-source-p))
-      (let ((sel (helm-get-selection))
+      (let ((mkd (helm-marked-candidates))
             (history-delete-duplicates t))
-        (when (and (file-exists-p sel)
-                   (not (file-directory-p sel)))
-          ;; we use `abbreviate-file-name' here because other parts of Emacs seems to,
-          ;; and we don't want to introduce duplicates.
-          (add-to-history 'file-name-history
-                          (abbreviate-file-name (helm-get-selection))))))))
-(add-hook 'helm-after-action-hook 'helm-files-save-file-name-history)
+        (cl-loop for sel in mkd
+                 when (and sel
+                           (file-exists-p sel)
+                           (not (file-directory-p sel)))
+                 do
+                 ;; we use `abbreviate-file-name' here because
+                 ;; other parts of Emacs seems to,
+                 ;; and we don't want to introduce duplicates.
+                 (add-to-history 'file-name-history
+                                 (abbreviate-file-name sel)))))))
+(add-hook 'helm-exit-minibuffer-hook 'helm-files-save-file-name-history)
 
 (defun helm-ff-valid-symlink-p (file)
   (file-exists-p (file-truename file)))
@@ -1822,7 +1821,7 @@ Return candidates prefixed with basename of `helm-input' first."
 
 (defun helm-ff-gnus-attach-files (_candidate)
   "Run `gnus-dired-attach' on `helm-marked-candidates' or CANDIDATE."
-  (let ((flist (helm-marked-candidates)))
+  (let ((flist (helm-marked-candidates :with-wildcard t)))
     (gnus-dired-attach flist)))
 
 (defvar image-dired-display-image-buffer)
@@ -1902,8 +1901,7 @@ If a prefix arg is given or `helm-follow-mode' is on open file."
                                        (set-text-properties 0 (length fname)
                                                             nil fname)
                                        (insert fname))))))
-    (cond ((and (string= (helm-ff-set-pattern helm-pattern)
-                         "Invalid tramp file name")
+    (cond ((and (helm-ff-invalid-tramp-name-p)
                 (string-match helm-tramp-file-name-regexp candidate))
            ;; First hit insert hostname and
            ;; second hit insert ":" and expand.
@@ -2054,10 +2052,7 @@ Use it for non--interactive calls of `helm-find-files'."
           (hlink)    ; String at point is an hyperlink.
           (remp abs) ; A remote file
           (file-p    ; a regular file
-           ;; Avoid ffap annoyances, don't use `ffap-alist'.
-           (let (ffap-alist)
-             (helm-aif (ffap-file-at-point)
-                 (expand-file-name it))))
+           (helm-aif (ffap-file-at-point) (expand-file-name it)))
           (urlp file-at-pt) ; possibly an url or email.
           ((and file-at-pt (file-exists-p file-at-pt))
            file-at-pt))))
@@ -2104,7 +2099,7 @@ Find inside `require' and `declare-function' sexp."
 ;;; Handle copy, rename, symlink, relsymlink and hardlink from helm.
 ;;
 ;;
-(defvar helm-async-be-async)
+(defvar dired-async-be-async)
 (cl-defun helm-dired-action (candidate
                              &key action follow (files (dired-get-marked-files)))
   "Execute ACTION on FILES to CANDIDATE.
@@ -2128,8 +2123,8 @@ Argument FOLLOW when non--nil specify to follow FILES to destination."
                       (not (file-directory-p candidate))))
         ;; When FOLLOW is enabled, disable helm-async.
         ;; If it is globally disabled use this nil value.
-        (helm-async-be-async (and (boundp 'helm-async-be-async)
-                                  helm-async-be-async
+        (dired-async-be-async (and (boundp 'dired-async-be-async)
+                                  dired-async-be-async
                                   (not follow))))
     (dired-create-files
      fn (symbol-name action) files
@@ -2158,7 +2153,8 @@ Argument FOLLOW when non--nil specify to follow FILES to destination."
                    (helm-find-files-1 (file-name-directory target)
                                       (if helm-ff-transformer-show-only-basename
                                           (helm-basename target) target))
-                   (helm-find-files-1 (expand-file-name candidate))))
+                   (helm-find-files-1 (file-name-as-directory
+                                       (expand-file-name candidate)))))
           (setq helm-ff-cand-to-mark nil))))))
 
 (defun helm-get-dest-fnames-from-list (flist dest-cand rename-dir-flag)
@@ -2239,15 +2235,15 @@ Ask to kill buffers associated with that file, too."
           (kill-buffer buf))))))
 
 (defun helm-delete-marked-files (_ignore)
-  (let* ((files (helm-marked-candidates))
-         (len (length files))
-         (buf (get-buffer-create helm-marked-buffer-name)))
+  (let* ((files (helm-marked-candidates :with-wildcard t))
+         (len (length files)))
     (with-helm-display-marked-candidates
-      buf (mapcar #'(lambda (f)
-                      (if (file-directory-p f)
-                          (concat (helm-basename f) "/")
-                          (helm-basename f)))
-                  files)
+      helm-marked-buffer-name
+      (mapcar #'(lambda (f)
+                  (if (file-directory-p f)
+                      (concat (helm-basename f) "/")
+                      (helm-basename f)))
+              files)
       (if (not (y-or-n-p (format "Delete *%s File(s)" len)))
           (message "(No deletions performed)")
           (cl-dolist (i files)
@@ -2257,7 +2253,7 @@ Ask to kill buffers associated with that file, too."
 
 (defun helm-find-file-or-marked (candidate)
   "Open file CANDIDATE or open helm marked files in background."
-  (let ((marked (helm-marked-candidates))
+  (let ((marked (helm-marked-candidates :with-wildcard t))
         (url-p (and ffap-url-regexp ; we should have only one candidate.
                     (string-match ffap-url-regexp candidate)))
         (ffap-newfile-prompt helm-ff-newfile-prompt-p)
@@ -2386,9 +2382,12 @@ Else return ACTIONS unmodified."
 ;;
 ;;
 (defvar helm-source-file-name-history
-  '((name . "File Name History")
+  `((name . "File Name History")
     (candidates . file-name-history)
-    (type . file)))
+    (persistent-action . ignore)
+    (filtered-candidate-transformer . helm-file-name-history-transformer)
+    (action . ,(cdr (helm-get-actions-from-type
+                     helm-source-locate)))))
 
 (defvar helm-source--ff-file-name-history
   '((name . "File name history")
@@ -2699,7 +2698,7 @@ This is the starting point for nearly all actions you can do on files."
                             (if helm-ff-transformer-show-only-basename
                                 (helm-basename it) it))))
     (set-text-properties 0 (length input) nil input)
-    (helm-find-files-1 input presel)))
+    (helm-find-files-1 input (and presel (regexp-quote presel)))))
 
 ;;;###autoload
 (defun helm-for-files ()
