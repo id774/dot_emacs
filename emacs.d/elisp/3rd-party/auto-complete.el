@@ -192,7 +192,7 @@
     java-mode malabar-mode clojure-mode clojurescript-mode  scala-mode
     scheme-mode
     ocaml-mode tuareg-mode coq-mode haskell-mode agda-mode agda2-mode
-    perl-mode cperl-mode python-mode ruby-mode lua-mode
+    perl-mode cperl-mode python-mode ruby-mode lua-mode tcl-mode
     ecmascript-mode javascript-mode js-mode js2-mode php-mode css-mode
     makefile-mode sh-mode fortran-mode f90-mode ada-mode
     xml-mode sgml-mode
@@ -303,6 +303,13 @@ a prefix doen't contain any upper case letters."
   :type 'integer
   :group 'auto-complete)
 
+(defcustom ac-max-width nil
+  "Maximum width for auto-complete menu to have"
+  :type '(choice (const :tag "No limit" nil)
+                 (const :tag "Character Limit" 25)
+                 (const :tag "Window Ratio Limit" 0.5))
+  :group 'auto-complete)
+
 (defface ac-completion-face
   '((t (:foreground "darkgray" :underline t)))
   "Face for inline completion"
@@ -314,7 +321,7 @@ a prefix doen't contain any upper case letters."
   :group 'auto-complete)
 
 (defface ac-candidate-mouse-face
-  '((t (:inherit popup-mouse-face)))
+  '((t (:inherit popup-menu-mouse-face)))
   "Mouse face for candidate."
   :group 'auto-complete)
 
@@ -697,6 +704,10 @@ If there is no common part, this will be nil.")
   (let ((point (re-search-backward "[\"<>' \t\r\n]" nil t)))
     (if point (1+ point))))
 
+(defsubst ac-windows-remote-file-p (file)
+  (and (memq system-type '(ms-dos windows-nt cygwin))
+       (string-match-p "\\`\\(?://\\|\\\\\\\\\\)" file)))
+
 (defun ac-prefix-valid-file ()
   "Existed (or to be existed) file prefix."
   (let* ((line-beg (line-beginning-position))
@@ -709,7 +720,8 @@ If there is no common part, this will be nil.")
                       (and (setq file (and (string-match "^[^/]*/" file)
                                            (match-string 0 file)))
                            (file-directory-p file))))
-        start)))
+        (unless (ac-windows-remote-file-p file)
+          start))))
 
 (defun ac-prefix-c-dot ()
   "C-like languages dot(.) prefix."
@@ -797,6 +809,7 @@ You can not use it in source definition like (prefix . `NAME')."
         (popup-create point width height
                       :around t
                       :face 'ac-candidate-face
+                      :max-width ac-max-width
                       :mouse-face 'ac-candidate-mouse-face
                       :selection-face 'ac-selection-face
                       :symbol t
@@ -1221,6 +1234,7 @@ that have been made before in this function.  When `buffer-undo-list' is
                 (and (> (popup-direction ac-menu) 0)
                      (ac-menu-at-wrapper-line-p)))
         (ac-inline-hide) ; Hide overlay to calculate correct column
+        (ac-remove-quick-help)
         (ac-menu-delete)
         (ac-menu-create ac-point preferred-width ac-menu-height)))
     (ac-update-candidates 0 0)
@@ -1666,7 +1680,8 @@ that have been made before in this function.  When `buffer-undo-list' is
                                           (ac-trigger-command-p this-command)
                                           (and ac-completing
                                                (memq this-command ac-trigger-commands-on-completing)))
-                                      (not (ac-cursor-on-diable-face-p))))
+                                      (not (ac-cursor-on-diable-face-p))
+                                      (or ac-triggered t)))
               (ac-compatible-package-command-p this-command))
           (progn
             (if (or (not (symbolp this-command))
@@ -1702,6 +1717,7 @@ that have been made before in this function.  When `buffer-undo-list' is
           ad-do-it))
     (ad-disable-advice 'flymake-on-timer-event 'around 'ac-flymake-stop-advice)))
 
+;;;###autoload
 (define-minor-mode auto-complete-mode
   "AutoComplete mode"
   :lighter " AC"
@@ -1725,6 +1741,7 @@ that have been made before in this function.  When `buffer-undo-list' is
            (memq major-mode ac-modes))
       (auto-complete-mode 1)))
 
+;;;###autoload
 (define-global-minor-mode global-auto-complete-mode
   auto-complete-mode auto-complete-mode-maybe
   :group 'auto-complete)

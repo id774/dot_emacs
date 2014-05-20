@@ -36,6 +36,23 @@
   "Goto the candidate when only one is remaining."
   :group 'helm-imenu
   :type 'boolean)
+
+(defcustom helm-imenu-lynx-style-map t
+  "Use Arrow keys to jump to occurences."
+  :group 'helm-imenu
+  :type  'boolean)
+
+
+;;; keymap
+(defvar helm-imenu-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map helm-map)
+    (define-key map (kbd "C-c ?") 'helm-imenu-help)
+    (when helm-imenu-lynx-style-map
+      (define-key map (kbd "<left>")  'helm-exit-minibuffer)
+      (define-key map (kbd "<right>") 'helm-execute-persistent-action))
+    (delq nil map)))
+
 
 ;;; Internals
 (defvar helm-cached-imenu-alist nil)
@@ -46,49 +63,59 @@
 
 (defvar helm-cached-imenu-tick nil)
 (make-variable-buffer-local 'helm-cached-imenu-tick)
+
 
 (defvar helm-source-imenu
-  '((name . "Imenu")
+  `((name . "Imenu")
     (candidates . helm-imenu-candidates)
     (allow-dups)
     (candidate-transformer . helm-imenu-transformer)
-    (persistent-action . (lambda (elm)
-                           (imenu elm)
-                           (helm-highlight-current-line)))
+    (persistent-action . helm-imenu-persistent-action)
     (persistent-help . "Show this entry")
-    (action . (lambda (candidate)
-                (imenu candidate)
-                ;; If semantic is supported in this buffer
-                ;; imenu used `semantic-imenu-goto-function'
-                ;; and position have been highlighted,
-                ;; no need to highlight again.
-                (unless (eq imenu-default-goto-function
-                            'semantic-imenu-goto-function)
-                  (helm-highlight-current-line nil nil nil nil 'pulse))))
-  "See (info \"(emacs)Imenu\")"))
+    (keymap . ,helm-imenu-map)
+    (mode-line . helm-imenu-mode-line)
+    (action . helm-imenu-action)
+    "See (info \"(emacs)Imenu\")"))
+
 
+(defun helm-imenu-action (candidate)
+  "Default action for `helm-source-imenu'."
+  (imenu candidate)
+  ;; If semantic is supported in this buffer
+  ;; imenu used `semantic-imenu-goto-function'
+  ;; and position have been highlighted,
+  ;; no need to highlight again.
+  (unless (eq imenu-default-goto-function
+              'semantic-imenu-goto-function)
+    (helm-highlight-current-line nil nil nil nil 'pulse)))
+
+(defun helm-imenu-persistent-action (candidate)
+  "Default persistent action for `helm-source-imenu'."
+  (imenu candidate)
+  (helm-highlight-current-line))
+
 (defun helm-imenu-candidates ()
   (with-helm-current-buffer
     (let ((tick (buffer-modified-tick)))
       (if (eq helm-cached-imenu-tick tick)
           helm-cached-imenu-candidates
-          (setq imenu--index-alist nil)
-          (setq helm-cached-imenu-tick tick
-                helm-cached-imenu-candidates
-                (let ((index (imenu--make-index-alist))) 
-                  (helm-imenu--candidates-1
-                   (delete (assoc "*Rescan*" index) index))))))))
+        (setq imenu--index-alist nil)
+        (setq helm-cached-imenu-tick tick
+              helm-cached-imenu-candidates
+              (let ((index (imenu--make-index-alist))) 
+                (helm-imenu--candidates-1
+                 (delete (assoc "*Rescan*" index) index))))))))
 
 (defun helm-imenu--candidates-1 (alist)
   (cl-loop for elm in alist
-           append (if (imenu--subalist-p elm)
-                      (helm-imenu--candidates-1
-                       (cl-loop for (e . v) in (cdr elm) collect
-                                (cons (propertize
-                                       e 'helm-imenu-type (car elm))
-                                      v)))
-                      (and (cdr elm) ; bug in imenu, should not be needed.
-                           (list elm)))))
+        append (if (imenu--subalist-p elm)
+                   (helm-imenu--candidates-1
+                    (cl-loop for (e . v) in (cdr elm) collect
+                          (cons (propertize
+                                 e 'helm-imenu-type (car elm))
+                                v)))
+                 (and (cdr elm) ; bug in imenu, should not be needed.
+                      (list elm)))))
 
 (defun helm-imenu--get-prop (item)
   ;; property value of ITEM can have itself
@@ -105,19 +132,19 @@
 
 (defun helm-imenu-transformer (candidates)
   (cl-loop for (k . v) in candidates
-           for types = (or (helm-imenu--get-prop k)
-                           (list "Function" k))
-           collect
-           (cons (mapconcat (lambda (x)
-                              (propertize
-                               x 'face (cond ((string= x "Variables")
-                                              'font-lock-variable-name-face)
-                                             ((string= x "Function")
-                                              'font-lock-function-name-face)
-                                             ((string= x "Types")
-                                              'font-lock-type-face))))
-                            types helm-imenu-delimiter)
-                 (cons k v))))
+        for types = (or (helm-imenu--get-prop k)
+                        (list "Function" k))
+        collect
+        (cons (mapconcat (lambda (x)
+                           (propertize
+                            x 'face (cond ((string= x "Variables")
+                                           'font-lock-variable-name-face)
+                                          ((string= x "Function")
+                                           'font-lock-function-name-face)
+                                          ((string= x "Types")
+                                           'font-lock-type-face))))
+                         types helm-imenu-delimiter)
+              (cons k v))))
 
 ;;;###autoload
 (defun helm-imenu ()

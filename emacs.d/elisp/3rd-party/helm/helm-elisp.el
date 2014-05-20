@@ -54,10 +54,10 @@ This is used in macro `with-helm-show-completion'."
 e.g give only function names after \(funcall '."
   :group 'helm-elisp
   :type '(repeat (choice symbol)))
-  
+
 (defcustom helm-lisp-unquoted-function-list
   '(function defadvice)
-    "List of function where unquoted function completion happen.
+  "List of function where unquoted function completion happen.
 e.g give only function names after \(function ."
   :group 'helm-elisp
   :type '(repeat (choice symbol)))
@@ -99,18 +99,18 @@ e.g give only function names after \(function ."
   (with-selected-window (selected-window)
     (if (window-dedicated-p)
         (helm-default-display-buffer buffer)
-        (let* ((screen-size  (+ (count-screen-lines (window-start) (point) t)
-                                1                         ; mode-line
-                                (if header-line-format 1 0))) ; header-line
-               (def-size     (- (window-height)
-                                helm-show-completion-min-window-height))
-               (upper-height (max window-min-height (min screen-size def-size)))
-               split-window-keep-point)
-          (recenter -1)
-          (set-window-buffer (if (active-minibuffer-window)
-                                 (minibuffer-selected-window)
-                                 (split-window nil upper-height))
-                             buffer)))))
+      (let* ((screen-size  (+ (count-screen-lines (window-start) (point) t)
+                              1                         ; mode-line
+                              (if header-line-format 1 0))) ; header-line
+             (def-size     (- (window-height)
+                              helm-show-completion-min-window-height))
+             (upper-height (max window-min-height (min screen-size def-size)))
+             split-window-keep-point)
+        (recenter -1)
+        (set-window-buffer (if (active-minibuffer-window)
+                               (minibuffer-selected-window)
+                             (split-window nil upper-height))
+                           buffer)))))
 
 (defmacro with-helm-show-completion (beg end &rest body)
   "Show helm candidate in an overlay at point.
@@ -128,7 +128,7 @@ If `helm-turn-on-show-completion' is nil just do nothing."
          (set (make-local-variable 'helm-display-function)
               (if helm-show-completion-use-special-display
                   'helm-show-completion-display-function
-                  'helm-default-display-buffer))))
+                'helm-default-display-buffer))))
      (unwind-protect
           (progn
             (helm-show-completion-init-overlay ,beg ,end)
@@ -177,7 +177,7 @@ If `helm-turn-on-show-completion' is nil just do nothing."
              (error nil)))
           (lambda (sym)
             (or (boundp sym) (fboundp sym) (symbol-plist sym)))
-          #'fboundp))))
+        #'fboundp))))
 
 (defun helm-thing-before-point (&optional limits regexp)
   "Return symbol name before point.
@@ -191,11 +191,11 @@ of symbol before point."
           (boundary (field-beginning nil nil (point-at-bol))))
       (if (re-search-backward (or regexp "\\_<") boundary t)
           (setq beg (match-end 0))
-          (setq beg boundary))
+        (setq beg boundary))
       (unless (= beg end)
         (if limits
             (cons beg end)
-            (buffer-substring-no-properties beg end))))))
+          (buffer-substring-no-properties beg end))))))
 
 (defun helm-bounds-of-thing-before-point (&optional regexp)
   "Get the beginning and end position of `helm-thing-before-point'.
@@ -240,10 +240,10 @@ Return a cons \(beg . end\)."
           (member 'helm-compile-source--match-plugin
                   helm-compile-source-functions)))
     (setq helm-lisp-completion--cache (cl-loop for sym in candidates
-                                               for len = (length sym)
-                                               when (> len helm-lgst-len)
-                                               do (setq helm-lgst-len len)
-                                               collect sym))
+                                            for len = (length sym)
+                                            when (> len helm-lgst-len)
+                                            do (setq helm-lgst-len len)
+                                            collect sym))
     (if candidates
         (with-helm-show-completion beg end
           ;; Overlay is initialized now in helm-current-buffer.
@@ -267,7 +267,7 @@ Return a cons \(beg . end\)."
            :resume 'noresume
            :buffer "*helm lisp completion*"
            :allow-nest t))
-        (message "[No Match]"))))
+      (message "[No Match]"))))
 
 (defun helm-lisp-completion-persistent-action (candidate)
   (let ((cursor-in-echo-area t)
@@ -281,15 +281,15 @@ Return a cons \(beg . end\)."
 (defun helm-lisp-completion-transformer (candidates _source)
   "Helm candidates transformer for lisp completion."
   (cl-loop for c in candidates
-           for sym = (intern c)
-           for annot = (cl-typecase sym
-                         (command " (Com)")
-                         (fbound  " (Fun)")
-                         (bound   " (Var)")
-                         (face    " (Face)"))
-           for spaces = (make-string (- helm-lgst-len (length c)) ? )
-           collect (cons (concat c spaces annot) c) into lst
-           finally return (sort lst #'helm-generic-sort-fn)))
+        for sym = (intern c)
+        for annot = (cl-typecase sym
+                      (command " (Com)")
+                      (fbound  " (Fun)")
+                      (bound   " (Var)")
+                      (face    " (Face)"))
+        for spaces = (make-string (- helm-lgst-len (length c)) ? )
+        collect (cons (concat c spaces annot) c) into lst
+        finally return (sort lst #'helm-generic-sort-fn)))
 
 (defun helm-get-first-line-documentation (sym)
   "Return first line documentation of symbol SYM.
@@ -306,7 +306,7 @@ If SYM is not documented, return \"Not documented\"."
              ;; for CL-style functions.
              (not (string-match-p "^\n\n" doc)))
         (car (split-string doc "\n"))
-        "Not documented")))
+      "Not documented")))
 
 ;;; File completion.
 ;;
@@ -338,7 +338,7 @@ If SYM is not documented, return \"Not documented\"."
     (when (and completion (not (string= completion "")))
       (delete-region beg end) (insert (if (string-match "^~" tap)
                                           (abbreviate-file-name completion)
-                                          completion)))))
+                                        completion)))))
 
 ;;;###autoload
 (defun helm-lisp-indent ()
@@ -361,7 +361,7 @@ Filename completion happen if string start after or between a double quote."
                    (search-backward tap (point-at-bol) t)
                    (looking-back "[^'`( ]")))
         (helm-complete-file-name-at-point)
-        (helm-lisp-completion-at-point))))
+      (helm-lisp-completion-at-point))))
 
 (helm-multi-key-defun helm-multi-lisp-complete-at-point
     "Multi key function for completion in emacs lisp buffers.
@@ -380,19 +380,16 @@ First call indent, second complete symbol, third complete fname."
   (require 'helm-help)
   (with-current-buffer (helm-candidate-buffer 'global)
     (goto-char (point-min))
-    (when (and default (stringp default)
-               ;; Some defaults args result as
-               ;; (symbol-name nil) == "nil".
-               ;; e.g debug-on-entry.
-               (not (string= default "nil"))
-               (funcall test (intern default)))
-      (insert (concat default "\n")))
-    (cl-loop with all = (all-completions "" obarray test)
-             for sym in all
-             for s = (intern sym)
-             unless (or (and default (string= sym default))
-                        (keywordp s))
-             do (insert (concat sym "\n")))))
+    (let ((default-symbol (and (stringp default)
+                               (intern-soft default))))
+      (when (and default-symbol (funcall test default-symbol))
+        (insert (concat default "\n")))
+      (cl-loop with all = (all-completions "" obarray test)
+            for sym in all
+            for s = (intern sym)
+            unless (or (and default (string= sym default))
+                       (keywordp s))
+            do (insert (concat sym "\n"))))))
 
 (defun helm-def-source--emacs-variables (&optional default)
   `((name . "Variables")
@@ -413,7 +410,7 @@ First call indent, second complete symbol, third complete fname."
     (nomark)
     (filtered-candidate-transformer . (lambda (candidates _source)
                                         (cl-loop for c in candidates
-                                                 collect (propertize c 'face (intern c)))))
+                                              collect (propertize c 'face (intern c)))))
     (action . (lambda (candidate)
                 (describe-face (intern candidate))))))
 
@@ -494,23 +491,23 @@ First call indent, second complete symbol, third complete fname."
 
 (defun helm-advice-candidates ()
   (cl-loop for (fname) in ad-advised-functions
-           for function = (intern fname)
-           append
-           (cl-loop for class in ad-advice-classes append
-                    (cl-loop for advice in (ad-get-advice-info-field function class)
-                             for enabled = (ad-advice-enabled advice)
-                             collect
-                             (cons (format
-                                    "%s %s %s"
-                                    (if enabled "Enabled " "Disabled")
-                                    (propertize fname 'face 'font-lock-function-name-face)
-                                    (ad-make-single-advice-docstring advice class nil))
-                                   (list function class advice))))))
+        for function = (intern fname)
+        append
+        (cl-loop for class in ad-advice-classes append
+              (cl-loop for advice in (ad-get-advice-info-field function class)
+                    for enabled = (ad-advice-enabled advice)
+                    collect
+                    (cons (format
+                           "%s %s %s"
+                           (if enabled "Enabled " "Disabled")
+                           (propertize fname 'face 'font-lock-function-name-face)
+                           (ad-make-single-advice-docstring advice class nil))
+                          (list function class advice))))))
 
 (defun helm-advice-persistent-action (func-class-advice)
   (if current-prefix-arg
       (helm-advice-toggle func-class-advice)
-      (describe-function (car func-class-advice))))
+    (describe-function (car func-class-advice))))
 
 (defun helm-advice-toggle (func-class-advice)
   (cl-destructuring-bind (function _class advice) func-class-advice
@@ -560,14 +557,14 @@ First call indent, second complete symbol, third complete fname."
 (defun helm-locate-library-scan-init ()
   "Init helm buffer status."
   (helm-init-candidates-in-buffer
-   'global (helm-locate-library-scan-list)))
+      'global (helm-locate-library-scan-list)))
 
 (defun helm-locate-library-scan-list ()
   (cl-loop for dir in load-path
-           when (file-directory-p dir)
-           append (directory-files dir t (regexp-opt (get-load-suffixes)))
-           into lst
-           finally return (helm-fast-remove-dups lst :test 'equal)))
+        when (file-directory-p dir)
+        append (directory-files dir t (regexp-opt (get-load-suffixes)))
+        into lst
+        finally return (helm-fast-remove-dups lst :test 'equal)))
 
 ;;;###autoload
 (defun helm-locate-library ()
@@ -616,19 +613,57 @@ First call indent, second complete symbol, third complete fname."
       (coerce . helm-symbolify))
   "Variable.")
 
-(defun helm-sexp-eval (cand)
-  (condition-case err
-      (eval (read cand))
-    (error (message "Evaluating gave an error: %S" err)
-           nil)))
+(defun helm-btf--usable-p ()
+  "Return t if current version of `backtrace-frame' accept 2 arguments."
+  (condition-case nil
+      (and (backtrace-frame 1 'condition-case) t)
+    (wrong-number-of-arguments nil)))
+
+(if (helm-btf--usable-p)        ; Check if BTF accept more than one arg.
+    ;; Emacs 24.4.
+    (dont-compile
+      (defvar helm-sexp--last-sexp nil)
+      ;; This wont work compiled.
+      (defun helm-sexp-eval-1 ()
+        (interactive)
+        (unwind-protect
+             (progn
+               ;; Trick called-interactively-p into thinking that `cand' is
+               ;; an interactive call, See `repeat-complex-command'.
+               (add-hook 'called-interactively-p-functions
+                         #'helm-complex-command-history--called-interactively-skip)
+               (eval (read helm-sexp--last-sexp)))
+          (remove-hook 'called-interactively-p-functions
+                       #'helm-complex-command-history--called-interactively-skip)))
+
+      (defun helm-complex-command-history--called-interactively-skip (i _frame1 frame2)
+        (and (eq 'eval (cadr frame2))
+             (eq 'helm-sexp-eval-1
+                 (cadr (backtrace-frame (+ i 2) #'called-interactively-p)))
+             1))
+      
+      (defun helm-sexp-eval (_candidate)
+        (call-interactively #'helm-sexp-eval-1)))
+  ;; Emacs 24.3
+  (defun helm-sexp-eval (cand)
+    (let ((sexp (read cand)))
+      (condition-case err
+          (if (> (length (remove nil sexp)) 1)
+              (eval sexp)
+            (apply 'call-interactively sexp))
+        (error (message "Evaluating gave an error: %S" err)
+               nil)))))
 
 (define-helm-type-attribute 'sexp
     '((action
-       ("Eval" . helm-sexp-eval)
+       ("Eval" . (lambda (candidate)
+                   (and (boundp 'helm-sexp--last-sexp)
+                        (setq helm-sexp--last-sexp candidate))
+                   (helm-run-after-quit 'helm-sexp-eval candidate)))
        ("Edit and eval" .
         (lambda (cand)
-          (let ((minibuffer-setup-hook
-                 (cons (lambda () (insert cand)) minibuffer-setup-hook)))
+          (minibuffer-with-setup-hook
+              (lambda () (insert cand))
             (call-interactively #'eval-expression)))))
       (persistent-action . helm-sexp-eval))
   "Sexp.")
@@ -638,7 +673,7 @@ First call indent, second complete symbol, third complete fname."
        ("Cancel Timer" . (lambda (_timer)
                            (let ((mkd (helm-marked-candidates)))
                              (cl-loop for timer in mkd
-                                      do (cancel-timer timer)))))
+                                   do (cancel-timer timer)))))
        ("Describe Function" . (lambda (tm) (describe-function (timer--function tm))))
        ("Find Function" . (lambda (tm) (find-function (timer--function tm)))))
       (persistent-action . (lambda (tm) (describe-function (timer--function tm))))
@@ -655,7 +690,7 @@ First call indent, second complete symbol, third complete fname."
     (filtered-candidate-transformer
      . (lambda (candidates _source)
          (cl-loop for timer in candidates
-                  collect (cons (helm-elisp--format-timer timer) timer))))
+               collect (cons (helm-elisp--format-timer timer) timer))))
     (allow-dups)
     (volatile)
     (type . timer)))
@@ -668,7 +703,7 @@ First call indent, second complete symbol, third complete fname."
     (filtered-candidate-transformer
      . (lambda (candidates _source)
          (cl-loop for timer in candidates
-                  collect (cons (helm-elisp--format-timer timer) timer))))
+               collect (cons (helm-elisp--format-timer timer) timer))))
     (type . timer)))
 
 (defun helm-elisp--format-timer (timer)
@@ -676,7 +711,7 @@ First call indent, second complete symbol, third complete fname."
           (let ((time (timer--time timer)))
             (if (timer--idle-delay timer)
                 (format-time-string "idle-for=%5s" time)
-                (format-time-string "%m/%d %T" time)))
+              (format-time-string "%m/%d %T" time)))
           (or (timer--repeat-delay timer) "nil")
           (mapconcat 'identity (split-string
                                 (prin1-to-string (timer--function timer))
@@ -697,7 +732,12 @@ First call indent, second complete symbol, third complete fname."
 ;;
 (defvar helm-source-complex-command-history
   '((name . "Complex Command History")
-    (candidates . (lambda () (mapcar 'prin1-to-string command-history)))
+    (candidates . (lambda ()
+                    ;; Use cdr to avoid adding
+                    ;; `helm-complex-command-history' here.
+                    (cl-loop for i in command-history
+                          unless (equal i '(helm-complex-command-history))
+                          collect (prin1-to-string i))))
     (type . sexp)))
 
 ;;;###autoload

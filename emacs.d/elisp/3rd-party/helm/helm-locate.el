@@ -51,7 +51,7 @@ Normally you should not have to modify this yourself.
 If nil it will be calculated when `helm-locate' startup
 with these default values for different systems:
 
-Gnu/linux: \"locate %s -r %s\"
+Gnu/linux: \"locate %s -e -A %s\"
 berkeley-unix: \"locate %s %s\"
 windows-nt: \"es %s %s\"
 Others: \"locate %s %s\"
@@ -140,13 +140,13 @@ See `helm-locate-with-db' and `helm-locate'."
   (let ((pfn #'(lambda (candidate)
                  (if (file-directory-p candidate)
                      (message "Error: The locate Db should be a file")
-                     (if (= (shell-command
-                             (format helm-locate-create-db-command
-                                     candidate
-                                     helm-ff-default-directory))
-                            0)
-                         (message "New locatedb file `%s' created" candidate)
-                         (error "Failed to create locatedb file `%s'" candidate)))))
+                   (if (= (shell-command
+                           (format helm-locate-create-db-command
+                                   candidate
+                                   helm-ff-default-directory))
+                          0)
+                       (message "New locatedb file `%s' created" candidate)
+                     (error "Failed to create locatedb file `%s'" candidate)))))
         (locdb (and localdb
                     (not (string-match "^es" helm-locate-command))
                     (or (and (equal '(4) localdb)
@@ -164,7 +164,7 @@ See `helm-locate-with-db' and `helm-locate'."
                                        (or (string-match
                                             helm-locate-db-file-regexp x)
                                            (file-directory-p x))
-                                       x)))))))
+                                     x)))))))
     (when (and locdb (or (equal localdb '(16))
                          (not (file-exists-p locdb))))
       (funcall pfn locdb))
@@ -175,7 +175,7 @@ See `helm-locate-with-db' and `helm-locate'."
   (unless helm-locate-command
     (setq helm-locate-command
           (cl-case system-type
-            (gnu/linux "locate %s -r %s")
+            (gnu/linux "locate %s -e -A --regex %s")
             (berkeley-unix "locate %s %s")
             (windows-nt "es %s %s")
             (t "locate %s %s")))))
@@ -199,10 +199,10 @@ See also `helm-locate'."
                                  ;; Remove eventually
                                  ;; marked directories by error.
                                  (cl-loop for i in db
-                                          unless (file-directory-p i)
-                                          collect i) ":"))
+                                       unless (file-directory-p i)
+                                       collect i) ":"))
               helm-locate-command)
-             helm-locate-command)))
+           helm-locate-command)))
     (setq helm-file-name-history (mapcar 'helm-basename file-name-history))
     (helm :sources 'helm-source-locate
           :buffer "*helm locate*"
@@ -227,10 +227,10 @@ See also `helm-locate'."
                    (smart (let ((case-fold-search nil))
                             (if (string-match "[A-Z]" helm-pattern)
                                 case-sensitive-flag
-                                ignore-case-flag)))
+                              ignore-case-flag)))
                    (t (if helm-locate-case-fold-search
                           ignore-case-flag
-                          case-sensitive-flag)))
+                        case-sensitive-flag)))
                  (concat
                   ;; The pattern itself.
                   (shell-quote-argument (car args)) " "
@@ -251,25 +251,13 @@ See also `helm-locate'."
                                                    (point-min) (point-max))) 0))
                                  'face 'helm-grep-finish))))
                  (force-mode-line-update))
-               (helm-log "Error: Locate %s"
-                         (replace-regexp-in-string "\n" "" event))))))))
-
-(defun helm-locate-pattern-transformer (pattern)
-  "Replace spaces in PATTERN with \".*\".
-Don't affect space at end of PATTERN preceding a possible locate option.
-Do nothing when `helm-locate-command' is 'es'."
-  (if (and (string-match
-            " " (replace-regexp-in-string
-                 " -[a-z]\\'" "" pattern))
-           (not (string-match-p "\\`es" helm-locate-command)))
-      (replace-match ".*" nil t pattern)
-      pattern))
+             (helm-log "Error: Locate %s"
+                       (replace-regexp-in-string "\n" "" event))))))))
 
 (defvar helm-source-locate
   `((name . "Locate")
     (init . helm-locate-set-command)
     (candidates-process . helm-locate-init)
-    (pattern-transformer . helm-locate-pattern-transformer)
     (type . file)
     (requires-pattern . 3)
     (history . ,'helm-file-name-history)

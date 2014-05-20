@@ -12,7 +12,7 @@ welcomed by submitting a Pull Request for [Home.mdpp][1].
 # Wiki maintainer instructions
 
 1. Checkout wiki repo at `git@github.com:emacs-helm/helm.wiki.git`
-2. Get markdown-pp at https://github.com/thierryvolpiatto/markdown-pp.git
+2. Get markdown-pp at https://github.com/jreese/markdown-pp
 3. Install markdown-pp
 
    For help on setup.py:
@@ -54,8 +54,43 @@ For a quick try, you can also run the shell script provided with helm if your sy
     ./emacs-helm.sh
 
 NOTE: If you install Helm in a different way using your own autoloads and personal configuration,
-      be sure to know and understand what you are doing, otherwise expect diverses bugs and failures.
+      be sure to know and understand what you are doing, otherwise expect diverse bugs and failures.
       You are warned!
+
+# Emacs completion vs Helm
+
+Emacs' default minibuffer completion is subtly different to Helm, and many
+([1][mental1], [2][mental2], [3][mental3]) new comers struggle with the difference.
+
+## Emacs default completion is **minibuffer centric**
+
+Emacs helps you narrow down your selection by transforming your minibuffer
+input when you hit `<tab>`.  And then your give it some more detail and hit
+`<tab>` again, until finally,the **minibuffer** contains the desired input and
+you hit `<enter>` to select it.
+
+## Helm is **completion window centric**
+
+In Helm, you don't pay attention to the minibuffer.  Instead, you look at the
+completion window *and* the currently highlighted item.
+
+You narrow the list shown in the **completion window** by providing more input.
+
+When the item is close enough to the current highlight, you navigate to it
+with `<C-n>` and hit `<enter>` to select it.
+
+## The key implications of the helm "mental model"
+
+1. `<tab>` is not needed to expand the minibuffer input.
+
+    - The minibuffer need not *ever* contain the selection you want, so
+      there is no point in transforming it.
+
+2. Therefore `<tab>` is used to select a different action in Helm.
+
+    - In Emacs completion, there is only one action available, but Helm
+      offers many actions.
+    - This is a feature.  Please don't ask how to make `<tab>` do expansion.
 
 # Debugging
 
@@ -169,7 +204,7 @@ Example:
     Find Files or url: ~/ el$
     Will show all what finish with el
 
-    
+
 Inside the `helm-find-files` buffer, you can move your selected row up
 or down with C-n C-p or arrow keys. When a row is selected, `C-z` performs the
 default action, which is different depending on the context.
@@ -306,7 +341,7 @@ your eshell aliases. This allow you creating personal actions for
 
 -   Because eshell accept shell commands but also elisp functions.
 
-All these command should end with `$1`.
+All these command should end with `https://github.com/emacs-helm/helm/issues/495`.
 
 You will have completion against all these aliases once eshell is loaded (start it once before using
 helm-find-files).
@@ -315,7 +350,7 @@ helm-find-files).
 
  Go in eshell, an enter at prompt:
 
-    alias my_alias command $1
+    alias my_alias command https://github.com/emacs-helm/helm/issues/495
 
 NOTE: don`t forget to escape the $.
 
@@ -901,7 +936,7 @@ To fix this problem, you can define a `pcomplete/sudo`  function and put it in y
 
 However this an incomplete definition of `pcomplete/sudo` which will not work in some case
 without modifications to some emacs functions due to bugs unresolved in emacs, to fix this
-you can use my [pcomplete-extension](https://github.com/thierryvolpiatto/emacs-tv-config/blob/master/pcomplete-extension.el)
+you can use my [pcomplete-extension](https://github.com/thierryvolpiatto/pcomplete-extension)
 which will provide more completions working well with helm like `apt-get` or `find`.
 
 ## Write your own pcomplete functions
@@ -909,7 +944,7 @@ which will provide more completions working well with helm like `apt-get` or `fi
 You can enhance Emacs pcomplete by writing your own pcomplete
 functions.
 
-See [pcomplete-extension](https://github.com/thierryvolpiatto/emacs-tv-config/blob/master/pcomplete-extension.el)
+See [pcomplete-extension](https://github.com/thierryvolpiatto/pcomplete-extension)
 For more enhanced completions.
 
  Here an example with `find` command:
@@ -961,7 +996,7 @@ Add this to `init.el`
 
 Completion in emacs `shell` is using `completion-at-point`, `helm-mode` provide completion for this
 starting from emacs-24.4 and is not available in emacs-24.3.
-Same as above, you should use [pcomplete-extension](https://github.com/thierryvolpiatto/emacs-tv-config/blob/master/pcomplete-extension.el)
+Same as above, you should use [pcomplete-extension](https://github.com/thierryvolpiatto/pcomplete-extension)
 to have a better experience.
 
 # Usefuls extensions
@@ -984,3 +1019,7 @@ Or at gmane: [gmane.emacs.helm.user](http://dir.gmane.org/gmane.emacs.helm.user)
 
 [1]: https://github.com/emacs-helm/helm/blob/master/doc/Home.mdpp
 [2]: https://github.com/thierryvolpiatto/markdown-pp#readme
+[mental1]: https://github.com/emacs-helm/helm/issues/495
+[mental2]: https://github.com/emacs-helm/helm/issues/222
+[mental3]: https://groups.google.com/forum/#!topic/emacs-helm/zaBbg2tFAuM
+
