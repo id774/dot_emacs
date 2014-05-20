@@ -118,6 +118,7 @@ byte_compile_all() {
     cd $TARGET/elisp/3rd-party
     emacs_batch_byte_compile \
       browse-kill-ring.el \
+      cl-lib.el \
       js2.el \
       undo-tree.el \
       shadow.el \
