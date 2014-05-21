@@ -34,6 +34,9 @@
 ;; Lang modes
 (load-p "lang-mode")
 
+;; YaTex modes
+(load-p "yatex-mode")
+
 ;; anything-git-files
 (when (require 'anything-git-files)
   (define-key global-map "\C-c\C-c\ b" 'anything-git-files))
