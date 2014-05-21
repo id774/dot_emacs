@@ -34,7 +34,7 @@
 ;; Lang modes
 (load-p "lang-mode")
 
-;; YaTex modes
+;; YaTeX modes
 (load-p "yatex-mode")
 
 ;; anything-git-files
