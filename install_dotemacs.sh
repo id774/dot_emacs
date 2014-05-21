@@ -164,7 +164,8 @@ byte_compile_all() {
       physical-line.el \
       proxy.el \
       tab4.el \
-      utils.el
+      utils.el \
+      yatex-mode.el
 }
 
 slink_elisp() {
