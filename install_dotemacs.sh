@@ -8,6 +8,8 @@
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+# v1.19 5/22,2014
+#       Clean up obsolete code.
 # v1.18 2/4,2014
 #       Explicit specification sudo.
 # v1.17 11/27,2013
@@ -56,30 +58,6 @@ setup_dotemacs() {
     cp $OPTIONS $DOT_EMACS/dot_mew.el $HOME/.mew.el
     test -d $TARGET || $SUDO mkdir -p $TARGET/
     $SUDO cp $OPTIONS $DOT_EMACS/emacs.d/elisp $TARGET/
-}
-
-setup_rhtml() {
-    if [ -d $GITHUB/rhtml ]; then
-        cd $GITHUB/rhtml
-        $SUDO git pull
-    else
-        cd $GITHUB
-        $SUDO git clone git://github.com/eschulte/rhtml.git
-        cd $GITHUB/rhtml
-    fi
-}
-
-setup_rinari() {
-    if [ -d $GITHUB/rinari ]; then
-        cd $GITHUB/rinari
-        $SUDO git pull
-    else
-        cd $GITHUB
-        $SUDO git clone git://github.com/eschulte/rinari.git
-        cd $GITHUB/rinari
-    fi
-    $SUDO git submodule init
-    $SUDO git submodule update
 }
 
 emacs_private_settings() {
@@ -195,11 +173,6 @@ slink_elisp() {
     touch $HOME/.emacs.d/anything/anything-c-adaptive-history
 }
 
-network_connection() {
-    setup_rhtml
-    setup_rinari
-}
-
 setup_environment() {
     SCRIPTS=$HOME/scripts
     PRIVATE=$HOME/private/scripts
@@ -218,13 +191,9 @@ setup_environment() {
     esac
 
     test -n "$1" && EMACS=$1
-
     TARGET=$HOME/.emacs.d
     test -n "$2" && export TARGET=$2
     test -n "$2" || export TARGET=/usr/local/etc/emacs.d
-    #test -n "$2" || export TARGET=/etc/emacs.d
-    #test -n "$2" || export TARGET=$HOME/.emacs.d
-
     test -n "$3" || SUDO=sudo
     test -n "$3" && SUDO=
     test "$3" = "sudo" && SUDO=sudo
@@ -242,7 +211,6 @@ install_dotemacs() {
     cd
     setup_environment $*
     setup_dotemacs
-    #ping -c 1 id774.net > /dev/null 2>&1 && network_connection
     emacs_private_settings
     byte_compile_all
     slink_elisp
