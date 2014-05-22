@@ -12,7 +12,7 @@
   "Revision number of running yatex.el")
 
 ;---------- Local variables ----------
-(defvar YaTeX-prefix "\C-c"
+(defvar YaTeX-prefix "\C-c\C-x"
   "*Prefix key to call YaTeX functions.
 You can select favorite prefix key by setq in your ~/.emacs.")
 

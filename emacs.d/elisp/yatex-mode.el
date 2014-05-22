@@ -2,7 +2,7 @@
 (setq auto-mode-alist
   (cons (cons "\\.tex$" 'yatex-mode) auto-mode-alist))
 (autoload 'yatex-mode "yatex" "Yet Another LaTeX mode" t)
-(setq tex-command "platex2pdf")
+(setq tex-command "/usr/local/sbin/platex2pdf")
 (cond
   ((eq system-type 'gnu/linux)
     (setq dvi2-command "evince"))
