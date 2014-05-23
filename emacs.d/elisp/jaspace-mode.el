@@ -13,6 +13,7 @@
                                       'ruby-mode
                                       'python-mode
                                       'latex-mode
+                                      'yatex-mode
                                       'markdown-mode
                                       'text-mode
                                       'fundamental-mode))))
