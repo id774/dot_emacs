@@ -98,6 +98,11 @@
   (add-to-list 'auto-mode-alist '("\\.coffee\\'" . coffee-mode))
   (add-to-list 'auto-mode-alist '("Cakefile" . coffee-mode)))
 
+;; pig-mode
+(when (load-p "pig-latin-mode")
+  (add-to-list 'auto-mode-alist '("\\.pig$" . pig-latin-mode))
+  (autoload 'pig-latin-mode "pig-latin-mode" "Pig-Latin mode" t))
+
 ;; bat-mode
 (setq auto-mode-alist
        (append
