@@ -142,6 +142,9 @@
 ;; scratch バッファを消しても再生成する
 (load-p "persistent-scratch")
 
+;; ESS
+(load-p "ess-site")
+
 ;; Anything.el & Helm
 (load-p "anything-helm")
 
