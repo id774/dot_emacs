@@ -10,7 +10,7 @@
 ;; hide tool-bar and scroll-bar
 (if window-system
   (progn
-    (tool-bar-mode nil)
+    (tool-bar-mode -1)
     (scroll-bar-mode -1)))
 
 ;; メニューバー使う
