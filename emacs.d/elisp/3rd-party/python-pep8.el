@@ -47,12 +47,12 @@ Notice that using \\[next-error] or \\[compile-goto-error] modifies
           (list (format base "W") 1 2 3 1)))
   "Regexp used to match PEP8 hits.  See `compilation-error-regexp-alist'.")
 
-(defcustom python-pep8-options '("--repeat")
+(defcustom python-pep8-options '("--ignore=E221,E701")
   "Options to pass to pep8.py"
   :type '(repeat string)
   :group 'python-pep8)
 
-(defcustom python-pep8-command "/opt/python/current/bin/pep8"
+(defcustom python-pep8-command "/opt/python/current/bin/flake8"
   "PEP8 command."
   :type '(file)
   :group 'python-pep8)
