@@ -171,8 +171,7 @@
 (require 'savekill)
 
 ;; python-pep8
-(when (load-p "python-pep8")
-  (define-key global-map "\C-c\ p" 'python-pep8))
+(load-p "python-pep8")
 
 ;; web-mode
 ;; http://web-mode.org/
