@@ -2,7 +2,7 @@
 (cond
   ((eq system-type 'gnu/linux)
     ;; python
-    (when (autoload 'python-mode "python-mode" "Python editing mode." t)
+    (when (autoload-p 'python-mode "python-mode" "Python editing mode." 'interactive)
       (setq python-mode-hook
         (function (lambda ()
           (local-set-key "\C-c\ p" 'python-pep8))))

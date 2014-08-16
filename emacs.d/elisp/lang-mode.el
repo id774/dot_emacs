@@ -103,7 +103,7 @@
 ;; pig-mode
 (when (load-p "pig-latin-mode")
   (add-to-list 'auto-mode-alist '("\\.pig$" . pig-latin-mode))
-  (autoload 'pig-latin-mode "pig-latin-mode" "Pig-Latin mode" t))
+  (autoload-p 'pig-latin-mode "pig-latin-mode" "Pig-Latin mode" 'interactive))
 
 ;; bat-mode
 (setq auto-mode-alist
@@ -119,7 +119,7 @@
       "DOS and Windows BAT files" t)
 
 ;; markdown-mode
-(when (autoload 'markdown-mode "markdown-mode.el" "Major mode for editing Markdown files" t)
+(when (autoload-p 'markdown-mode "markdown-mode.el" "Major mode for editing Markdown files" 'interactive)
   (setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
   (setq auto-mode-alist (cons '("\\.txt" . markdown-mode) auto-mode-alist)))
 
