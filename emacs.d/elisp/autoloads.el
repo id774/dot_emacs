@@ -170,9 +170,6 @@
 ;; Kill Ring を保存する
 (require 'savekill)
 
-;; python-pep8
-(load-p "python-pep8")
-
 ;; web-mode
 ;; http://web-mode.org/
 (load-p "web-mode-settings")

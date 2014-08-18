@@ -1,3 +1,6 @@
+;; python-pep8
+(load-p "python-pep8")
+
 ;; python-mode
 (cond
   ((< emacs-major-version '24)
