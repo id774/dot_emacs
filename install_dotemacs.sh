@@ -105,8 +105,6 @@ byte_compile_all() {
       jaspace.el \
       auto-async-byte-compile.el \
       actionscript-mode.el \
-      flymake-cursor.el \
-      python-mode.el \
       fuzzy.el \
       popup.el \
       key-chord.el \
