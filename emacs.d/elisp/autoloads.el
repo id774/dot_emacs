@@ -15,6 +15,9 @@
 ;; 同じキーバインド連打でラクをする
 (load-p "smartchr-settings")
 
+;; multi-term
+(load-p "multi-term-settings")
+
 ;; git.el
 (load-p "git")
 (load-p "git-blame")

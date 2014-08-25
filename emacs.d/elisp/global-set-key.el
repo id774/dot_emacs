@@ -162,9 +162,11 @@
 (define-key global-map "\C-c\C-c\C-g" 'grep-find)
 (define-key global-map "\C-c\C-c\ g" 'grep)
 
-;; ansi-term
-(global-set-key "\C-x\C-a" '(lambda ()(interactive)(ansi-term "/bin/zsh")))
-(global-set-key "\C-x\ a" '(lambda ()(interactive)(ansi-term "/bin/zsh")))
+;; Terminal
+(global-set-key "\C-x\C-a" 'multi-term)
+(global-set-key "\C-x\ a" 'multi-term)
+;; (global-set-key "\C-x\C-a" '(lambda ()(interactive)(ansi-term "/bin/zsh")))
+;; (global-set-key "\C-x\ a" '(lambda ()(interactive)(ansi-term "/bin/zsh")))
 
 ;; 矩形選択
 (define-key global-map "\C-c\C-c\C-z" 'cua-mode)

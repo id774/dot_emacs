@@ -116,6 +116,7 @@ byte_compile_all() {
       git-blame.el \
       minibuf-isearch.el \
       minor-mode-hack.el \
+      multi-term.el \
       open-junk-file.el \
       paredit.el \
       popwin.el \
