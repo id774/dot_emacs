@@ -38,14 +38,14 @@ This naming convention is to mimic the Ubuntu.
 Environment
 -----------
 
-This dot emacs is supported on the following platforms.
+This platforms on which this is known to work include:
 
-+ Emacs on Debian or Ubuntu stable package.
-+ Builded Emacs 23.x or later on GNU/Linux.
-+ Emacs 23.x or later for Mac OS X ( http://emacsformacosx.com/ )
++ Emacs on Debian/Ubuntu stable.
++ Emacs building from source 23.x or later.
++ Emacs for Mac OS X ( http://emacsformacosx.com/ ) 23.x or later.
 + Meadow based on Emacs 22.3.1 or later on Windows 7 (Partially support).
 
-Current main supported version is Emacs 24.3.
+The current main supported version is Emacs 23.4/24.3.
 
 
 Authors
