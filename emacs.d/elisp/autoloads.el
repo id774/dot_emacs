@@ -75,6 +75,9 @@
 ;; popwin-el
 (load-p "popwin-el")
 
+;; dired
+(load-p "dired-settings")
+
 ;; wdired
 (when (require 'wdired)
   (define-key dired-mode-map "r" 'wdired-change-to-wdired-mode))

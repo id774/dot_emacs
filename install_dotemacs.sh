@@ -134,6 +134,7 @@ byte_compile_all() {
       init.el \
       mew-settings.el \
       delete-empty-file.el \
+      dired-settings.el \
       emacs-w3m.el \
       faces.el \
       global-set-key.el \
