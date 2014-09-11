@@ -64,8 +64,8 @@ emacs_private_settings() {
     if [ -f $PRIVATE/dot_files/dot_mew.el ]; then
         cp $PRIVATE/dot_files/dot_mew.el $HOME/.mew.el
     fi
-    if [ -f $HOME/etc/config.local/dot_mew_el ]; then
-        cp $HOME/etc/config.local/dot_mew_el $HOME/.mew.el
+    if [ -f $HOME/etc/config.local/dot_mew.el ]; then
+        cp $HOME/etc/config.local/dot_mew.el $HOME/.mew.el
     fi
     chmod 600 $HOME/.mew.el
 
