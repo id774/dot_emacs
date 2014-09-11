@@ -1,23 +1,24 @@
-;; HTML $B%a!<%k(B
+;; HTML メール
 (require 'mew-w3m)
 (defadvice mew-summary-display 
   (after mew-auto-analize-again activate)
   (mew-summary-analyze-again))
-;; $B5/F0;~$K%a!<%k<hF@$9$k(B/$B$7$J$$(B
+;; 起動時にメール取得する/しない
 (setq mew-auto-get nil)
-;; POP $B%5!<%P!<$+$i%a!<%k$r:o=|$9$k(B/$B$7$J$$(B
-(setq mew-pop-delete t)
-;; $B%Q%9%o!<%I%-%c%C%7%e(B
+;; POP サーバーからメールを削除する/しない/日数
+(setq mew-pop-delete 90)
+;; パスワードキャッシュ
 (setq mew-use-cached-passwd t)
 (setq mew-use-master-passwd t)
-;; $B%a!<%kDj4|<u?.(B
+;; メール定期受信
 (setq mew-use-biff t)
 (setq mew-use-biff-bell nil)
 (setq mew-pop-biff-interval 5)
-;; $B%a!<%k%5!<%P!<@_Dj(B
+;; メールサーバー設定
 (setq mew-ssl-cert-directory "/etc/ssl/certs")
 (setq mew-ssl-verify-level 2)
 (setq mew-config-alist '(
+  ;; Gmail
   ("default"
     ("pop-ssl"        . t)
     ("pop-ssl-port"   . "995")
@@ -33,4 +34,19 @@
     ("smtp-user"      . "xxxxxx@gmail.com")
     ("smtp-server"    . "smtp.gmail.com")
   )
+  ;; POP
+; ("default"
+;   ("pop-auth"       . pass)
+;   ("mew-pop-port"   . "110")
+;   ("inbox-folder"   . "+inbox-gmail")
+;   ("name"           . "xxxxxx")
+;   ("user"           . "xxxxxx")
+;   ("mail-domain"    . "xxx.co.jp")
+;   ("pop-user"       . "xxxxxx")
+;   ("pop-server"     . "xxx.co.jp")
+;   ("smtp-user"      . "xxxxxx")
+;   ("smtp-server"    . "xxx.co.jp") 
+;   ("smtp-auth"      . pass)
+;   ("mew-smtp-port"  . "25")
+; )
 ))
