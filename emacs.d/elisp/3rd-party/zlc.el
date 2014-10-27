@@ -3,7 +3,7 @@
 ;; Copyright (C) 2010, 2013 mooz
 
 ;; Author:  mooz <stillpedant@gmail.com>
-;; Version: 0.0.3
+;; Version: 0.0.4
 ;; Keywords: matching, convenience
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -65,7 +65,9 @@
       :background "firebrick"
       :italic nil
       :bold t)))
-  "Style of selected item in *Completions* buffer")
+  "Style of selected item in *Completions* buffer"
+  :group 'zlc-face
+  )
 
 (defcustom zlc-select-completion-immediately nil
   "Non-nil to select completion immediately when completion list created."
@@ -199,6 +201,11 @@
   (interactive)
   (zlc-select-next-vertical -1))
 
+(defmacro zlc--do-completion ()
+  (if (eq (car (help-function-arglist 'completion--do-completion)) '&optional)
+      (completion--do-completion)
+    '(completion--do-completion (minibuffer-prompt-end) (point-max))))
+
 (defun zlc-minibuffer-complete ()
   "Complete the minibuffer contents as far as possible.
 Return nil if there is no valid completion, else t.
@@ -227,7 +234,7 @@ select completion orderly."
                   ;; `completion-show-inline-help', since
                   ;; `minibuffer-message' is a blocking fucntion
                   (let (completion-show-inline-help)
-                    (completion--do-completion)))
+                    (zlc--do-completion)))
         (#b000 nil)
         (#b001 (goto-char (field-end))
                (minibuffer-message "Sole completion")
