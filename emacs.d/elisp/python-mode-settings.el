@@ -1,6 +1,9 @@
 ;; python-pep8
 (load-p "python-pep8")
 
+;; Python Path
+(setq python-shell-interpreter "/opt/python/current/bin/python")
+
 ;; python-mode
 (cond
   ((< emacs-major-version '24)
