@@ -100,6 +100,9 @@
 (when (load-p "uniquify")
   (setq uniquify-buffer-name-style 'post-forward-angle-brackets))
 
+;; google
+(load-p "google-this-settings")
+
 ;; diminish
 (load-p "diminish-settings")
 
