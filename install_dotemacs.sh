@@ -114,6 +114,7 @@ byte_compile_all() {
       erlang.el \
       git.el \
       git-blame.el \
+      google-this.el \
       minibuf-isearch.el \
       minor-mode-hack.el \
       multi-term.el \
