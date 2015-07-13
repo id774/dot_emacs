@@ -95,6 +95,7 @@ byte_compile_all() {
       ruby-additional.el
     cd $TARGET/elisp/3rd-party
     emacs_batch_byte_compile \
+      py-autopep8.el \
       browse-kill-ring.el \
       cl-lib.el \
       js2.el \
