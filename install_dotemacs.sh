@@ -83,6 +83,8 @@ emacs_batch_byte_compile() {
 }
 
 byte_compile_all() {
+    cd $TARGET/elisp/3rd-party/helm
+    $SUDO make
     cd $TARGET/elisp/3rd-party/ruby-mode
     emacs_batch_byte_compile \
       inf-ruby.el \
