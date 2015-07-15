@@ -1,6 +1,6 @@
 ;;; helm-external.el --- Run Externals commands within Emacs with helm completion. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2014 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2015 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 
 (require 'cl-lib)
 (require 'helm)
+(require 'helm-help)
+(require 'helm-net)
 
 
 (defgroup helm-external nil
@@ -171,7 +173,7 @@ If not found or a prefix arg is given query the user which tool to use."
             (setq helm-external-programs-associations
                   (delete it helm-external-programs-associations)))
         (push (cons (file-name-extension fname)
-                    (read-string
+                    (helm-read-string
                      "Program (Add args maybe and confirm): " real-prog-name))
               helm-external-programs-associations)
         (customize-save-variable 'helm-external-programs-associations

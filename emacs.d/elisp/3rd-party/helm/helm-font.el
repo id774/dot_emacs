@@ -1,6 +1,6 @@
 ;;; helm-font --- Font and ucs selection for Helm -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2014 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2015 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 
 (require 'cl-lib)
 (require 'helm)
+(require 'helm-help)
 
 (defvar helm-ucs-map
   (let ((map (make-sparse-keymap)))
@@ -27,7 +28,6 @@
     (define-key map (kbd "<C-left>")      'helm-ucs-persistent-backward)
     (define-key map (kbd "<C-right>")     'helm-ucs-persistent-forward)
     (define-key map (kbd "<C-return>")    'helm-ucs-persistent-insert)
-    (define-key map (kbd "C-c ?")         'helm-ucs-help)
     map)
   "Keymap for `helm-ucs'.")
 
@@ -96,6 +96,7 @@ Only math* symbols are collected."
                       ;; call `insert-char' with nil nil
                       ;; to shutup byte compiler in 24.1.
                       (insert-char v nil nil))
+                    (insert (format " #x%x" v))
                     (insert "\n")))))
 
 (defun helm-ucs-forward-char (_candidate)
@@ -110,12 +111,19 @@ Only math* symbols are collected."
   (with-helm-current-buffer
     (delete-char -1)))
 
-(defun helm-ucs-insert-char (candidate)
+(defun helm-ucs-insert (candidate n)
   (with-helm-current-buffer
-    (insert
-     (replace-regexp-in-string
-      " " ""
-      (cadr (split-string candidate ":"))))))
+    (string-match "^\\([^:]+\\): +\\(.\\) #x\\([a-f0-9]+\\)$" candidate)
+    (insert (match-string n candidate))))
+
+(defun helm-ucs-insert-name (candidate)
+  (helm-ucs-insert candidate 1))
+
+(defun helm-ucs-insert-char (candidate)
+  (helm-ucs-insert candidate 2))
+
+(defun helm-ucs-insert-code (candidate)
+  (helm-ucs-insert candidate 3))
 
 (defun helm-ucs-persistent-insert ()
   (interactive)
@@ -142,15 +150,16 @@ Only math* symbols are collected."
     (helm-execute-persistent-action 'action-delete)))
 
 (defvar helm-source-ucs
-  '((name . "Ucs names")
-    (init . helm-ucs-init)
-    (candidate-number-limit . 9999)
-    (candidates-in-buffer)
-    (mode-line . helm-ucs-mode-line-string)
-    (action . (("Insert" . helm-ucs-insert-char)
-               ("Forward char" . helm-ucs-forward-char)
-               ("Backward char" . helm-ucs-backward-char)
-               ("Delete char backward" . helm-ucs-delete-backward))))
+  (helm-build-in-buffer-source "Ucs names"
+    :init #'helm-ucs-init
+    :candidate-number-limit 9999
+    :help-message 'helm-ucs-help-message
+    :action '(("Insert character" . helm-ucs-insert-char)
+              ("Insert character name" . helm-ucs-insert-name)
+              ("Insert character code in hex" . helm-ucs-insert-code)
+              ("Forward char" . helm-ucs-forward-char)
+              ("Backward char" . helm-ucs-backward-char)
+              ("Delete char backward" . helm-ucs-delete-backward)))
   "Source for collecting `ucs-names' math symbols.")
 
 ;;;###autoload

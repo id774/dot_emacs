@@ -3,7 +3,7 @@
 ;; Original Author: rubikitch
 
 ;; Copyright (C) 2008 ~ 2011 rubikitch
-;; Copyright (C) 2011 ~ 2014 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2011 ~ 2015 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; Author: Thierry Volpiatto <thierry.volpiatto@gmail.com>
 ;; URL: http://github.com/emacs-helm/helm
@@ -26,47 +26,7 @@
 (require 'helm)
 (require 'cl-lib)
 
-;;;; Match-plugin
-
-;; Internal
-(defvar helm-mp-default-match-functions nil)
-(defvar helm-mp-default-search-functions nil)
-(defvar helm-mp-default-search-backward-functions nil)
-
-(defun helm-mp-set-matching-method (var key)
-  "Default function to set matching methods in helm match plugin."
-  (set-default var key)
-  (cl-case (symbol-value var)
-    (multi1 (setq helm-mp-default-match-functions
-                  '(helm-mp-exact-match helm-mp-1-match)
-                  helm-mp-default-search-functions
-                  '(helm-mp-exact-search helm-mp-1-search)
-                  helm-mp-default-search-backward-functions
-                  '(helm-mp-exact-search-backward
-                    helm-mp-1-search-backward)))
-    (multi2 (setq helm-mp-default-match-functions
-                  '(helm-mp-exact-match helm-mp-2-match)
-                  helm-mp-default-search-functions
-                  '(helm-mp-exact-search helm-mp-2-search)
-                  helm-mp-default-search-backward-functions
-                  '(helm-mp-exact-search-backward
-                    helm-mp-2-search-backward)))
-    (multi3 (setq helm-mp-default-match-functions
-                  '(helm-mp-exact-match helm-mp-3-match)
-                  helm-mp-default-search-functions
-                  '(helm-mp-exact-search helm-mp-3-search)
-                  helm-mp-default-search-backward-functions
-                  '(helm-mp-exact-search-backward
-                    helm-mp-3-search-backward)))
-    (multi3p (setq helm-mp-default-match-functions
-                   '(helm-mp-exact-match helm-mp-3p-match)
-                   helm-mp-default-search-functions
-                   '(helm-mp-exact-search helm-mp-3p-search)
-                   helm-mp-default-search-backward-functions
-                   '(helm-mp-exact-search-backward
-                     helm-mp-3p-search-backward)))
-    (t (error "Unknown value: %s" helm-mp-matching-method))))
-
+
 (defgroup helm-match-plugin nil
   "Helm match plugin."
   :group 'helm)
@@ -85,41 +45,14 @@ Default is multi3."
            (const :tag "Multiple regexp 2 ordered with partial match"        multi2)
            (const :tag "Multiple regexp 3 matching no order, partial, best." multi3)
            (const :tag "Multiple regexp 3p matching with prefix match"       multi3p))
-  :set   'helm-mp-set-matching-method
   :group 'helm-match-plugin)
 
-(defface helm-match
-    '((t (:inherit match)))
-  "Face used to highlight matches."
-  :group 'helm-match-plugin)
-
-(defcustom helm-mp-highlight-delay 0.7
-  "Highlight matches with `helm-match' face after this many seconds.
- If nil, no highlight. "
-  :type  'integer
-  :group 'helm-match-plugin)
-
-(defcustom helm-mp-highlight-threshold 2
-  "Minimum length of pattern to highlight.
-The smaller  this value is, the slower highlight is."
-  :type  'integer
-  :group 'helm-match-plugin)
-
-;;;###autoload
-(define-minor-mode helm-match-plugin-mode
-    "Add more flexible regexp matching for helm.
-See `helm-mp-matching-method' for the behavior of each method."
-  :group 'helm-match-plugin
-  :require 'helm-match-plugin
-  :global t
-  (if helm-match-plugin-mode
-      (progn
-        (add-to-list 'helm-compile-source-functions 'helm-compile-source--match-plugin)
-        (add-hook 'helm-update-hook 'helm-mp-highlight-match))
-    (setq helm-compile-source-functions
-          (delq 'helm-compile-source--match-plugin
-                helm-compile-source-functions))
-    (remove-hook 'helm-update-hook 'helm-mp-highlight-match)))
+
+;; Internal
+(defconst helm-mp-default-match-functions
+  '(helm-mp-exact-match helm-mp-match))
+(defconst helm-mp-default-search-functions
+  '(helm-mp-exact-search helm-mp-search))
 
 
 ;;; Build regexps
@@ -167,10 +100,6 @@ but \"foo\ bar\"=> (\"foobar\")."
   (and (search-forward (helm-mp-exact-get-pattern pattern) nil t)
        (forward-line -1)))
 
-(defun helm-mp-exact-search-backward (pattern &rest _ignore)
-  (and (search-backward (helm-mp-exact-get-pattern pattern) nil t)
-       (forward-line 1)))
-
 
 ;;; Prefix match
 ;;
@@ -194,10 +123,6 @@ but \"foo\ bar\"=> (\"foobar\")."
 (defun helm-mp-prefix-search (pattern &rest _ignore)
   (search-forward (helm-mp-prefix-get-pattern pattern) nil t))
 
-(defun helm-mp-prefix-search-backward (pattern &rest _ignore)
-  (and (search-backward (helm-mp-prefix-get-pattern pattern) nil t)
-       (forward-line 1)))
-
 
 ;;; Multiple regexp patterns 1 (order is preserved / prefix).
 ;;
@@ -219,9 +144,6 @@ but \"foo\ bar\"=> (\"foobar\")."
 (defun helm-mp-1-search (pattern &rest _ignore)
   (re-search-forward (helm-mp-1-get-pattern pattern) nil t))
 
-(defun helm-mp-1-search-backward (pattern &rest _ignore)
-  (re-search-backward (helm-mp-1-get-pattern pattern) nil t))
-
 
 ;;; Multiple regexp patterns 2 (order is preserved / partial).
 ;;
@@ -242,9 +164,6 @@ but \"foo\ bar\"=> (\"foobar\")."
 
 (defun helm-mp-2-search (pattern &rest _ignore)
   (re-search-forward (helm-mp-2-get-pattern pattern) nil t))
-
-(defun helm-mp-2-search-backward (pattern &rest _ignore)
-  (re-search-backward (helm-mp-2-get-pattern pattern) nil t))
 
 
 ;;; Multiple regexp patterns 3 (permutation).
@@ -273,7 +192,7 @@ e.g ((identity . \"foo\") (identity . \"bar\"))."
                       (cons 'not (substring pat 1))
                     (cons 'identity pat)))))
 
-(defun helm-mp-3-match (str &optional pattern)
+(cl-defun helm-mp-3-match (str &optional (pattern helm-pattern))
   "Check if PATTERN match STR.
 When PATTERN contain a space, it is splitted and matching is done
 with the several resulting regexps against STR.
@@ -284,9 +203,15 @@ e.g \"foo bar\"=>((identity . \"foo\") (identity . \"bar\")).
 Then each predicate of cons cell(s) is called with regexp of same
 cons cell against STR (a candidate).
 i.e (identity (string-match \"foo\" \"foo bar\")) => t."
-  (let ((pat (helm-mp-3-get-patterns (or pattern helm-pattern))))
+  (let ((pat (helm-mp-3-get-patterns pattern)))
     (cl-loop for (predicate . regexp) in pat
-          always (funcall predicate (string-match regexp str)))))
+             always (funcall predicate
+                             (condition-case _err
+                                 ;; FIXME: Probably do nothing when
+                                 ;; using fuzzy leaving the job
+                                 ;; to the fuzzy fn.
+                                 (string-match regexp str)
+                               (invalid-regexp nil))))))
 
 (defun helm-mp-3-search-base (pattern searchfn1 searchfn2)
   "Try to find PATTERN in `helm-buffer' with SEARCHFN1 and SEARCHFN2.
@@ -296,28 +221,30 @@ instead of matching on a string.
 i.e (identity (re-search-forward \"foo\" (point-at-eol) t)) => t."
   (cl-loop with pat = (if (stringp pattern)
                           (helm-mp-3-get-patterns pattern)
-                        pattern)
-        while (funcall searchfn1 (or (cdar pat) "") nil t)
-        for bol = (point-at-bol)
-        for eol = (point-at-eol)
-        if (cl-loop for (pred . str) in (cdr pat) always
-                 (progn (goto-char bol)
-                        (funcall pred (funcall searchfn2 str eol t))))
-        do (goto-char eol) and return t
-        else do (goto-char eol)
-        finally return nil))
+                          pattern)
+           when (eq (caar pat) 'not) return
+           ;; Pass the job to `helm-search-match-part'.
+           (prog1 (list (point-at-bol) (point-at-eol))
+             (forward-line 1))
+           while (condition-case _err
+                     (funcall searchfn1 (or (cdar pat) "") nil t)
+                   (invalid-regexp nil))
+           for bol = (point-at-bol)
+           for eol = (point-at-eol)
+           if (cl-loop for (pred . str) in (cdr pat) always
+                       (progn (goto-char bol)
+                              (funcall pred (condition-case _err
+                                                (funcall searchfn2 str eol t)
+                                              (invalid-regexp nil)))))
+           do (goto-char eol) and return t
+           else do (goto-char eol)
+           finally return nil))
 
 (defun helm-mp-3-search (pattern &rest _ignore)
   (when (stringp pattern)
     (setq pattern (helm-mp-3-get-patterns pattern)))
   (helm-mp-3-search-base
    pattern 're-search-forward 're-search-forward))
-
-(defun helm-mp-3-search-backward (pattern &rest _ignore)
-  (when (stringp pattern)
-    (setq pattern (helm-mp-3-get-patterns pattern)))
-  (helm-mp-3-search-base
-   pattern 're-search-backward 're-search-backward))
 
 
 ;;; mp-3p- (multiple regexp pattern 3 with prefix search)
@@ -340,22 +267,34 @@ e.g \"bar foo\" will match \"barfoo\" but not \"foobar\" contrarily to
   (helm-mp-3-search-base
    pattern 'helm-mp-prefix-search 're-search-forward))
 
-(defun helm-mp-3p-search-backward (pattern &rest _ignore)
-  (when (stringp pattern)
-    (setq pattern (helm-mp-3-get-patterns pattern)))
-  (helm-mp-3-search-base
-   pattern 'helm-mp-prefix-search-backward 're-search-backward))
+
+;;; Generic multi-match/search functions
+;;
+;;
+(cl-defun helm-mp-match (str &optional (pattern helm-pattern))
+  (let ((fun (cl-ecase helm-mp-matching-method
+               (multi1 #'helm-mp-1-match)
+               (multi2 #'helm-mp-2-match)
+               (multi3 #'helm-mp-3-match)
+               (multi3p #'helm-mp-3p-match))))
+    (funcall fun str pattern)))
+
+(defun helm-mp-search (pattern &rest _ignore)
+  (let ((fun (cl-ecase helm-mp-matching-method
+               (multi1 #'helm-mp-1-search)
+               (multi2 #'helm-mp-2-search)
+               (multi3 #'helm-mp-3-search)
+               (multi3p #'helm-mp-3p-search))))
+    (funcall fun pattern)))
 
 
 ;;; source compiler
-;;
+;;  This is used only in old sources defined without helm-source.
 ;;
 (defun helm-compile-source--match-plugin (source)
   (if (assoc 'no-matchplugin source)
       source
-    (let* ((searchers        (if (assoc 'search-from-end source)
-                                 helm-mp-default-search-backward-functions
-                               helm-mp-default-search-functions))
+    (let* ((searchers        helm-mp-default-search-functions)
            (defmatch         (helm-aif (assoc-default 'match source)
                                  (helm-mklist it)))
            (defmatch-strict  (helm-aif (assoc-default 'match-strict source)
@@ -372,58 +311,13 @@ e.g \"bar foo\" will match \"barfoo\" but not \"foobar\" contrarily to
                                    (defsearch
                                     (append searchers defsearch))
                                    (t searchers))))
-      `(,(if (or (assoc 'candidates-in-buffer source)
-                 (equal '(identity) matchfns))
-             '(match identity) `(match ,@matchfns))
-         (search ,@searchfns)
+      `(,(if (assoc 'candidates-in-buffer source)
+             `(search ,@searchfns) `(match ,@matchfns))
          ,@source))))
 
-
-;;; Highlight matches.
-;;
-;;
-(defun helm-mp-highlight-match ()
-  "Highlight matches after `helm-mp-highlight-delay' seconds."
-  (unless (or (assoc 'nohighlight (helm-get-current-source))
-              (not helm-mp-highlight-delay)
-              (helm-empty-buffer-p)
-              (string= helm-pattern ""))
-    (helm-mp-highlight-match-internal (window-end (helm-window)))
-    (run-with-idle-timer helm-mp-highlight-delay nil
-                         'helm-mp-highlight-match-internal
-                         (with-current-buffer helm-buffer (point-max)))))
 
-(defun helm-mp-highlight-region (start end regexp face)
-  (save-excursion
-    (goto-char start)
-    (let ((case-fold-search (helm-set-case-fold-search regexp)) me)
-      (condition-case _err
-          (while (and (setq me (re-search-forward regexp nil t))
-                      (< (point) end)
-                      (< 0 (- (match-end 0) (match-beginning 0))))
-            (unless (helm-pos-header-line-p)
-              (put-text-property (match-beginning 0) me 'face face)))
-        (invalid-regexp nil)))))
-
-(defun helm-mp-highlight-match-internal (end)
-  (when helm-alive-p
-    (set-buffer helm-buffer)
-    (let ((requote (cl-loop for (pred . re) in
-                         (helm-mp-3-get-patterns helm-pattern)
-                         when (and (eq pred 'identity)
-                                   (>= (length re)
-                                       helm-mp-highlight-threshold))
-                         collect re into re-list
-                         finally return
-                         (if (and re-list (>= (length re-list) 1))
-                             (mapconcat 'identity re-list "\\|")
-                           (regexp-quote helm-pattern)))))
-      (when (>= (length requote) helm-mp-highlight-threshold)
-        (helm-mp-highlight-region
-         (point-min) end requote 'helm-match)))))
-
-;; Enable match-plugin by default.
-(helm-match-plugin-mode 1)
+;; Enable match-plugin by default in old sources.
+(add-to-list 'helm-compile-source-functions 'helm-compile-source--match-plugin)
 
 (provide 'helm-match-plugin)
 

@@ -8,7 +8,6 @@ welcomed by submitting a Pull Request for [Home.mdpp][1].
 ------
 
 !TOC
-
 # Wiki maintainer instructions
 
 1. Checkout wiki repo at `git@github.com:emacs-helm/helm.wiki.git`
@@ -341,7 +340,7 @@ your eshell aliases. This allow you creating personal actions for
 
 -   Because eshell accept shell commands but also elisp functions.
 
-All these command should end with `https://github.com/emacs-helm/helm/issues/495`.
+All these command should end with `$1`.
 
 You will have completion against all these aliases once eshell is loaded (start it once before using
 helm-find-files).
@@ -350,7 +349,7 @@ helm-find-files).
 
  Go in eshell, an enter at prompt:
 
-    alias my_alias command https://github.com/emacs-helm/helm/issues/495
+    alias my_alias command $1
 
 NOTE: don`t forget to escape the $.
 
@@ -478,8 +477,15 @@ find/xargs.
 It supports wildcards and respects the variables `grep-find-ignored-files`
 and `grep-find-ignored-directories`.
 
-It has full tramp integration. (you can grep file on a remote host or
-in su/sudo methods).
+It works with `tramp` (you can grep file on a remote host or
+in su/sudo methods) BUT (read carefully):
+
+Tramp support badly multiples processes launched in a short delay of time (less than 5s actually)
+so I recommend that you suspend helm updating with `C-!` while you write your regexp, once done
+hit again `C-!` to restart helm updating.
+
+If you don't do that it will work, but slowly and you may expect failures.
+
 
 -   NOTE: When using it recursively, `grep-find-ignored-files` is not
     used unless you don`t specify the only extensions of files where you
@@ -495,7 +501,10 @@ This version should accept the `--exclude-dir` option.
 
     Install it from homebrew with:
 
-         brew install grep
+         brew tap homebrew/dupes
+         brew install homebrew/dupes/grep
+
+    You should also set `helm-grep-default-command` to use `ggrep` instead of `grep`.
 
 ## Helm do grep
 
@@ -603,6 +612,42 @@ _NOTE:_ You can save differents named helm grep buffers.
 Editing the `helm-grep-mode` buffer is possible with [Emacs-wgrep](https://github.com/mhayashi1120/Emacs-wgrep).
 Saving this buffer will apply changes to corresponding files.
 
+## Highlighting grep matched results
+
+By default helm have its own implementation to highlight matched items, however it is better to
+use the backend way to highlight result with ANSI sequences e.g:
+
+For ack-grep:
+
+    (setq helm-grep-default-command
+              "ack-grep -Hn --smart-case --no-group %e %p %f"
+              helm-grep-default-recurse-command
+              "ack-grep -H --smart-case --no-group %e %p %f")
+
+For grep:
+
+    (setq helm-grep-default-command
+              "grep --color=always -d skip %e -n%cH -e %p %f"
+              helm-grep-default-recurse-command
+              "grep --color=always -d recurse %e -n%cH -e %p %f")
+
+For git-grep
+
+    (setq helm-ls-git-grep-command
+          "git grep -n%cH --color=always --full-name -e %p %f")
+
+
+The color of git-grep can be customized from global .gitconfig file.
+
+See the docstring of `helm-grep-default-command` for more infos.
+
+NOTE: The non--matched part of the resulting lines in grep will be hidden
+when using "--color=always", to fix this you have to set the env var "GREP_COLORS" for emacs:
+
+    (setenv "GREP_COLORS" "ms=30;43:mc=30;43:sl=01;37:cx=:fn=35:ln=32:bn=32:se=36")
+
+This will colorize in black/yellow matched items.
+
 # Helm M-x
 
  It is bound to `helm-command-prefix-key` `M-x`, you should bind it to `M-x`.
@@ -692,7 +737,33 @@ On Windows you should use Everything program that mimics locate, it is very
 fast and you don't need to update database manually. To use with
 helm-locate, you will need his command line named `es`. Be sure to
 modify the PATH environment variable, to include path to the directory
-that contain `es`.
+that contain `es`. And be sure too that helm-locate-fuzzy-match is unset. Or
+Everything will not give any results.
+
+
+# Helm findutils
+
+You can use the `gnu find` command easily from `helm-find-files` when you want
+to search in subdirectories instead of using helm locate, it is bound to `C-c /`
+by default in `helm-find-files`.
+The search with this command is actually performed literally, however you can use a space to
+match multiple pattern within a line.
+
+- Note: In Windows the Gnuw32 version is not working, you will have to install the msys version.
+
+However the msys `find` isn't available as standalone program,
+it can be installed as part of [msys](http://www.mingw.org/wiki/MSYS).
+And msys, by itself, is installed using [mingw installer](http://www.mingw.org/).
+
+So one would need to:
+
+1) [download and install mingw installer from here](http://sourceforge.net/projects/mingw/files/latest/download?source=files)
+
+2) install msys `find` using that installer
+
+3) add msys bin directory to PATH (e.g. "C:\MinGW\msys\1.0\bin")
+
+I believe mingw itself wouldn't be required to be installed, but I might be mistaken.
 
 # Helm Etags
 
@@ -1005,10 +1076,138 @@ If you are using git, I suggest you use [helm-ls-git](https://github.com/emacs-h
 
 Not complete.
 
+# The Helm workflow with files, directories and buffers
+
+Old helm users were used to throw many sources in one buffer (e.g helm-mini, helm-for-files)
+and just type in pattern to find their files, and use dired to open their directories.
+This approach is like in emacs based on default-directory and current-buffer and limit you to this
+zone, thus it leave tons of dired buffers open.
+Also one of the thing people like which is particularly inefficient is running helm-locate at the same
+time with all others source, an alternative of this have been done with `helm-multi-files` which prevent
+running locate at the same time with all other sources, but it is not the best you can do with helm.
+
+The new approach is using `helm-find-files` as a starting point and never open a dired buffer.
+You can see `helm-find-files` like a virtual dired buffer that you can use anywhere.
+From `helm-find-files`, you have access to many other helm commands (e.g grep, locate, find, etc...) and
+you are not limited to current directory, you can for example mark several files from different directories and
+run helm grep on them.
+Always from `helm-find-files` you can run `C-x C-d` (`helm-browse-project`) which allow you to see
+all buffers under this directory and all files in project.
+If you use [helm-ls-git](https://github.com/emacs-helm/helm-ls-git) and [helm-ls-hg](https://github.com/emacs-helm/helm-ls-hg)
+the files under this directory will be shown using the corresponding backend, otherwise, if the directory is not
+under version controls you will have to give a prefix arg the first time you run `C-c C-d` to see all files under
+this directory (recursively).
+At any time, you can switch back to `helm-find-files` using `C-x C-f`.
+During this session you can also switch back to the resumed helm sources you ran previously using `C-x C-b`, or the very last
+with `C-x b`.
+The history of your directories from `helm-find-files` is accessed with `M-p` and the full history of files (`file-name-history`) is
+accessed via `C-c h`.
+
+# Developping using helm framework
+
+## Conventions
+
+- Class names: It is the mess actually. TODO make a convention for these names.
+
+- Source variable names: Prefix your sources with "helm-source-"
+
+- Help: To give a specific help to your source, create a variable "helm-<my-source>-help-string"
+  And bind it in your source with the `helm-message` slot, it will appear when you use `C-h m` or `C-c ?`.
+
+
+## Writing your own helm commands
+
+You create helm command like any command in Emacs, and you invoke in this function `helm`.
+
+## Calling helm
+
+The function `helm` have to be called with several keywords args the mandatory one being `:sources`,
+the other important one (even if not mandatory) is `:buffer` because it will help `helm-resume` to retrieve your
+helm session.
+The `:sources` keyword expect a single source (an alist), a symbol naming the source, or a list of sources (symbols or alist)
+e.g
+
+- Symbols list: `:sources '(helm-source-1 helm-source-2 helm-source-3)`
+
+- Single symbol: `:sources 'helm-source-1`
+
+- Single alist: `:sources '((name . "test") (candidates . (a b c d)))`
+
+- List of alists: `:sources '(((name . "test") (candidates . (a b c d)))
+                              ((name . "test2") (candidates . (e f g h))))`
+
+
+Example:
+
+    (defun my-first-helm-command ()
+      (interactive)
+      (helm :sources 'my-source
+            :buffer "*helm my command*"))
+
+The name of the buffer should be prefixed this helm, again it is not mandatory but it will allow hiding
+this buffer in buffer list among other things.
+
+A convention is to name your sources if needed with the prefix `helm-source`.
+
+## Building sources
+
+The old way to build source was creating an alist with diverse attribute.
+
+The new way described here is to use the build in functions and classes provided in helm
+that use comprehensives keywords.
+
+You will find several methods to distribute you candidates, the main ones are:
+
+- Distribute your candidates in a list (`helm-source-sync`).
+
+- Distribute your candidates in a buffer (`helm-source-in-buffer`).
+
+- Distribute your candidates asyncronously using output of a process (`helm-source-async`).
+
+
+### Creating a source using the `helm-source-sync` class
+
+     (helm-build-sync-source "test"
+       :candidates '(a b c d e))
+
+     (helm :sources (helm-build-sync-source "test"
+                      :candidates '(a b c d e))
+           :buffer "*helm test*")
+
+
+### Creating a source using the `helm-source-in-buffer` class
+
+     (helm-build-in-buffer-source "test1"
+       :data '(a b c d e))
+
+     (helm :sources (helm-build-in-buffer-source "test1"
+                      :data '(a b c d e))
+           :buffer "*helm test1*")
+
+
+### Creating a source using the `helm-source-async` class
+
+     (helm :sources (helm-build-async-source "test2"
+                      :candidates-process
+                      (lambda ()
+                        (start-process "echo" nil "echo" "a\nb\nc\nd\ne")))
+           :buffer "*helm test2*")
+
+### Create your own class inheriting from one of the main classes
+
+### Create your own class and Inherit from one of helm-type classes
+
+### Write your own helm-type class
+
+### Create your source from your own class
+
 # Usefuls links
 
 You can have infos about helm on Github.
  <https://github.com/emacs-helm/helm>
+
+ And a very detailed tutorial about the possibilities of Helm by the user Tuhdo:
+  <http://tuhdo.github.io/helm-intro.html>
 
 You can ask on the helm mailing-list by subscribing at:
  <https://groups.google.com/group/emacs-helm?hl=en>
@@ -1023,3 +1222,87 @@ Or at gmane: [gmane.emacs.helm.user](http://dir.gmane.org/gmane.emacs.helm.user)
 [mental2]: https://github.com/emacs-helm/helm/issues/222
 [mental3]: https://groups.google.com/forum/#!topic/emacs-helm/zaBbg2tFAuM
 
+# FAQ
+## I have updated from melpa and I have errors
+
+Normally since helm, when installed from (m)elpa force dependency to
+[Async](https://github.com/jwiegley/emacs-async) you should not have this problem
+anymore, however if it happen, do like this:
+
+1. Uninstall `helm` and `async` from `list-packages`
+
+2. Close emacs
+
+3. Start `emacs -Q`
+
+4. Reinstall `helm` from `list-packages`
+
+5. Restart emacs
+
+If problem persists report bug on [emacs helm issues](https://github.com/emacs-helm/helm/issues)
+
+
+_Note:_ After upgrading (helm or whatever), you will have to restart emacs (expect problems otherwise).
+
+_Note:_ [emacs-async](https://github.com/jwiegley/emacs-async) is available as "async" in melpa.
+
+_Note:_ Async compilation of packages can be disabled per package or globally in async-bytecomp.el.
+If you do so, don't complain if you have errors after upgrading helm or helm modules.
+
+## I have warnings when compiling from emacs-24.3.1
+
+Helm have no warning when compiling with >=emacs-24.4, but when compiling
+with 24.3 you may have many warnings (due to bugs in emacs itself relative
+to lexical-binding and eieio), don't be afraid, just ignore them ;-).
+
+## Void function function-put
+
+Bad installation of helm, please reinstall, See [Here](https://github.com/emacs-helm/helm/wiki#ihaveupdatedfrommelpaandihaveerrors) how to do.
+
+## I have an error message when starting helm-M-x with a prefix arg
+
+Please pass your prefix args AFTER starting helm-M-x.
+Read the embeded documentation for more infos (C-c ?).
+
+## I cannot exit with empty string in completing-read's
+
+The answer is in your mode-line:
+`C-RET` or `M-RET`.
+
+## I want to modify source attributes but source is nil e.g helm-occur
+
+If the source is `nil`, it is probably setup when command starts, and probably
+it is defined using new `helm-make-source` with its own class.
+If the source is defined with a specialized class (not a generic class like
+`helm-source-sync`, `helm-source-async`, `helm-source-in-buffer`, `helm-source-dummy`)
+You can add a new defmethod in your init file e.g:
+
+```emacs-lisp
+(defmethod helm-setup-user-source ((source helm-source-ffiles))
+  (helm-source-add-action-to-source-if
+   "Byte compile file(s) async"
+   'async-byte-compile-file
+   source
+   'helm-ff-candidates-lisp-p))
+```
+or
+
+```emacs-lisp
+(defmethod helm-setup-user-source ((source helm-source-multi-occur))
+  (oset source :follow 1))
+```
+You can also setup the source yourself:
+
+```emacs-lisp
+(with-eval-after-load "helm-regexp.el"
+  (setq helm-source-occur (helm-make-source "Occur" 'helm-source-multi-occur))
+  (setq helm-source-occur (helm-make-source "Moccur" 'helm-source-multi-occur)))
+```
+
+_Note:_ Don't define a new `defmethod` `helm-setup-user-source` with generic classes as specified above.
+
+
+## I can't find help or documentation for helm
+
+In each helm session you will find help with `C-c ?`, it is notified in your `mode-line`.
+All these help pages are regrouped in a org file generated by the command `helm-documentation`.

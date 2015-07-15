@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 
 ## Copyright (C) 2012 Thierry Volpiatto <thierry.volpiatto@gmail.com>
@@ -20,10 +20,12 @@
 
 # Preconfigured Emacs with a basic helm configuration.
 # Useful to start quickly an emacs -Q with helm.
-# Run it from this directory.
+# Run it from this directory or symlink it somewhere in your PATH.
 
-TMP="/tmp/helm-cfg.el"
-LOADPATH=$(readlink -f $0 | xargs dirname)
+# If TEMP env var exists use it otherwise declare it.
+[ -z $TEMP ] && declare TEMP="/tmp"
+
+CONF_FILE="$TEMP/helm-cfg.el"
 EMACS=emacs
 
 case $1 in
@@ -38,13 +40,30 @@ case $1 in
         ;;
 esac
 
-cat > $TMP <<EOF
+cd $(dirname "$0")
+
+# Check if autoload file exists.
+# It is maybe in a different directory if
+# emacs-helm.sh is a symlink.
+LS=$(ls -l $0 | awk '{print $11}')
+if [ ! -z $LS ]; then
+    AUTO_FILE="$(dirname $LS)/helm-autoloads.el"
+else
+    AUTO_FILE="helm-autoloads.el"
+fi
+if [ ! -e "$AUTO_FILE" ]; then
+    echo No autoloads found, please run make first to generate autoload file
+    exit 2
+fi
+
+
+cat > $CONF_FILE <<EOF
 (setq initial-scratch-message (concat initial-scratch-message
 ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n\
 ;; This Emacs is Powered by \`HELM' using\n\
 ;; emacs program \"$EMACS\".\n\
 ;; This is a minimal \`helm' configuration to discover \`helm' or debug it.\n\
-;; You can retrieve this minimal configuration in \"$TMP\" \n\
+;; You can retrieve this minimal configuration in \"$CONF_FILE\" \n\
 ;; Some originals emacs commands have been replaced by own \`helm' commands:\n\n\
 ;; - \`find-file'(C-x C-f)           =>\`helm-find-files'\n\
 ;; - \`occur'(M-s o)                 =>\`helm-occur'\n\
@@ -62,17 +81,19 @@ cat > $TMP <<EOF
                             (menu-bar-lines . 0)
                             (fullscreen . nil)))
 (blink-cursor-mode -1)
-(add-to-list 'load-path (expand-file-name "$LOADPATH"))
+(add-to-list 'load-path (file-name-directory (file-truename "$0")))
 (require 'helm-config)
 (helm-mode 1)
 (define-key global-map [remap find-file] 'helm-find-files)
 (define-key global-map [remap occur] 'helm-occur)
 (define-key global-map [remap list-buffers] 'helm-buffers-list)
 (define-key global-map [remap dabbrev-expand] 'helm-dabbrev)
+(global-set-key (kbd "M-x") 'helm-M-x)
 (unless (boundp 'completion-in-region-function)
   (define-key lisp-interaction-mode-map [remap completion-at-point] 'helm-lisp-completion-at-point)
   (define-key emacs-lisp-mode-map       [remap completion-at-point] 'helm-lisp-completion-at-point))
-(add-hook 'kill-emacs-hook #'(lambda () (and (file-exists-p "$TMP") (delete-file "$TMP"))))
+(add-hook 'kill-emacs-hook #'(lambda () (and (file-exists-p "$CONF_FILE") (delete-file "$CONF_FILE"))))
 EOF
 
-$EMACS -Q -l $TMP $@
+$EMACS -Q -l $CONF_FILE $@
+

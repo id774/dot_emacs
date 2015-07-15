@@ -1,6 +1,6 @@
 ;;; helm-eshell.el --- pcomplete and eshell completion for helm. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2014 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2015 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 ;;; Code:
 (require 'cl-lib)
 (require 'helm)
+(require 'helm-help)
 (require 'helm-elisp)
 (require 'helm-regexp)
 
@@ -32,6 +33,7 @@
 (declare-function eshell-send-input "esh-mode" (&optional use-region queue-p no-newline))
 (declare-function eshell-bol "esh-mode")
 (declare-function eshell-parse-arguments "esh-arg" (beg end))
+(declare-function eshell-backward-argument "esh-mode" (&optional arg))
 
 (defvar helm-eshell-history-map
   (let ((map (make-sparse-keymap)))
@@ -47,28 +49,31 @@
     map)
   "Keymap for `helm-esh-pcomplete'.")
 
-(defvar helm-source-esh
-  '((name . "Eshell completions")
-    (init . (lambda ()
-              (setq pcomplete-current-completions nil
-                    pcomplete-last-completion-raw nil)
-              ;; Eshell-command add this hook in all minibuffers
-              ;; Remove it for the helm one. (Fixed in Emacs24)
-              (remove-hook 'minibuffer-setup-hook 'eshell-mode)))
-    (candidates . helm-esh-get-candidates)
-    (nomark)
-    (persistent-action . ignore)
-    (filtered-candidate-transformer
-     (lambda (candidates _sources)
-       (cl-loop for i in (sort candidates 'helm-generic-sort-fn)
-             collect
-             (cond ((string-match "\\`~/?" helm-ec-target)
-                    (abbreviate-file-name i))
-                   ((string-match "\\`/" helm-ec-target) i)
-                   (t
-                    (file-relative-name i))))))
-    (action . helm-ec-insert))
-  "Helm source for Eshell completion.")
+(defclass helm-esh-source (helm-source-sync)
+  ((init :initform (lambda ()
+                     (setq pcomplete-current-completions nil
+                           pcomplete-last-completion-raw nil)
+                     ;; Eshell-command add this hook in all minibuffers
+                     ;; Remove it for the helm one. (Fixed in Emacs24)
+                     (remove-hook 'minibuffer-setup-hook 'eshell-mode)))
+   (candidates :initform 'helm-esh-get-candidates)
+   (nomark :initform t)
+   (persistent-action :initform 'ignore)
+   (filtered-candidate-transformer
+    :initform
+    (lambda (candidates _sources)
+      (cl-loop 
+       for i in candidates
+       collect
+       (cond ((string-match "\\`~/?" helm-ec-target)
+              (abbreviate-file-name i))
+             ((string-match "\\`/" helm-ec-target) i)
+             (t
+              (file-relative-name i)))
+       into lst
+       finally return (sort lst 'helm-generic-sort-fn))))
+   (action :initform 'helm-ec-insert))
+  "Helm class to define source for Eshell completion.")
 
 ;; Internal.
 (defvar helm-ec-target "")
@@ -80,6 +85,7 @@ The function that call this should set `helm-ec-target' to thing at point."
                (search-backward helm-ec-target nil t)
                (string= (buffer-substring (point) pt) helm-ec-target))
       (delete-region (point) pt)))
+  (when (string-match "\\`\\*" helm-ec-target) (insert "*"))
   (cond ((string-match "\\`~/?" helm-ec-target)
          (insert (helm-quote-whitespace (abbreviate-file-name candidate))))
         ((string-match "\\`/" helm-ec-target)
@@ -144,25 +150,23 @@ The function that call this should set `helm-ec-target' to thing at point."
 ;;; Eshell history.
 ;;
 ;;
-(defvar helm-source-eshell-history
-  `((name . "Eshell history")
-    (init . (lambda ()
-              (let (eshell-hist-ignoredups)
-                (eshell-write-history eshell-history-file-name t)
-                (with-current-buffer (helm-candidate-buffer 'global)
-                  (insert-file-contents eshell-history-file-name)))
-              ;; Same comment as in `helm-source-esh'
-              (remove-hook 'minibuffer-setup-hook 'eshell-mode)))
-    (candidates-in-buffer)
-    (nomark)
-    (keymap . ,helm-eshell-history-map)
-    (filtered-candidate-transformer . (lambda (candidates sources)
-                                        (reverse candidates)))
-    (candidate-number-limit . 9999)
-    (action . (lambda (candidate)
-                (eshell-kill-input)
-                (insert candidate))))
-  "Helm source for Eshell history.")
+(defclass helm-eshell-history-source (helm-source-in-buffer)
+  ((init :initform (lambda ()
+                     (let (eshell-hist-ignoredups)
+                       (eshell-write-history eshell-history-file-name t)
+                       (with-current-buffer (helm-candidate-buffer 'global)
+                         (insert-file-contents eshell-history-file-name)))
+                     ;; Same comment as in `helm-source-esh'
+                     (remove-hook 'minibuffer-setup-hook 'eshell-mode)))
+   (nomark :initform t)
+   (keymap :initform helm-eshell-history-map)
+   (filtered-candidate-transformer :initform (lambda (candidates sources)
+                                               (reverse candidates)))
+   (candidate-number-limit :initform 9999)
+   (action :initform (lambda (candidate)
+                       (eshell-kill-input)
+                       (insert candidate))))
+  "Helm class to define source for Eshell history.")
 
 ;;;###autoload
 (defun helm-esh-pcomplete ()
@@ -174,15 +178,19 @@ The function that call this should set `helm-ec-target' to thing at point."
          (beg (save-excursion (eshell-bol) (point)))
          (args (catch 'eshell-incomplete
                  (eshell-parse-arguments beg end)))
-         ;; Use thing-at-point instead of last args value
-         ;; to exclude possible delimiters e.g "(".
-         (target (thing-at-point 'symbol))
+         (target
+          (or (and (looking-back " " (1- (point))) " ")
+              (buffer-substring-no-properties
+               (save-excursion
+                 (eshell-backward-argument 1) (point))
+               end)))
          (first (car args)) ; Maybe lisp delimiter "(".
          last) ; Will be the last but parsed by pcomplete.
     (setq helm-ec-target (or target " ")
           end (point)
           ;; Reset beg for `with-helm-show-completion'.
-          beg (or (and target (- end (length target)))
+          beg (or (and target (not (string= target " "))
+                       (- end (length target)))
                   ;; Nothing at point.
                   (progn (insert " ") (point))))
     (cond ((eq first ?\()
@@ -193,10 +201,12 @@ The function that call this should set `helm-ec-target' to thing at point."
           ;; which is calling `lisp-complete-symbol',
           ;; calling it before would popup the
           ;; *completions* buffer.
-          (t (setq last (car (last (ignore-errors
-                                     (pcomplete-parse-arguments)))))
+          (t (setq last (replace-regexp-in-string
+                         "\\`\\*" ""
+                         (car (last (ignore-errors
+                                      (pcomplete-parse-arguments))))))
              (with-helm-show-completion beg end
-               (helm :sources 'helm-source-esh
+               (helm :sources (helm-make-source "Eshell completions" 'helm-esh-source)
                      :buffer "*helm pcomplete*"
                      :keymap helm-esh-completion-map
                      :resume 'noresume
@@ -207,8 +217,8 @@ The function that call this should set `helm-ec-target' to thing at point."
 (defun helm-eshell-history ()
   "Preconfigured helm for eshell history."
   (interactive)
-  (let* ((end (point))
-         (beg (save-excursion (eshell-bol) (point)))
+  (let* ((end   (point))
+         (beg   (save-excursion (eshell-bol) (point)))
          (input (buffer-substring beg end))
          flag-empty)
     (when (eq beg end)
@@ -217,12 +227,13 @@ The function that call this should set `helm-ec-target' to thing at point."
       (setq end (point)))
     (unwind-protect
          (with-helm-show-completion beg end
-           (helm :sources 'helm-source-eshell-history
+           (helm :sources (helm-make-source "Eshell history"
+                              'helm-eshell-history-source)
                  :buffer "*helm eshell history*"
                  :resume 'noresume
                  :input input))
       (when (and flag-empty
-                 (looking-back " "))
+                 (looking-back " " (1- (point))))
         (delete-char -1)))))
 
 (provide 'helm-eshell)

@@ -1,6 +1,6 @@
 ;;; helm-semantic.el --- Helm interface for Semantic -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2014 Daniel Hackney <dan@haxney.org>
+;; Copyright (C) 2012 ~ 2015 Daniel Hackney <dan@haxney.org>
 ;; Author: Daniel Hackney <dan@haxney.org>
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -24,28 +24,58 @@
 
 (require 'cl-lib)
 (require 'semantic)
+(require 'helm-help)
 (require 'helm-imenu)
 
 (declare-function pulse-momentary-highlight-one-line "pulse.el" (point &optional face))
 
+(defgroup helm-semantic nil
+  "Semantic tags related libraries and applications for helm."
+  :group 'helm)
+
 (defcustom helm-semantic-lynx-style-map t
   "Use Arrow keys to jump to occurences."
-  :group 'helm-imenu
+  :group 'helm-semantic
   :type  'boolean)
+
+(defcustom helm-semantic-display-style
+  '((python-mode . semantic-format-tag-summarize)
+    (c-mode . semantic-format-tag-concise-prototype-c-mode)
+    (emacs-lisp-mode . semantic-format-tag-abbreviate-emacs-lisp-mode))
+  "Function to present a semantic tag according to `major-mode'.
+
+It is an alist where the `car' of each element is a `major-mode' and
+the `cdr' a `semantic-format-tag-*' function.
+
+If no function is found for current `major-mode', fall back to
+`semantic-format-tag-summarize' default function.
+
+You can have more or less informations depending of the `semantic-format-tag-*'
+function you choose.
+
+All the supported functions are prefixed with \"semantic-format-tag-\",
+you have completion on these functions with `C-M i' in the customize interface."
+  :group 'helm-semantic
+  :type '(alist :key-type symbol :value-type symbol))
 
 ;;; keymap
 (defvar helm-semantic-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map helm-map)
-    (define-key map (kbd "C-c ?") 'helm-semantic-help)
-    (when helm-imenu-lynx-style-map
-      (define-key map (kbd "<left>")  'helm-exit-minibuffer)
+    (when helm-semantic-lynx-style-map
+      (define-key map (kbd "<left>")  'helm-maybe-exit-minibuffer)
       (define-key map (kbd "<right>") 'helm-execute-persistent-action))
     (delq nil map)))
 
-(defun helm-semantic-init-candidates (tags depth &optional class)
+;; Internals vars
+(defvar helm-semantic--tags-cache nil)
+
+(defun helm-semantic--fetch-candidates (tags depth &optional class)
   "Write the contents of TAGS to the current buffer."
-  (let ((class class) cur-type)
+  (let ((class class) cur-type
+        (stylefn (or (with-helm-current-buffer
+                       (assoc-default major-mode helm-semantic-display-style))
+                     #'semantic-format-tag-summarize)))
     (cl-dolist (tag tags)
       (when (listp tag)
         (cl-case (setq cur-type (semantic-tag-class tag))
@@ -56,20 +86,26 @@
                (setq class nil))
              (insert
               (if (and class (not type-p))
-                  (format "%s%sClass(%s) "
+                  (format "%s%s(%s) "
                           spaces (if (< depth 2) "" "├►") class)
                 spaces)
               ;; Save the tag for later
-              (propertize (semantic-format-tag-summarize tag nil t)
+              (propertize (funcall stylefn tag nil t)
                           'semantic-tag tag)
               "\n")
              (and type-p (setq class (car tag)))
              ;; Recurse to children
-             (helm-semantic-init-candidates
-              (semantic-tag-components tag) (1+ depth) class)))
+             (unless (eq cur-type 'function)
+               (helm-semantic--fetch-candidates
+                (semantic-tag-components tag) (1+ depth) class))))
 
           ;; Don't do anything with packages or includes for now
-          ((package include))
+          ((package include)
+           (insert
+            (propertize (funcall stylefn tag nil t)
+                        'semantic-tag tag)
+            "\n")
+           )
           ;; Catch-all
           (t))))))
 
@@ -88,62 +124,93 @@
 
 (defun helm-semantic--maybe-set-needs-update ()
   (with-helm-current-buffer
-    (let ((tick (buffer-modified-tick)))
-      (unless (eq helm-cached-imenu-tick tick)
-        (setq helm-cached-imenu-tick tick)
-        (semantic-parse-tree-set-needs-update)))))
+    (when (semantic-parse-tree-needs-update-p)
+      (semantic-parse-tree-set-needs-update))))
 
-(defvar helm-source-semantic
-  `((name . "Semantic Tags")
-    (init . (lambda ()
-              (helm-semantic--maybe-set-needs-update)
-              (let ((tags (semantic-fetch-tags)))
-                (with-current-buffer (helm-candidate-buffer 'global)
-                  (helm-semantic-init-candidates tags 0)))))
-    (candidates-in-buffer)
-    (allow-dups)
-    (get-line . buffer-substring)
-    (persistent-action . (lambda (elm)
-                           (helm-semantic-default-action elm t)
-                           (helm-highlight-current-line)))
-    (persistent-help . "Show this entry")
-    (keymap . ,helm-semantic-map)
-    (mode-line . helm-semantic-mode-line)
-    (action . helm-semantic-default-action)
-    "Source to search tags using Semantic from CEDET."))
+(defvar helm-source-semantic nil)
+
+(defclass helm-semantic-source (helm-source-in-buffer)
+  ((init :initform (lambda ()
+                     (helm-semantic--maybe-set-needs-update)
+                     (setq helm-semantic--tags-cache (semantic-fetch-tags))
+                     (with-current-buffer (helm-candidate-buffer 'global)
+                       (let ((major-mode (with-helm-current-buffer major-mode)))
+                         (helm-semantic--fetch-candidates helm-semantic--tags-cache 0)))))
+   (get-line :initform 'buffer-substring)
+   (persistent-help :initform "Show this entry")
+   (keymap :initform 'helm-semantic-map)
+   (help-message :initform 'helm-semantic-help-message)
+   (persistent-action :initform (lambda (elm)
+                                  (helm-semantic-default-action elm t)
+                                  (helm-highlight-current-line)))
+   (action :initform 'helm-semantic-default-action)))
+
+(defcustom helm-semantic-fuzzy-match nil
+  "Enable fuzzy matching in `helm-source-semantic'."
+  :group 'helm-semantic
+  :type  'boolean
+  :set (lambda (var val)
+         (set var val)
+         (setq helm-source-semantic
+               (helm-make-source "Semantic Tags" 'helm-semantic-source
+                 :fuzzy-match helm-semantic-fuzzy-match))))
 
 ;;;###autoload
-(defun helm-semantic ()
-  "Preconfigured `helm' for `semantic'."
-  (interactive)
-  (let ((str (thing-at-point 'symbol)))
+(defun helm-semantic (arg)
+  "Preconfigured `helm' for `semantic'.
+If ARG is supplied, pre-select symbol at point instead of current"
+  (interactive "P")
+  (let ((tag (helm-aif (semantic-current-tag-parent)
+                  (cons (format "\\_<%s\\_>" (car it))
+                        (format "\\_<%s\\_>" (car (semantic-current-tag))))
+                (format "\\_<%s\\_>" (car (semantic-current-tag))))))
+    (unless helm-source-semantic
+      (setq helm-source-semantic
+            (helm-make-source "Semantic Tags" 'helm-semantic-source
+              :fuzzy-match helm-semantic-fuzzy-match)))
     (helm :sources 'helm-source-semantic
-          :default (list (concat "\\_<" str "\\_>") str)
           :candidate-number-limit 9999
+          :preselect (if arg
+                         (thing-at-point 'symbol)
+                       tag)
           :buffer "*helm semantic*")))
 
 ;;;###autoload
-(defun helm-semantic-or-imenu ()
-  "Run `helm' with `semantic' or `imenu'.
+(defun helm-semantic-or-imenu (arg)
+  "Preconfigured helm for `semantic' or `imenu'.
+If ARG is supplied, pre-select symbol at point instead of current
+semantic tag in scope.
 
 If `semantic-mode' is active in the current buffer, then use
 semantic for generating tags, otherwise fall back to `imenu'.
 Fill in the symbol at point by default."
-  (interactive)
+  (interactive "P")
+  (unless helm-source-semantic
+    (setq helm-source-semantic
+          (helm-make-source "Semantic Tags" 'helm-semantic-source
+            :fuzzy-match helm-semantic-fuzzy-match)))
+  (unless helm-source-imenu
+    (setq helm-source-imenu
+          (helm-make-source "Imenu" 'helm-imenu-source
+            :fuzzy-match helm-imenu-fuzzy-match)))
   (let* ((source (if (semantic-active-p)
                      'helm-source-semantic
-                   'helm-source-imenu))
+                     'helm-source-imenu))
          (imenu-p (eq source 'helm-source-imenu))
-         (str (thing-at-point 'symbol))
          (imenu-auto-rescan imenu-p)
          (helm-execute-action-at-once-if-one
           (and imenu-p
-               helm-imenu-execute-action-at-once-if-one)))
+               helm-imenu-execute-action-at-once-if-one))
+         (tag (helm-aif (semantic-current-tag-parent)
+                  (cons (format "\\_<%s\\_>" (car it))
+                        (format "\\_<%s\\_>" (car (semantic-current-tag))))
+                (format "\\_<%s\\_>" (car (semantic-current-tag))))))
     (helm :sources source
-          :default (list (concat "\\_<" str "\\_>") str)
-          :buffer "*helm semantic/imenu*"
           :candidate-number-limit 9999
-          :preselect (unless imenu-p (thing-at-point 'symbol)))))
+          :preselect (if (or arg imenu-p)
+                         (thing-at-point 'symbol)
+                         tag)
+          :buffer "*helm semantic/imenu*")))
 
 (provide 'helm-semantic)
 
