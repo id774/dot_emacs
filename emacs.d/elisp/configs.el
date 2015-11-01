@@ -78,7 +78,8 @@
 (setq inhibit-startup-message t)
 
 ;; 画面反転をやめる
-(setq visible-bell nil)
+(setq visible-bell t)
+(setq ring-bell-function 'ignore)
 
 ;; あまりに大きいファイルは色付けると時間かかるので、上限を指定する
 (setq font-lock-maximum-size nil)
