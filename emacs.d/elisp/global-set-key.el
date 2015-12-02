@@ -14,7 +14,7 @@
 ;; No more bobcat, no more keyswap!
 (cond ((eq window-system 'x)
        (progn
-	 (global-set-key [delete] 'delete-char)))
+     (global-set-key [delete] 'delete-char)))
       ((eq window-system 'mac)
        t) ;; ok
       (t (keyboard-translate ?\C-h ?\C-?)))
@@ -85,6 +85,10 @@
   (navi2ch))
 (define-key global-map "\C-c\C-c\C-i" 'switch-to-navi2ch)
 (define-key global-map "\C-c\C-c\ i" 'switch-to-navi2ch)
+
+;; C-x 5,6 で文字拡大縮小
+(define-key global-map "\C-x\ 5" 'text-scale-increase)
+(define-key global-map "\C-x\ 6" 'text-scale-decrease)
 
 ;; C-M-g でも keyboard-escape-quit する
 (global-set-key "\C-\M-g" 'keyboard-escape-quit)

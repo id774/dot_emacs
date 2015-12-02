@@ -75,6 +75,11 @@
   (add-hook 'text-mode-hook 'zencoding-mode)
   (define-key zencoding-mode-keymap "\C-i" 'zencoding-expand-line))
 
+;; Large scale on text-mode
+(add-hook 'text-mode-hook
+  (lambda ()
+  (text-scale-set 1)))
+
 (load-p "python-mode-settings")
 
 ;; scss-mode
