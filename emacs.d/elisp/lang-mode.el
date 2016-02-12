@@ -105,11 +105,6 @@
   (add-to-list 'auto-mode-alist '("\\.coffee\\'" . coffee-mode))
   (add-to-list 'auto-mode-alist '("Cakefile" . coffee-mode)))
 
-;; jade-mode
-(when (require 'jade-mode nil t)
-  (require 'sws-mode)
-  (add-to-list 'auto-mode-alist '("\\.styl\\'" . sws-mode)))
-
 ;; pig-mode
 (when (load-p "pig-latin-mode")
   (add-to-list 'auto-mode-alist '("\\.pig$" . pig-latin-mode))
