@@ -119,6 +119,8 @@ byte_compile_all() {
       anything.el \
       bat-mode.el \
       erlang.el \
+      findr.el \
+      inflections.el \
       git.el \
       git-blame.el \
       google-this.el \
