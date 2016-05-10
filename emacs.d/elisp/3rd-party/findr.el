@@ -1,11 +1,10 @@
 ;;; findr.el --- Breadth-first file-finding facility for (X)Emacs
-;;  Dec 1, 2006
 
 ;; Copyright (C) 1999 Free Software Foundation, Inc.
 
 ;; Author: David Bakhash <cadet@bu.edu>
 ;; Maintainer: David Bakhash <cadet@bu.edu>
-;; Version: 0.7
+;; Version: 0.9.11
 ;; Created: Tue Jul 27 12:49:22 EST 1999
 ;; Keywords: files
 
@@ -100,10 +99,18 @@
 ;; 0.9: Added customize variables, added file/directory filter regexp
 ;;      minibuffer history by attila.lendvai@gmail.com
 ;; 0.9.1: Updated date at the top of the file, added .svn filter
-;; 0.9.2: Added support for skipping symlinks
+;; 0.9.2: Added support for skipping symlinks by attila.lendvai@gmail.com
+;; 0.9.3: Smarter minibuffer handling by attila.lendvai@gmail.com
+;; 0.9.4: Better handle symlinks by levente.meszaros@gmail.com
+;; 0.9.5: Collect resolved files in the result by attila.lendvai@gmail.com
+;; 0.9.6: Use a seen hashtable to deal with circles through symlinks by attila.lendvai@gmail.com
+;; 0.9.7: Fix wrong calls to message by Michael Heerdegen
+;; 0.9.8: Fix 'symbol-calue' typo in non-exposed code path by Michael Heerdegen
+;; 0.9.9: Call message less frequent by attila.lendvai@gmail.com
+;; 0.9.10: match findr-skip-directory-regexp agaisnt the whole path by attila.lendvai@gmail.com
+;; 0.9.11: Fix header line to use ELPA-compliant triple dash by Steve Purcell
 
-(eval-when-compile
-  (require 'cl))
+(require 'cl)
 
 (provide 'findr)
 
@@ -121,13 +128,13 @@
 ;;    (setf result (concatenate 'string result "^" (regexp-quote el) "$")))
 ;;  result)
 
-(defcustom findr-skip-directory-regexp "^\\.backups$\\|^_darcs$\\|^\\.git$\\|^CVS$\\|^\\.svn$"
-  "A regexp that will be matched against the directory names and when it matches then the entire directory is skipped."
+(defcustom findr-skip-directory-regexp "\\/.backups$\\|/_darcs$\\|/\\.git$\\|/CVS$\\|/\\.svn$"
+  "A regexp filter to skip directory paths."
   :type 'string
   :group 'findr)
 
 (defcustom findr-skip-file-regexp "^[#\\.]"
-  "A regexp that will be matched against all file names (including directories) and when it matches then the file is skipped."
+  "A regexp that all file names will be matched against (including directories) and matching files are skipped."
   :type 'string
   :group 'findr)
 
@@ -136,48 +143,106 @@
 (defvar findr-file-name-regexp-history nil)
 (defvar findr-directory-history nil)
 
+(defun findr-propertize-string (string properties)
+  (add-text-properties 0 (length string) properties string)
+  string)
+
+(defmacro findr-with-infrequent-message (&rest body)
+  (let ((last-message-at (gensym "last-message-at")))
+    `(let ((,last-message-at 0))
+       (labels ((message* (message &rest args)
+                  (when (> (- (time-to-seconds) ,last-message-at) 0.5)
+                    (setq ,last-message-at (time-to-seconds))
+                    (apply 'message message args))))
+         ,@body))))
+
+(defun findr-propertize-prompt (string)
+  (findr-propertize-string string '(read-only t intangible t)))
+
+(defun* findr-read-from-minibuffer (prompt history &key initial-content
+                                           store-empty-answer-in-history)
+  (let ((minibuffer-message-timeout 0)
+        (history-position (position initial-content (symbol-value history)
+                                    :test 'string=)))
+    (let ((result (read-from-minibuffer
+                   (findr-propertize-prompt prompt)
+                   initial-content nil nil (if (and (not (consp history))
+                                                    history-position)
+                                               (cons history (1+ history-position))
+                                               history))))
+      (when (and store-empty-answer-in-history
+                 (zerop (length result)))
+        (setf (symbol-value history)
+              (delete-if (lambda (el)
+                           (zerop (length el)))
+                         (symbol-value history)))
+        (push result (symbol-value history)))
+      result)))
+
+(defun* findr-read-from-minibuffer-defaulting (prompt history &key store-empty-answer-in-history)
+  (let* ((default (if (consp history)
+                      (elt (symbol-value (car history)) (cdr history))
+                      (first (symbol-value history))))
+         (result (findr-read-from-minibuffer
+                  (format prompt (or default ""))
+                  history
+                  :store-empty-answer-in-history store-empty-answer-in-history)))
+    (if (= (length result) 0)
+        default
+        result)))
+
 (defun findr-read-search-regexp (&optional prompt)
-  (read-from-minibuffer
-   (or prompt "Search through files for (regexp): ")
-   nil nil nil 'findr-search-regexp-history))
+  (findr-read-from-minibuffer-defaulting
+   "Search through files for (regexp, default: \"%s\"): "
+   'findr-search-regexp-history))
 
 (defun findr-read-file-regexp (&optional prompt)
-  (read-from-minibuffer
-   (or prompt "Look in these files (regexp): ")
-   (first findr-file-name-regexp-history)
-   nil nil 'findr-file-name-regexp-history))
+  (findr-read-from-minibuffer
+   "Look in these files (regexp): "
+   'findr-file-name-regexp-history
+   :initial-content (first findr-file-name-regexp-history)
+   :store-empty-answer-in-history t))
 
 (defun findr-read-starting-directory (&optional prompt)
-  (apply 'read-directory-name
-         (append
-          (list (or prompt "Start in directory: ") default-directory
-                default-directory t nil)
-          (when (featurep 'xemacs)
-            (list 'findr-directory-history)))))
+  (setq prompt (or prompt "Start in directory: "))
+  (if (and (fboundp 'ido-read-directory-name)
+           ido-mode)
+      (ido-read-directory-name prompt)
+      (apply 'read-directory-name
+             (append
+              (list prompt default-directory default-directory t nil)
+              (when (featurep 'xemacs)
+                (list 'findr-directory-history))))))
 
 ;;;; breadth-first file finder...
 
-(defun* findr (name dir &key (prompt-p (interactive-p)) (skip-symlinks t))
+(defun* findr (name dir &key (prompt-p (interactive-p)) (skip-symlinks nil) (resolve-symlinks t))
   "Search directory DIR breadth-first for files matching regexp NAME.
 If PROMPT-P is non-nil, or if called interactively, Prompts for visiting
 search result\(s\)."
-  (let ((*dirs* (findr-make-queue))
-        *found-files*)
-    (labels ((findr-1 (dir)
-               (message "Searching %s ..." dir)
-               (let ((files (directory-files dir t "\\w")))
-                 (loop
+  (findr-with-infrequent-message
+    (let ((*dirs* (findr-make-queue))
+          (seen-directories (make-hash-table :test 'equal))
+          *found-files*)
+      (labels ((findr-1 (dir)
+                 (message* "Collecting in dir %s" dir)
+                 (let ((files (directory-files dir t "\\w")))
+                   (loop
                      for file in files
                      for fname = (file-relative-name file dir)
                      when (and (file-directory-p file)
-                               (not (string-match findr-skip-directory-regexp fname))
-                               (and skip-symlinks
-                                    (not (file-symlink-p file))))
-                     do (findr-enqueue file *dirs*)
+                               (not (string-match findr-skip-directory-regexp file))
+                               (not (gethash (file-truename file) seen-directories))
+                               (or (not skip-symlinks)
+                                   (not (file-symlink-p file))))
+                     do (progn
+                          (print file)
+                          (setf (gethash (file-truename file) seen-directories) t)
+                          (findr-enqueue file *dirs*))
                      when (and (string-match name fname)
                                (not (string-match findr-skip-file-regexp fname))
-                               (and skip-symlinks
-                                    (not (file-symlink-p file))))
+                               (or (not skip-symlinks)
+                                   (not (file-symlink-p file))))
                      do
                      ;; Don't return directory names when
                      ;; building list for `tags-query-replace' or `tags-search'
@@ -187,20 +252,23 @@ search result\(s\)."
 
                      ;; _never_ return directory names
                      (when (file-regular-p file)
-                       (push file *found-files*))
-                     (message file)
+                       (push (if resolve-symlinks
+                                 (file-truename file)
+                                 file)
+                             *found-files*))
+                     (message* "Collecting file %s" file)
                      (when (and prompt-p
                                 (y-or-n-p (format "Find file %s? " file)))
                        (find-file file)
                        (sit-for 0)	; redisplay hack
                        )))))
-      (unwind-protect
-           (progn
-             (findr-enqueue dir *dirs*)
-             (while (findr-queue-contents *dirs*)
-               (findr-1 (findr-dequeue *dirs*)))
-             (message "Searching... done."))
-        (return-from findr (nreverse *found-files*))))))
+        (unwind-protect
+             (progn
+               (findr-enqueue dir *dirs*)
+               (while (findr-queue-contents *dirs*)
+                 (findr-1 (findr-dequeue *dirs*)))
+               (message "Searching... done."))
+          (return-from findr (nreverse *found-files*)))))))
 
 (defun findr-query-replace (from to name dir)
   "Do `query-replace-regexp' of FROM with TO, on each file found by findr.
@@ -208,8 +276,10 @@ If you exit (\\[keyboard-quit] or ESC), you can resume the query replace
 with the command \\[tags-loop-continue]."
   (interactive (let ((search-for (findr-read-search-regexp "Search through files for (regexp): ")))
                  (list search-for
-                       (read-from-minibuffer (format "Query replace '%s' with: " search-for)
-                                             nil nil nil 'findr-search-replacement-history)
+                       (findr-read-from-minibuffer-defaulting
+                        (format "Query replace '%s' with %s: "
+                                search-for "(default: \"%s\")")
+                        'findr-search-replacement-history)
                        (findr-read-file-regexp)
                        (findr-read-starting-directory))))
   (tags-query-replace from to nil '(findr name dir)))
@@ -229,7 +299,9 @@ To continue searching for next match, use command \\[tags-loop-continue]."
   (interactive (list (findr-read-file-regexp)
                      (findr-read-starting-directory)))
   ;; TODO: open a scratch buffer or store in the clipboard
-  (mapcar 'message (findr files dir)))
+  (mapcar (lambda (file)
+            (message "%s" file))
+          (findr files dir)))
 
 ;;;; Queues
 

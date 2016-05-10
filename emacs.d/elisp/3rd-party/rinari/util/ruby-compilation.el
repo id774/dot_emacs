@@ -1,8 +1,10 @@
 ;;; ruby-compilation.el --- run a ruby process in a compilation buffer
 
 ;; Copyright (C) 2008 Eric Schulte
+;; Copyright (C) 2009-2015 Steve Purcell
 
 ;; Author: Eric Schulte
+;; Maintainer: Steve Purcell <steve@sanityinc.com>
 ;; URL: https://github.com/eschulte/rinari
 ;; Version: 0.17
 ;; Created: 2008-08-23
@@ -80,27 +82,9 @@ Should be used with `make-local-variable'.")
 
 ;;; Core plumbing
 
-(defun ruby-compilation--adjust-paths (beg end)
-  (save-excursion
-    (goto-char beg)
-    (while (re-search-forward "\\(^[\t ]+\\|\\[\\)/test" end t)
-      (replace-match "\\1test"))))
-
 (defun ruby-compilation-filter ()
   "Filter function for compilation output."
-  (save-excursion
-    (forward-line 0)
-    (let ((end (point)) beg)
-      (goto-char compilation-filter-start)
-      (forward-line 0)
-      (setq beg (point))
-      ;; Only operate on whole lines so we don't get caught with part of an
-      ;; escape sequence in one chunk and the rest in another.
-      (when (< (point) end)
-        (setq end (copy-marker end))
-        (ansi-color-apply-on-region beg end)
-        (ruby-compilation--adjust-paths beg end)))))
-
+  (ansi-color-apply-on-region compilation-filter-start (point-max)))
 
 (defun ruby-compilation--kill-any-orphan-proc ()
   "Ensure any dangling buffer process is killed."
@@ -233,22 +217,26 @@ buffer."
         (delq (assoc dir ruby-compilation-rake-tasks-cache)
               ruby-compilation-rake-tasks-cache)))
 
+(defun ruby-compilation--rakefile-dir ()
+  "Return directory in which Rakefile is found, or nil if no such file exists."
+  (locate-dominating-file default-directory "Rakefile"))
+
 (defun pcmpl-rake-tasks ()
-   "Return a list of all the rake tasks defined in the current projects."
-   (let ((rakefile-dir (locate-dominating-file default-directory "Rakefile")))
-     (unless rakefile-dir
-       (error "No Rakefile found"))
-     (let ((cached (assoc rakefile-dir ruby-compilation-rake-tasks-cache))
-           (rakefile-modtime (elt (file-attributes (expand-file-name "Rakefile" rakefile-dir)) 5)))
-       (if (and cached (equal (cadr cached) rakefile-modtime))
-           (cddr cached)
-         (message "Building task completion list...")
-         (let ((tasks (ruby-compilation-extract-output-matches "rake -T" "rake \\([^ ]+\\)")))
-           (ruby-compilation-rake--clear-task-cache-for-dir rakefile-dir)
-           (setq ruby-compilation-rake-tasks-cache
-                 (push (cons rakefile-dir (cons rakefile-modtime tasks))
-                       ruby-compilation-rake-tasks-cache))
-           tasks)))))
+  "Return a list of all the rake tasks defined in the current projects."
+  (let ((rakefile-dir (ruby-compilation--rakefile-dir)))
+    (unless rakefile-dir
+      (error "No Rakefile found"))
+    (let ((cached (assoc rakefile-dir ruby-compilation-rake-tasks-cache))
+          (rakefile-modtime (elt (file-attributes (expand-file-name "Rakefile" rakefile-dir)) 5)))
+      (if (and cached (equal (cadr cached) rakefile-modtime))
+          (cddr cached)
+        (message "Building task completion list...")
+        (let ((tasks (ruby-compilation-extract-output-matches "rake -T" "rake \\([^ ]+\\)")))
+          (ruby-compilation-rake--clear-task-cache-for-dir rakefile-dir)
+          (setq ruby-compilation-rake-tasks-cache
+                (push (cons rakefile-dir (cons rakefile-modtime tasks))
+                      ruby-compilation-rake-tasks-cache))
+          tasks)))))
 
 ;;;###autoload
 (defun pcomplete/rake ()
@@ -260,7 +248,7 @@ buffer."
   "Reset the list of available rake tasks for the current Rakefile environment."
   (interactive)
   (ruby-compilation-rake--clear-task-cache-for-dir
-   (locate-dominating-file default-directory "Rakefile")))
+   (ruby-compilation--rakefile-dir)))
 
 ;;;###autoload
 (defun ruby-compilation-rake (&optional edit task env-vars)
@@ -276,17 +264,21 @@ the available tasks will automatically be refreshed.  Use function
 `ruby-compilation-rake-refresh-tasks' to force an update of the
 available tasks, e.g. if tasks defined outside the Rakefile change."
   (interactive "P")
-  (let* ((task (concat
-                (or task (if (stringp edit) edit)
-                    (completing-read "Rake: " (pcmpl-rake-tasks)))
-                " "
-                (ruby-compilation--format-env-vars env-vars)))
-         (rake-args (if (and edit (not (stringp edit)))
-                        (read-from-minibuffer "Edit Rake Command: " (concat task " "))
-                      task)))
-    (pop-to-buffer (ruby-compilation-do
-                    "rake" (cons ruby-compilation-executable-rake
-                                 (split-string rake-args))))))
+  (let ((rakefile-dir (ruby-compilation--rakefile-dir)))
+    (unless rakefile-dir
+      (error "No Rakefile found"))
+    (let* ((default-directory rakefile-dir)
+           (task (concat
+                  (or task (if (stringp edit) edit)
+                      (completing-read "Rake: " (pcmpl-rake-tasks)))
+                  " "
+                  (ruby-compilation--format-env-vars env-vars)))
+           (rake-args (if (and edit (not (stringp edit)))
+                          (read-from-minibuffer "Edit Rake Command: " (concat task " "))
+                        task)))
+      (pop-to-buffer (ruby-compilation-do
+                      "rake" (cons ruby-compilation-executable-rake
+                                   (split-string rake-args)))))))
 
 
 (defun pcmpl-cap-tasks ()

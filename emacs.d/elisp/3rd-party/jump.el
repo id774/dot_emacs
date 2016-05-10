@@ -42,17 +42,17 @@
 ;;; Example: (jumping to the related model in a rails application)
 
 ;; (defjump
-;;   'rinari-find-model
-;;   '(("app/controllers/\\1_controller.rb#\\2"  . "app/models/\\1.rb#\\2")
-;;     ("app/views/\\1/.*"                       . "app/models/\\1.rb")
-;;     ("app/helpers/\\1_helper.rb"              . "app/models/\\1.rb")
-;;     ("db/migrate/.*create_\\1.rb"             . "app/models/\\1.rb")
-;;     ("test/functional/\\1_controller_test.rb" . "app/models/\\1.rb")
-;;     ("test/unit/\\1_test.rb#test_\\2"         . "app/models/\\1.rb#\\2")
-;;     ("test/unit/\\1_test.rb"                  . "app/models/\\1.rb")
-;;     ("test/fixtures/\\1.yml"                  . "app/models/\\1.rb")
-;;     (t                                        . "app/models/"))
-;;   'rinari-root
+;;   rinari-find-model
+;;   (("app/controllers/\\1_controller.rb#\\2"  . "app/models/\\1.rb#\\2")
+;;    ("app/views/\\1/.*"                       . "app/models/\\1.rb")
+;;    ("app/helpers/\\1_helper.rb"              . "app/models/\\1.rb")
+;;    ("db/migrate/.*create_\\1.rb"             . "app/models/\\1.rb")
+;;    ("test/functional/\\1_controller_test.rb" . "app/models/\\1.rb")
+;;    ("test/unit/\\1_test.rb#test_\\2"         . "app/models/\\1.rb#\\2")
+;;    ("test/unit/\\1_test.rb"                  . "app/models/\\1.rb")
+;;    ("test/fixtures/\\1.yml"                  . "app/models/\\1.rb")
+;;    (t                                        . "app/models/"))
+;;   rinari-root
 ;;   "Go to the most logical model given the current location."
 ;;   '(lambda (path)
 ;;      (message (shell-command-to-string
@@ -105,13 +105,19 @@ buffer."
 
 (defun jump-select-and-find-file (files)
   "Select a single file from an alist of file names and paths.
-Return the path selected or nil if files was empty."
+Return the path selected or nil if FILES was empty."
   (let ((file   (case (length files)
 		  (0 nil)
 		  (1 (caar files))
 		  (t (jump-completing-read "Jump to: "
-					   (mapcar 'car files))))))
-    (if file (find-file (cdr (assoc file files))))))
+					   (mapcar 'car files)
+                                           nil
+                                           t)))))
+    (when file
+      (let ((path (cdr (assoc file files))))
+        (if path
+            (find-file path)
+          (error "No such file: %s" file))))))
 
 (defun jump-remove-unwanted-files (files)
   "Remove file matching `jump-ignore-file-regexp' from the list
@@ -289,7 +295,7 @@ find the current method which defaults to `which-function'."
      ,(concat doc "\n\nautomatically created by `defjump'")
      (interactive "P")
      (let ((root ,(if (functionp root) `(,root) root))
-	   (method-command ,(or method-command 'which-function))
+	   (method-command ,(or method-command '(quote which-function)))
 	   matches)
        (loop ;; try every rule in mappings
 	for spec in (quote ,(mapcar

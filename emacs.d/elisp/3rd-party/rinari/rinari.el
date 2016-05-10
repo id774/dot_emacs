@@ -1,8 +1,9 @@
 ;;; rinari.el --- Rinari Is Not A Rails IDE
 
 ;; Copyright (C) 2008 Phil Hagelberg, Eric Schulte
+;; Copyright (C) 2009-2015 Steve Purcell
 
-;; Author: Phil Hagelberg, Eric Schulte
+;; Author: Phil Hagelberg, Eric Schulte, Steve Purcell
 ;; URL: https://github.com/eschulte/rinari
 ;; Version: DEV
 ;; Created: 2006-11-10
@@ -77,6 +78,7 @@
 (require 'ruby-compilation)
 (require 'jump)
 (require 'cl)
+(require 'json)
 (require 'easymenu)
 
 ;; fill in some missing variables for XEmacs
@@ -116,10 +118,17 @@
     "cache_sweeper" "protect_from_forgery" "caches_page" "cache_page"
     "caches_action" "expire_page" "expire_action" "rescue_from" "params"
     "request" "response" "session" "flash" "head" "redirect_to"
-    "render_to_string" "respond_with" "before_filter" "append_before_filter"
+    "render_to_string" "respond_with"
+    ;; Rails < 4
+    "before_filter" "append_before_filter"
     "prepend_before_filter" "after_filter" "append_after_filter"
     "prepend_after_filter" "around_filter" "append_around_filter"
-    "prepend_around_filter" "skip_before_filter" "skip_after_filter" "skip_filter")
+    "prepend_around_filter" "skip_before_filter" "skip_after_filter" "skip_filter"
+    ;; Rails >= 4
+    "after_action" "append_after_action" "append_around_action"
+    "append_before_action" "around_action" "before_action" "prepend_after_action"
+    "prepend_around_action" "prepend_before_action" "skip_action_callback"
+    "skip_after_action" "skip_around_action" "skip_before_action")
   "List of keywords to highlight for controllers"
   :group 'rinari
   :type '(repeat string))
@@ -185,13 +194,13 @@ leave this to the environment variables outside of Emacs.")
     ad-do-it
     (rinari-launch)))
 
-(defun rinari-parse-yaml ()
-  "Parse key/value pairs out of a simple yaml file."
-  (let ((end (save-excursion (re-search-forward "^[^:]*$" nil t) (point)))
-        pairs)
-    (while (re-search-forward "^ *\\(.*\\): \\(.*\\)$" end t)
-      (push (cons (match-string 1) (match-string 2)) pairs))
-    pairs))
+(defun rinari-parse-yaml (file)
+  "Parse the YAML contents of FILE."
+  (json-read-from-string
+   (shell-command-to-string
+    (concat ruby-compilation-executable
+            " -ryaml -rjson -e 'JSON.dump(YAML.load(ARGF.read), STDOUT)' "
+            (shell-quote-argument file)))))
 
 (defun rinari-root (&optional dir home)
   "Return the root directory of the project within which DIR is found.
@@ -282,14 +291,16 @@ Use `font-lock-add-keywords' in case of `ruby-mode' or
 (defun rinari-script (&optional script)
   "Select and run SCRIPT from the script/ directory of the rails application."
   (interactive)
-  (let* ((completions (append (directory-files (rinari-script-path) nil "^[^.]")
+  (let* ((completions (append (and (file-directory-p (rinari-script-path))
+                                   (directory-files (rinari-script-path) nil "^[^.]"))
                               (rinari-get-rails-commands)))
          (script (or script (jump-completing-read "Script: " completions)))
          (ruby-compilation-error-regexp-alist ;; for jumping to newly created files
           (if (equal script "generate")
               '(("^ +\\(create\\) +\\([^[:space:]]+\\)" 2 3 nil 0 2)
-                ("^ +\\(exists\\) +\\([^[:space:]]+\\)" 2 3 nil 0 1)
-                ("^ +\\(conflict\\) +\\([^[:space:]]+\\)" 2 3 nil 0 0))
+                ("^ +\\(identical\\) +\\([^[:space:]]+\\)" 2 3 nil 0 2)
+                ("^ +\\(exists\\) +\\([^[:space:]]+\\)" 2 3 nil 0 2)
+                ("^ +\\(conflict\\) +\\([^[:space:]]+\\)" 2 3 nil 0 2))
             ruby-compilation-error-regexp-alist))
          (script-path (concat (rinari--wrap-rails-command script) " ")))
     (when (string-match-p "^\\(db\\)?console" script)
@@ -347,6 +358,12 @@ arguments."
      ((file-exists-p script-rails) script-rails)
      (t (executable-find "rails")))))
 
+(defun rinari--maybe-wrap-with-ruby (command-line)
+  "If the first part of COMMAND-LINE is not executable, prepend with ruby."
+  (if (file-executable-p (first (split-string-and-unquote command-line)))
+      command-line
+    (concat ruby-compilation-executable " " command-line)))
+
 (defun rinari--wrap-rails-command (command)
   "Given a COMMAND such as 'console', return a suitable command line.
 Where the corresponding script is executable, it will be run
@@ -354,14 +371,10 @@ as-is.  Otherwise, as can be the case on Windows, the command will
 be prepended with `ruby-compilation-executable'."
   (let* ((default-directory (rinari-root))
          (script (rinari-script-path))
-         (script-command (expand-file-name command script))
-         (command-line
-          (if (file-exists-p script-command)
-              script-command
-            (concat (rinari--rails-path) " " command))))
-    (if (file-executable-p (first (split-string-and-unquote command-line)))
-        command-line
-      (concat ruby-compilation-executable " " command-line))))
+         (script-command (expand-file-name command script)))
+    (if (file-exists-p script-command)
+        script-command
+      (concat (rinari--rails-path) " " command))))
 
 (defun rinari-console (&optional edit-cmd-args)
   "Run a Rails console in a compilation buffer.
@@ -370,7 +383,8 @@ and source code.  Optional prefix argument EDIT-CMD-ARGS lets the
 user edit the console command arguments."
   (interactive "P")
   (let* ((default-directory (rinari-root))
-         (command (rinari--wrap-rails-command "console")))
+         (command (rinari--maybe-wrap-with-ruby
+                   (rinari--wrap-rails-command "console"))))
 
     ;; Start console in correct environment.
     (when rinari-rails-env
@@ -391,36 +405,43 @@ Looks up login information from your conf/database.sql file."
          (existing-buffer (get-buffer (concat "*SQL: " environment "*"))))
     (if existing-buffer
         (pop-to-buffer existing-buffer)
-      (let* ((database-alist (save-excursion
-                               (with-temp-buffer
-                                 (insert-file-contents
-                                  (expand-file-name
-                                   "database.yml"
-                                   (file-name-as-directory
-                                    (expand-file-name "config" (rinari-root)))))
-                                 (goto-char (point-min))
-                                 (re-search-forward (concat "^" environment ":"))
-                                 (rinari-parse-yaml))))
-             (adapter (or (cdr (assoc "adapter" database-alist)) "sqlite"))
-             (server (or (cdr (assoc "host" database-alist)) "localhost"))
-             (port (cdr (assoc "port" database-alist))))
+      (unless (featurep 'sql)
+        (require 'sql))
+      (let* ((database-yaml (rinari-parse-yaml
+                             (expand-file-name
+                              "database.yml"
+                              (file-name-as-directory
+                               (expand-file-name "config" (rinari-root))))))
+             (database-alist (or (cdr (assoc (intern environment) database-yaml))
+                                 (error "Couldn't parse database.yml")))
+             (product (let* ((adapter (or (cdr (assoc 'adapter database-alist)) "sqlite")))
+                        (cond
+                         ((string-match "mysql" adapter) "mysql")
+                         ((string-match "sqlite" adapter) "sqlite")
+                         ((string-match "postgresql" adapter) "postgres")
+                         (t adapter))))
+             (port (cdr (assoc 'port database-alist)))
+             (sql-login-params (or (intern-soft (concat "sql-" product "-login-params"))
+                                   (error "`%s' is not a known product; use `sql-add-product' to add it first" product))))
         (with-temp-buffer
-          (set (make-local-variable 'sql-user) (cdr (assoc "username" database-alist)))
-          (set (make-local-variable 'sql-password) (cdr (assoc "password" database-alist)))
-          (set (make-local-variable 'sql-database) (or (cdr (assoc "database" database-alist))
-                                                       (concat (file-name-nondirectory (rinari-root))
+          (set (make-local-variable 'sql-user) (cdr (assoc 'username database-alist)))
+          (set (make-local-variable 'sql-password) (cdr (assoc 'password database-alist)))
+          (set (make-local-variable 'sql-database) (or (cdr (assoc 'database database-alist))
+                                                       (when (string-match-p "sqlite" product)
+                                                         (expand-file-name (concat "db/" environment ".sqlite3")
+                                                                           (rinari-root)))
+                                                       (concat (file-name-nondirectory
+                                                                (directory-file-name (rinari-root)))
                                                                "_" environment)))
-          (set (make-local-variable 'sql-server) (if port (concat server ":" port) server))
+          (when (string= "sqlite" product)
+            ;; Always expand sqlite DB filename relative to RAILS_ROOT
+            (setq sql-database (expand-file-name sql-database (rinari-root))))
+          (set (make-local-variable 'sql-server) (or (cdr (assoc 'host database-alist)) "localhost"))
+          (when port
+            (set (make-local-variable 'sql-port) port)
+            (set (make-local-variable sql-login-params) (add-to-list sql-login-params 'port t)))
           (funcall
-           (intern (concat "sql-"
-                           (cond
-                            ((string-match "mysql" adapter)
-                             "mysql")
-                            ((string-match "sqlite" adapter)
-                             "sqlite")
-                            ((string-match "postgresql" adapter)
-                             "postgres")
-                            (t adapter))))
+           (intern (concat "sql-" product))
            environment))))
     (rinari-launch)))
 
@@ -552,7 +573,9 @@ With optional prefix argument ARG, just run `rgrep'."
   "Run the generate command to generate a TYPE called NAME."
   (let* ((default-directory (rinari-root))
          (command (rinari--wrap-rails-command "generate")))
-    (message (shell-command-to-string (concat command " " type " " (read-from-minibuffer (format "create %s: " type) name))))))
+    (shell-command
+     (rinari--maybe-wrap-with-ruby
+      (concat command " " type " " (read-from-minibuffer (format "create %s: " type) name))))))
 
 (defvar rinari-ruby-hash-regexp
   "\\(:[^[:space:]]*?\\)[[:space:]]*\\(=>[[:space:]]*[\"\':]?\\([^[:space:]]*?\\)[\"\']?[[:space:]]*\\)?[,){}\n]"
