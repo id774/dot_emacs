@@ -1,6 +1,6 @@
 ;;; helm-font --- Font and ucs selection for Helm -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2015 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2016 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -21,6 +21,10 @@
 (require 'helm)
 (require 'helm-help)
 
+(defgroup helm-font nil
+  "Related applications to display fonts in helm."
+  :group 'helm)
+
 (defvar helm-ucs-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map helm-map)
@@ -31,73 +35,70 @@
     map)
   "Keymap for `helm-ucs'.")
 
+(defface helm-ucs-char
+  '((((class color) (background dark))  (:foreground "Gold")))
+  "Face used to display ucs characters."
+  :group 'helm-font)
 
 ;;; Xfont selection
 ;;
 ;;
-(defun helm-persistent-xfont-action (elm)
-  "Show current font temporarily"
-  (let ((current-font (cdr (assoc 'font (frame-parameters))))
-        (default-font elm))
-    (unwind-protect
-         (progn (set-frame-font default-font 'keep-size) (sit-for 2))
-      (set-frame-font current-font))))
-
 (defvar helm-xfonts-cache nil)
+(defvar helm-previous-font nil)
 (defvar helm-source-xfonts
-  '((name . "X Fonts")
-    (init . (lambda ()
-              (unless helm-xfonts-cache
-                (setq helm-xfonts-cache
-                      (x-list-fonts "*")))))
-    (candidates . helm-xfonts-cache)
-    (action . (("Copy to kill ring" . (lambda (elm)
-                                        (kill-new elm)))
-               ("Set Font" . (lambda (elm)
-                               (kill-new elm)
-                               (set-frame-font elm 'keep-size)
-                               (message "New font have been copied to kill ring")))))
-    (persistent-action . helm-persistent-xfont-action)
-    (persistent-help . "Switch to this font temporarily")))
+  (helm-build-sync-source "X Fonts"
+    :init (lambda ()
+            (unless helm-xfonts-cache
+              (setq helm-xfonts-cache
+                    (x-list-fonts "*")))
+            ;; Save current font so it can be restored in cleanup
+            (setq helm-previous-font (cdr (assoc 'font (frame-parameters)))))
+    :candidates 'helm-xfonts-cache
+    :action '(("Copy font to kill ring" . (lambda (elm)
+                                            (kill-new elm)))
+              ("Set font" . (lambda (elm)
+                              (kill-new elm)
+                              (set-frame-font elm 'keep-size)
+                              (message "Font copied to kill ring"))))
+    :cleanup (lambda ()
+               ;; Restore previous font
+               (set-frame-font helm-previous-font 'keep-size))
+    :persistent-action (lambda (new-font)
+                         (set-frame-font new-font 'keep-size)
+                         (kill-new new-font))
+    :persistent-help "Preview font and copy to kill-ring"))
 
 ;;; 𝕌𝕔𝕤 𝕊𝕪𝕞𝕓𝕠𝕝 𝕔𝕠𝕞𝕡𝕝𝕖𝕥𝕚𝕠𝕟
 ;;
 ;;
-(defvar helm-ucs-max-len 0)
+(defvar helm-ucs--max-len nil)
+(defvar helm-ucs--names nil)
+(defvar helm-ucs-history nil)
+
 (defun helm-calculate-ucs-max-len ()
   "Calculate the length of longest `ucs-names' candidate."
-  (cl-loop with count = 0
-        for (n . v) in (ucs-names)
-        for len = (length n)
-        if (> len count)
-        do (setq count len)
-        finally return count))
+  (cl-loop for (_n . v) in (ucs-names)
+           maximize (length (format "#x%x:" v)) into code
+           maximize (max 1 (string-width (format "%c" v))) into char
+           finally return (cons code char)))
 
 (defun helm-ucs-init ()
   "Initialize an helm buffer with ucs symbols.
 Only math* symbols are collected."
-  (unless (> helm-ucs-max-len 0)
-    (setq helm-ucs-max-len
+  (unless helm-ucs--max-len
+    (setq helm-ucs--max-len
           (helm-calculate-ucs-max-len)))
-  (with-current-buffer (helm-candidate-buffer
-                        (get-buffer-create "*helm ucs*"))
-    ;; `ucs-names' fn will not run again, data is cached in
-    ;; var `ucs-names'.
-    (cl-loop for (n . v) in (ucs-names)
-          for len = (length n)
-          for diff = (+ (- helm-ucs-max-len len) 2)
-          unless (string= "" n)
-          do (progn (insert (concat
-                             n ":"
-                             (make-string
-                              diff ? )))
-                    (if (fboundp 'ucs-insert)
-                        (ucs-insert v)
-                      ;; call `insert-char' with nil nil
-                      ;; to shutup byte compiler in 24.1.
-                      (insert-char v nil nil))
-                    (insert (format " #x%x" v))
-                    (insert "\n")))))
+  (or helm-ucs--names
+      (setq helm-ucs--names
+            (cl-loop for (n . v) in (ucs-names)
+                     for len = (length (format "#x%x:" v))
+                     for diff = (- (car helm-ucs--max-len) len)
+                     for code = (format "(#x%x): " v)
+                     for char = (propertize (format "%c" v)
+                                            'face 'helm-ucs-char)
+                     unless (string= "" n) collect
+                     (concat code (make-string diff ? )
+                             char "  " n)))))
 
 (defun helm-ucs-forward-char (_candidate)
   (with-helm-current-buffer
@@ -112,17 +113,19 @@ Only math* symbols are collected."
     (delete-char -1)))
 
 (defun helm-ucs-insert (candidate n)
-  (with-helm-current-buffer
-    (string-match "^\\([^:]+\\): +\\(.\\) #x\\([a-f0-9]+\\)$" candidate)
-    (insert (match-string n candidate))))
-
-(defun helm-ucs-insert-name (candidate)
-  (helm-ucs-insert candidate 1))
+  (when (string-match
+         "^(\\(#x[a-f0-9]+\\)): *\\(.\\) *\\([^:]+\\)+"
+         candidate)
+    (with-helm-current-buffer
+      (insert (match-string n candidate)))))
 
 (defun helm-ucs-insert-char (candidate)
   (helm-ucs-insert candidate 2))
 
 (defun helm-ucs-insert-code (candidate)
+  (helm-ucs-insert candidate 1))
+
+(defun helm-ucs-insert-name (candidate)
   (helm-ucs-insert candidate 3))
 
 (defun helm-ucs-persistent-insert ()
@@ -130,30 +133,37 @@ Only math* symbols are collected."
   (with-helm-alive-p
     (helm-attrset 'action-insert 'helm-ucs-insert-char)
     (helm-execute-persistent-action 'action-insert)))
+(put 'helm-ucs-persistent-insert 'helm-only t)
 
 (defun helm-ucs-persistent-forward ()
   (interactive)
   (with-helm-alive-p
     (helm-attrset 'action-forward 'helm-ucs-forward-char)
     (helm-execute-persistent-action 'action-forward)))
+(put 'helm-ucs-persistent-forward 'helm-only t)
 
 (defun helm-ucs-persistent-backward ()
   (interactive)
   (with-helm-alive-p
     (helm-attrset 'action-back 'helm-ucs-backward-char)
     (helm-execute-persistent-action 'action-back)))
+(put 'helm-ucs-persistent-backward 'helm-only t)
 
 (defun helm-ucs-persistent-delete ()
   (interactive)
   (with-helm-alive-p
     (helm-attrset 'action-delete 'helm-ucs-delete-backward)
     (helm-execute-persistent-action 'action-delete)))
+(put 'helm-ucs-persistent-delete 'helm-only t)
 
 (defvar helm-source-ucs
   (helm-build-in-buffer-source "Ucs names"
-    :init #'helm-ucs-init
-    :candidate-number-limit 9999
+    :data #'helm-ucs-init
+    :get-line #'buffer-substring
     :help-message 'helm-ucs-help-message
+    :match-part (lambda (candidate) (cadr (split-string candidate ":")))
+    :filtered-candidate-transformer
+    (lambda (candidates _source) (sort candidates #'helm-generic-sort-fn))
     :action '(("Insert character" . helm-ucs-insert-char)
               ("Insert character name" . helm-ucs-insert-name)
               ("Insert character code in hex" . helm-ucs-insert-code)
@@ -166,14 +176,19 @@ Only math* symbols are collected."
 (defun helm-select-xfont ()
   "Preconfigured `helm' to select Xfont."
   (interactive)
-  (helm-other-buffer 'helm-source-xfonts "*helm select* xfont"))
+  (helm :sources 'helm-source-xfonts
+        :buffer "*helm select xfont*"))
 
 ;;;###autoload
 (defun helm-ucs ()
   "Preconfigured helm for `ucs-names' math symbols."
   (interactive)
-  (helm :sources 'helm-source-ucs
-        :keymap  helm-ucs-map))
+  (let ((char (helm-aif (char-after) (string it))))
+    (helm :sources 'helm-source-ucs
+          :keymap  helm-ucs-map
+          :history 'helm-ucs-history
+          :input (and char (multibyte-string-p char) char)
+          :buffer "*helm ucs*")))
 
 (provide 'helm-font)
 

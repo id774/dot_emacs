@@ -1,6 +1,6 @@
 ;;; helm-command.el --- Helm execute-exended-command. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2015 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2016 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -45,7 +45,9 @@ Show all candidates on startup when 0 (default)."
   :type 'boolean)
 
 (defcustom helm-M-x-fuzzy-match nil
-  "Enable fuzzy matching in `helm-M-x' when non--nil.")
+  "Enable fuzzy matching in `helm-M-x' when non--nil."
+  :group 'helm-command
+  :type 'boolean)
 
 
 ;;; Faces
@@ -67,10 +69,11 @@ Show all candidates on startup when 0 (default)."
 
 (cl-defun helm-M-x-get-major-mode-command-alist (mode-map)
   "Return alist of MODE-MAP."
-  (cl-loop for key being the key-seqs of mode-map using (key-bindings com)
-        for str-key  = (key-description key)
-        for ismenu   = (string-match "<menu-bar>" str-key)
-        unless ismenu collect (cons str-key com)))
+  (when mode-map
+    (cl-loop for key being the key-seqs of mode-map using (key-bindings com)
+             for str-key  = (key-description key)
+             for ismenu   = (string-match "<menu-bar>" str-key)
+             unless ismenu collect (cons str-key com))))
 
 (defun helm-get-mode-map-from-mode (mode)
   "Guess the mode-map name according to MODE.
@@ -91,9 +94,9 @@ Return nil if no mode-map found."
 
 (defun helm-M-x-current-mode-map-alist ()
   "Return mode-map alist of current `major-mode'."
-  (let ((map (helm-get-mode-map-from-mode major-mode)))
-    (when (and map (boundp map))
-      (helm-M-x-get-major-mode-command-alist (symbol-value map)))))
+  (let ((map-sym (helm-get-mode-map-from-mode major-mode)))
+    (when (and map-sym (boundp map-sym))
+      (helm-M-x-get-major-mode-command-alist (symbol-value map-sym)))))
 
 
 (defun helm-M-x-transformer-1 (candidates &optional sort)
@@ -107,6 +110,7 @@ fuzzy matching is running its own sort function with a different algorithm."
           for cand in candidates
           for local-key  = (car (rassq cand local-map))
           for key        = (substitute-command-keys (format "\\[%s]" cand))
+          unless (get (intern (if (consp cand) (car cand) cand)) 'helm-only)
           collect
           (cons (cond ((and (string-match "^M-x" key) local-key)
                        (format "%s (%s)"
@@ -168,35 +172,20 @@ than the default which is OBARRAY."
                  (read-extended-command))
             (helm-mode 1))
           (read-extended-command))
-      (let* (in-help
-             help-cand
-             (orig-fuzzy-sort-fn helm-fuzzy-sort-fn)
+      (let* ((orig-fuzzy-sort-fn helm-fuzzy-sort-fn)
              (helm-fuzzy-sort-fn (lambda (candidates source)
                                    (funcall orig-fuzzy-sort-fn
                                             candidates source 'real)))
              (helm--mode-line-display-prefarg t)
-             (pers-help
-              #'(lambda (candidate)
-                  (let ((hbuf (get-buffer (help-buffer))))
-                    (if (and in-help (string= candidate help-cand)
-                             (null helm-persistent-action-use-special-display))
-                        (progn
-                          ;; When M-x is started from a help buffer,
-                          ;; Don't kill it as it is helm-current-buffer.
-                          (unless (equal hbuf helm-current-buffer)
-                            (kill-buffer hbuf)
-                            (set-window-buffer (get-buffer-window hbuf)
-                                               helm-current-buffer))
-                          (setq in-help nil))
-                        (helm-describe-function candidate)
-                        (setq in-help t))
-                    (setq help-cand candidate))))
-             (tm (run-at-time 1 0.1 'helm-M-x--notify-prefix-arg)))
+             (tm (run-at-time 1 0.1 'helm-M-x--notify-prefix-arg))
+             (helm-move-selection-after-hook
+              (cons (lambda () (setq current-prefix-arg nil))
+                    helm-move-selection-after-hook)))
         (setq extended-command-history
-              (cl-loop for i in extended-command-history
-                       when (commandp (intern i))
-                       do (set-text-properties 0 (length i) nil i)
-                       and collect i))
+              (cl-loop for c in extended-command-history
+                       when (and c (commandp (intern c)))
+                       do (set-text-properties 0 (length c) nil c)
+                       and collect c))
         (unwind-protect
              (let ((msg "Error: Specifying a prefix arg before calling `helm-M-x'"))
                (when current-prefix-arg
@@ -212,10 +201,13 @@ than the default which is OBARRAY."
                 :requires-pattern helm-M-x-requires-pattern
                 :name "Emacs Commands"
                 :buffer "*helm M-x*"
-                :persistent-action pers-help
+                :persistent-action (lambda (candidate)
+                                     (helm-elisp--persistent-help
+                                      candidate 'helm-describe-function))
                 :persistent-help "Describe this command"
                 :history (or history extended-command-history)
                 :reverse-history helm-M-x-reverse-history
+                :input-history 'helm-M-x-input-history
                 :del-input nil
                 :help-message 'helm-M-x-help-message
                 :must-match t
@@ -238,21 +230,22 @@ the prefix args if needed, are passed AFTER starting `helm-M-x'.
 You can get help on each command by persistent action."
   (interactive (list current-prefix-arg (helm-M-x-read-extended-command)))
   (let ((sym-com (and (stringp command-name) (intern-soft command-name))))
-    ;; Avoid having `this-command' set to *exit-minibuffer.
-    (setq this-command sym-com
-          ;; Handle C-x z (repeat) Issue #322
-          real-this-command sym-com)
-    ;; If helm-M-x is called with regular emacs completion (kmacro)
-    ;; use the value of arg otherwise use helm-current-prefix-arg.
-    (let ((prefix-arg (or helm-current-prefix-arg arg)))
-      ;; This ugly construct is to save history even on error.
-      (unless helm-M-x-always-save-history
-        (command-execute sym-com 'record))
-      (setq extended-command-history
-            (cons command-name
-                  (delete command-name extended-command-history)))
-      (when helm-M-x-always-save-history
-        (command-execute sym-com 'record)))))
+    (when sym-com
+      ;; Avoid having `this-command' set to *exit-minibuffer.
+      (setq this-command sym-com
+            ;; Handle C-x z (repeat) Issue #322
+            real-this-command sym-com)
+      ;; If helm-M-x is called with regular emacs completion (kmacro)
+      ;; use the value of arg otherwise use helm-current-prefix-arg.
+      (let ((prefix-arg (or helm-current-prefix-arg arg)))
+        ;; This ugly construct is to save history even on error.
+        (unless helm-M-x-always-save-history
+          (command-execute sym-com 'record))
+        (setq extended-command-history
+              (cons command-name
+                    (delete command-name extended-command-history)))
+        (when helm-M-x-always-save-history
+          (command-execute sym-com 'record))))))
 
 
 (provide 'helm-command)

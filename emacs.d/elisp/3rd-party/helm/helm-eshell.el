@@ -1,6 +1,6 @@
 ;;; helm-eshell.el --- pcomplete and eshell completion for helm. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2015 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2016 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -15,26 +15,36 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+;;; Commentary:
+;;
 ;; Enable like this in .emacs:
-;;
 ;; (add-hook 'eshell-mode-hook
-;;           #'(lambda ()
-;;               (define-key eshell-mode-map [remap pcomplete] 'helm-esh-pcomplete)))
-;;
+;;           (lambda ()
+;;               (eshell-cmpl-initialize)
+;;               (define-key eshell-mode-map [remap eshell-pcomplete] 'helm-esh-pcomplete)
+;;               (define-key eshell-mode-map (kbd "M-p") 'helm-eshell-history)))
+
 
 ;;; Code:
 (require 'cl-lib)
 (require 'helm)
+(require 'helm-lib)
 (require 'helm-help)
 (require 'helm-elisp)
-(require 'helm-regexp)
 
 (declare-function eshell-read-aliases-list "em-alias")
 (declare-function eshell-send-input "esh-mode" (&optional use-region queue-p no-newline))
 (declare-function eshell-bol "esh-mode")
 (declare-function eshell-parse-arguments "esh-arg" (beg end))
 (declare-function eshell-backward-argument "esh-mode" (&optional arg))
+(declare-function helm-quote-whitespace "helm-lib")
 
+
+(defgroup helm-eshell nil
+  "Helm eshell completion and history."
+  :group 'helm)
+
+
 (defvar helm-eshell-history-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map helm-map)
@@ -49,6 +59,7 @@
     map)
   "Keymap for `helm-esh-pcomplete'.")
 
+
 (defclass helm-esh-source (helm-source-sync)
   ((init :initform (lambda ()
                      (setq pcomplete-current-completions nil
@@ -59,6 +70,7 @@
    (candidates :initform 'helm-esh-get-candidates)
    (nomark :initform t)
    (persistent-action :initform 'ignore)
+   (nohighlight :initform t)
    (filtered-candidate-transformer
     :initform
     (lambda (candidates _sources)
@@ -146,28 +158,31 @@ The function that call this should set `helm-ec-target' to thing at point."
                           ;; Entry should not be here now but double check.
                           (remove entry ls))
                 ls))))))
-
+
 ;;; Eshell history.
 ;;
 ;;
-(defclass helm-eshell-history-source (helm-source-in-buffer)
-  ((init :initform (lambda ()
-                     (let (eshell-hist-ignoredups)
-                       (eshell-write-history eshell-history-file-name t)
-                       (with-current-buffer (helm-candidate-buffer 'global)
-                         (insert-file-contents eshell-history-file-name)))
-                     ;; Same comment as in `helm-source-esh'
-                     (remove-hook 'minibuffer-setup-hook 'eshell-mode)))
+(defclass helm-eshell-history-source (helm-source-sync)
+  ((init :initform
+         (lambda ()
+           ;; Same comment as in `helm-source-esh'.
+           (remove-hook 'minibuffer-setup-hook 'eshell-mode)))
+   (candidates
+    :initform
+    (lambda ()
+      (with-helm-current-buffer
+        (cl-loop for c from 0 to (ring-length eshell-history-ring)
+                 collect (eshell-get-history c)))))
    (nomark :initform t)
+   (multiline :initform t)
    (keymap :initform helm-eshell-history-map)
-   (filtered-candidate-transformer :initform (lambda (candidates sources)
-                                               (reverse candidates)))
    (candidate-number-limit :initform 9999)
    (action :initform (lambda (candidate)
                        (eshell-kill-input)
                        (insert candidate))))
   "Helm class to define source for Eshell history.")
 
+
 ;;;###autoload
 (defun helm-esh-pcomplete ()
   "Preconfigured helm to provide helm completion in eshell."
@@ -185,14 +200,15 @@ The function that call this should set `helm-ec-target' to thing at point."
                  (eshell-backward-argument 1) (point))
                end)))
          (first (car args)) ; Maybe lisp delimiter "(".
-         last) ; Will be the last but parsed by pcomplete.
+         last ; Will be the last but parsed by pcomplete.
+         del-space)
     (setq helm-ec-target (or target " ")
           end (point)
           ;; Reset beg for `with-helm-show-completion'.
           beg (or (and target (not (string= target " "))
                        (- end (length target)))
                   ;; Nothing at point.
-                  (progn (insert " ") (point))))
+                  (progn (insert " ") (setq del-space t) (point))))
     (cond ((eq first ?\()
            (helm-lisp-completion-or-file-name-at-point))
           ;; In eshell `pcomplete-parse-arguments' is called
@@ -206,12 +222,14 @@ The function that call this should set `helm-ec-target' to thing at point."
                          (car (last (ignore-errors
                                       (pcomplete-parse-arguments))))))
              (with-helm-show-completion beg end
-               (helm :sources (helm-make-source "Eshell completions" 'helm-esh-source)
-                     :buffer "*helm pcomplete*"
-                     :keymap helm-esh-completion-map
-                     :resume 'noresume
-                     :input (and (stringp last)
-                                 (helm-ff-set-pattern last))))))))
+               (or (helm :sources (helm-make-source "Eshell completions" 'helm-esh-source)
+                         :buffer "*helm pcomplete*"
+                         :keymap helm-esh-completion-map
+                         :resume 'noresume
+                         :input (and (stringp last)
+                                     (helm-ff-set-pattern last)))
+                   (and del-space (looking-back "\\s-" (1- (point)))
+                        (delete-char -1))))))))
 
 ;;;###autoload
 (defun helm-eshell-history ()

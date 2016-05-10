@@ -1,6 +1,6 @@
 ;;; helm-eval.el --- eval expressions from helm. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2015 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2016 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -99,9 +99,11 @@ Should take one arg: the string to display."
     :action '(("Copy result to kill-ring" . (lambda (candidate)
                                               (kill-new
                                                (replace-regexp-in-string
-                                                "\n" "" candidate))))
+                                                "\n" "" candidate))
+                                              (message "Result copied to kill-ring")))
               ("copy sexp to kill-ring" . (lambda (_candidate)
-                                            (kill-new helm-input))))))
+                                            (kill-new helm-input)
+                                            (message "Sexp copied to kill-ring"))))))
 
 (defun helm-eval-new-line-and-indent ()
   (interactive)
@@ -149,7 +151,13 @@ Should take one arg: the string to display."
                                            (calc-eval helm-pattern)
                                          (error "error"))))
     :nohighlight t
-    :action '(("Copy result to kill-ring" . kill-new))))
+    :action '(("Copy result to kill-ring" . (lambda (candidate)
+                                              (kill-new candidate)
+                                              (message "Result \"%s\" copied to kill-ring"
+                                                       candidate)))
+              ("Copy operation to kill-ring" . (lambda (_candidate)
+                                                 (kill-new helm-input)
+                                                 (message "Calculation copied to kill-ring"))))))
 
 ;;;###autoload
 (defun helm-eval-expression (arg)

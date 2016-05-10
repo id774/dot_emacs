@@ -1,6 +1,6 @@
 ;;; helm-lib.el --- Helm routines. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015  Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2015 ~ 2016  Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; Author: Thierry Volpiatto <thierry.volpiatto@gmail.com>
 ;; URL: http://github.com/emacs-helm/helm
@@ -54,73 +54,6 @@ If you prefer scrolling line by line, set this value to 1."
   :group 'helm
   :type 'integer)
 
-(defvar helm-help-message
-  (lambda ()
-    (concat
-     "\n\n\n* Helm generic help\n"
-     "\\<helm-map>"
-     "\n`helm' is an Emacs incremental completion and selection narrowing framework.
-
-Narrow the list by typing some pattern,
-Multiple patterns are allowed by splitting by space.
-Select with natural Emacs operations, choose with RET.
-
-** Help
-
-C-h m : Run this generic help for helm.
-
-** Basic Operations
-
-C-p, Up: Previous Line
-C-n, Down : Next Line
-M-v, PageUp : Previous Page
-C-v, PageDown : Next Page
-Enter : Execute first (default) action / Select
-M-< : First Line
-M-> : Last Line
-M-PageUp, C-M-S-v, C-M-y : Previous Page (other-window)
-M-PageDown, C-M-v : Next Page (other-window)
-
-Tab, C-i : Show action list
-Left : Previous Source
-Right, C-o : Next Source
-C-k : Delete pattern (with prefix arg delete from point to end)
-C-j or C-z: Persistent Action (Execute action with helm session kept)
-
-** Shortcuts For nth Action
-
-f1-12: Execute nth 1 to 12 Action(s).
-
-** Visible Marks
-
-Visible marks store candidate. Some actions uses marked candidates.
-
-\\[helm-toggle-visible-mark] : Toggle Visible Mark
-\\[helm-prev-visible-mark] : Previous Mark
-\\[helm-next-visible-mark] : Next Mark
-
-** Miscellaneous Commands
-
-\\[helm-toggle-resplit-window] : Toggle vertical/horizontal split helm window.
-\\[helm-quit-and-find-file] : Drop into `find-file'.
-\\[helm-delete-current-selection] : Delete selected item (visually).
-\\[helm-kill-selection-and-quit] : Kill display value of candidate and quit (with prefix arg kill the real value).
-\\[helm-yank-selection] : Yank selection into pattern.
-\\[helm-follow-mode] : Toggle automatical execution of persistent action.
-\\[helm-follow-action-forward] : Run persistent action and goto next line.
-\\[helm-follow-action-backward] : Run persistent action and goto previous line.
-\\[helm-force-update] : Recalculate and redisplay candidates.
-\\[helm-toggle-suspend-update] : Suspend/reenable update.
- 
-** Global Commands
-
-\\<global-map>\\[helm-resume] revives last `helm' session.
-It is very useful, so you should bind any key.
-
-\n** Helm Map
-\\{helm-map}"))
-  "Detailed help message string for `helm'.
-It also accepts function or variable symbol.")
 
 ;;; Internal vars
 ;;
@@ -132,7 +65,8 @@ It also accepts function or variable symbol.")
 (defvar helm-current-buffer nil
   "Current buffer when `helm' is invoked.")
 (defvar helm-suspend-update-flag nil)
-
+(defvar helm-action-buffer "*helm action*"
+  "Buffer showing actions.")
 
 ;;; Macros helper.
 ;;
@@ -176,13 +110,35 @@ If NAME returns nil the pair is skipped.
            do (setq name (funcall name))
            when name
            collect (cons name (cadr i))))
-
+
+;;; Anaphoric macros.
+;;
 (defmacro helm-aif (test-form then-form &rest else-forms)
-  "Like `if' but set the result of TEST-FORM in a temprary variable called `it'.
+  "Anaphoric version of `if'.
+Like `if' but set the result of TEST-FORM in a temporary variable called `it'.
 THEN-FORM and ELSE-FORMS are then excuted just like in `if'."
   (declare (indent 2) (debug t))
   `(let ((it ,test-form))
      (if it ,then-form ,@else-forms)))
+
+(defmacro helm-awhile (sexp &rest body)
+  "Anaphoric version of `while'."
+  (helm-with-gensyms (flag)
+    `(let ((,flag t))
+       (while ,flag
+         (helm-aif ,sexp
+             (progn ,@body)
+           (setq ,flag nil))))))
+
+(defmacro helm-acond (&rest clauses)
+  "Anaphoric version of `cond'."
+  (unless (null clauses)
+    (helm-with-gensyms (sym)
+      (let ((clause1 (car clauses)))
+        `(let ((,sym ,(car clause1)))
+           (helm-aif ,sym
+               ,@(cdr clause1)
+             (helm-acond ,@(cdr clauses))))))))
 
 (defun helm-current-line-contents ()
   "Current line string without properties."
@@ -230,10 +186,9 @@ text to be displayed in BUFNAME."
            (switch-to-buffer bufname)
            (delete-other-windows)
            (delete-region (point-min) (point-max))
-           (outline-mode)
+           (org-mode)
            (save-excursion
              (funcall insert-content-fn))
-           (setq cursor-type nil)
            (buffer-disable-undo)
            (helm-help-event-loop))
       (setq helm-suspend-update-flag nil)
@@ -251,6 +206,25 @@ text to be displayed in BUFNAME."
     (beginning-of-buffer nil)
     (end-of-buffer nil)))
 
+(defun helm-help-next-line ()
+  (condition-case _err
+      (call-interactively #'next-line)
+    (beginning-of-buffer nil)
+    (end-of-buffer nil)))
+
+(defun helm-help-previous-line ()
+  (condition-case _err
+      (call-interactively #'previous-line)
+    (beginning-of-buffer nil)
+    (end-of-buffer nil)))
+
+(defun helm-help-toggle-mark ()
+  (if (region-active-p)
+      (deactivate-mark)
+      (push-mark nil nil t)))
+
+;; For movement of cursor in help buffer we need to call interactively
+;; commands for impaired people using a synthetizer (#1347).
 (defun helm-help-event-loop ()
   (let ((prompt (propertize
                  "[SPC,C-v,down,next:NextPage  b,M-v,up,prior:PrevPage C-s/r:Isearch q:Quit]"
@@ -262,27 +236,23 @@ text to be displayed in BUFNAME."
                ((?\M-v ?b up prior) (helm-help-scroll-down helm-scroll-amount))
                (?\C-s (isearch-forward))
                (?\C-r (isearch-backward))
-               (?q (cl-return))
-               (t (ignore))))))
+               (?\C-a (call-interactively #'move-beginning-of-line))
+               (?\C-e (call-interactively #'move-end-of-line))
+               (?\C-f (call-interactively #'forward-char))
+               (?\C-b (call-interactively #'backward-char))
+               (?\C-n (helm-help-next-line))
+               (?\C-p (helm-help-previous-line))
+               (?\M-a (call-interactively #'backward-sentence))
+               (?\M-e (call-interactively #'forward-sentence))
+               (?\M-f (call-interactively #'forward-word))
+               (?\M-b (call-interactively #'backward-word))
+               (?\C-  (helm-help-toggle-mark))
+               (?\M-w (copy-region-as-kill
+                       (region-beginning) (region-end))
+                      (deactivate-mark))
+               (?q    (cl-return))
+               (t     (ignore))))))
 
-(defun helm-help ()
-  "Help of `helm'."
-  (interactive)
-  (with-helm-alive-p
-    (save-selected-window
-      (helm-help-internal
-       "*Helm Help*"
-       (lambda ()
-         (helm-aif (assoc-default 'help-message (helm-get-current-source))
-             (insert (substitute-command-keys
-                      (helm-interpret-value it))
-                     (substitute-command-keys
-                      (helm-interpret-value helm-help-message)))
-           (insert
-            "\n* No specific help for this source for now\n
-It may appear after next update if provided.\ni.e After first results popup in helm buffer."
-            (substitute-command-keys
-             (helm-interpret-value helm-help-message)))))))))
 
 ;;; List processing
 ;;
@@ -334,17 +304,19 @@ Default is `eq'."
   (cl-loop with cont = (make-hash-table :test test)
         for elm in seq
         unless (gethash elm cont)
-        do (puthash elm elm cont)
-        finally return
-        (cl-loop for i being the hash-values in cont collect i)))
+        collect (puthash elm elm cont)))
 
-(defun helm-skip-entries (seq regexp-list)
+(defun helm-skip-entries (seq black-regexp-list &optional white-regexp-list)
   "Remove entries which matches one of REGEXP-LIST from SEQ."
   (cl-loop for i in seq
-        unless (cl-loop for regexp in regexp-list
-                     thereis (and (stringp i)
-                                  (string-match regexp i)))
-        collect i))
+           unless (and (cl-loop for re in black-regexp-list
+                                thereis (and (stringp i)
+                                             (string-match-p re i)))
+                       (null
+                        (cl-loop for re in white-regexp-list
+                                thereis (and (stringp i)
+                                             (string-match-p re i)))))
+           collect i))
 
 (defun helm-shadow-entries (seq regexp-list)
   "Put shadow property on entries in SEQ matching a regexp in REGEXP-LIST."
@@ -396,11 +368,13 @@ ARGS is (cand1 cand2 ...) or ((disp1 . real1) (disp2 . real2) ...)
 
 ;;; Strings processing.
 ;;
-(defun helm-stringify (str-or-sym)
-  "Get string of STR-OR-SYM."
-  (if (stringp str-or-sym)
-      str-or-sym
-    (symbol-name str-or-sym)))
+(defun helm-stringify (elm)
+  "Return the representation of ELM as a string.
+ELM can be a string, a number or a symbol."
+  (cl-typecase elm
+    (string elm)
+    (number (number-to-string elm))
+    (symbol (symbol-name elm))))
 
 (defun helm-substring (str width)
   "Return the substring of string STR from 0 to WIDTH.
@@ -411,10 +385,10 @@ Handle multibyte characters by moving by columns."
     (move-to-column width)
     (buffer-substring (point-at-bol) (point))))
 
-(cl-defun helm-substring-by-width (str width &optional (endstr "..."))
+(defun helm-substring-by-width (str width &optional endstr)
   "Truncate string STR to end at column WIDTH.
 Similar to `truncate-string-to-width'.
-Add ENDSTR (default \"...\") at end of truncated STR.
+Add ENDSTR at end of truncated STR.
 Add spaces at end if needed to reach WIDTH when STR is shorter than WIDTH."
   (cl-loop for ini-str = str
         then (substring ini-str 0 (1- (length ini-str)))
@@ -448,6 +422,11 @@ Add spaces at end if needed to reach WIDTH when STR is shorter than WIDTH."
 
 (defun helm-region-active-p ()
   (and transient-mark-mode mark-active (/= (mark) (point))))
+
+(defun helm-quote-whitespace (candidate)
+  "Quote whitespace, if some, in string CANDIDATE."
+  (replace-regexp-in-string " " "\\\\ " candidate))
+
 
 ;;; Symbols routines
 ;;
@@ -458,7 +437,8 @@ Add spaces at end if needed to reach WIDTH when STR is shorter than WIDTH."
     (intern str-or-sym)))
 
 (defun helm-symbol-name (obj)
-  (if (or (consp obj) (byte-code-function-p obj))
+  (if (or (and (consp obj) (functionp obj))
+          (byte-code-function-p obj))
       "Anonymous"
       (symbol-name obj)))
 
@@ -472,6 +452,11 @@ Add spaces at end if needed to reach WIDTH when STR is shorter than WIDTH."
   (describe-variable (helm-symbolify var))
   (message nil))
 
+(defun helm-describe-face (face)
+  "VAR is symbol or string."
+  (describe-face (helm-symbolify face))
+  (message nil))
+
 (defun helm-find-function (func)
   "FUNC is symbol or string."
   (find-function (helm-symbolify func)))
@@ -480,6 +465,10 @@ Add spaces at end if needed to reach WIDTH when STR is shorter than WIDTH."
   "VAR is symbol or string."
   (find-variable (helm-symbolify var)))
 
+(defun helm-find-face-definition (face)
+  "FACE is symbol or string."
+  (find-face-definition (helm-symbolify face)))
+
 (defun helm-kill-new (candidate &optional replace)
   "CANDIDATE is symbol or string.
 See `kill-new' for argument REPLACE."
@@ -487,27 +476,44 @@ See `kill-new' for argument REPLACE."
 
 ;;; Files routines
 ;;
+(defun helm-file-name-sans-extension (filename)
+  "Same as `file-name-sans-extension' but remove all extensions."
+  (helm-aif (file-name-sans-extension filename)
+      ;; Start searching at index 1 for files beginning with a dot (#1335).
+      (if (string-match "\\." (helm-basename it) 1)
+          (helm-file-name-sans-extension it)
+          it)))
+
 (defun helm-basename (fname &optional ext)
   "Print FNAME  with any  leading directory  components removed.
-If specified, also remove filename extension EXT."
+If specified, also remove filename extension EXT.
+Arg EXT can be specified as a string with or without dot,
+in this case it should match file-name-extension.
+It can also be non-nil (`t') in this case no checking
+of file-name-extension is done and the extension is removed
+unconditionally."
   (let ((non-essential t))
     (if (and ext (or (string= (file-name-extension fname) ext)
-                     (string= (file-name-extension fname t) ext))
+                     (string= (file-name-extension fname t) ext)
+                     (eq ext t))
              (not (file-directory-p fname)))
         (file-name-sans-extension (file-name-nondirectory fname))
       (file-name-nondirectory (directory-file-name fname)))))
 
 (defun helm-basedir (fname)
-  "Return the base directory of filename."
-  (helm-aif (and fname (file-name-directory fname))
+  "Return the base directory of filename ending by a slash."
+  (helm-aif (and fname
+                 (or (and (string= fname "~") "~")
+                     (file-name-directory fname)))
       (file-name-as-directory it)))
 
 (defun helm-current-directory ()
   "Return current-directory name at point.
 Useful in dired buffers when there is inserted subdirs."
-  (if (eq major-mode 'dired-mode)
-      (dired-current-directory)
-    default-directory))
+  (expand-file-name
+   (if (eq major-mode 'dired-mode)
+       (dired-current-directory)
+       default-directory)))
 
 (defun helm-w32-prepare-filename (file)
   "Convert filename FILE to something usable by external w32 executables."
@@ -518,7 +524,6 @@ Useful in dired buffers when there is inserted subdirs."
     file nil nil) nil t))
 
 (defun helm-w32-shell-execute-open-file (file)
-  (interactive "fOpen file:")
   (with-no-warnings
     (w32-shell-execute "open" (helm-w32-prepare-filename file))))
 
@@ -585,7 +590,8 @@ instead of `helm-walk-ignore-directories'."
   "Same as `file-expand-wildcards' but allow recursion.
 Recursion happen when PATTERN starts with two stars.
 Directories expansion is not supported."
-  (let ((bn (helm-basename pattern)))
+  (let ((bn (helm-basename pattern))
+        (case-fold-search nil))
     (if (and helm-file-globstar
              (string-match "\\`\\*\\{2\\}\\(.*\\)" bn))
         (helm-walk-directory (helm-basedir pattern)
@@ -630,14 +636,32 @@ That is what completion commands operate on."
                                   (current-buffer)))
      ,@body))
 
+(defun helm-buffer-get ()
+  "Return `helm-action-buffer' if shown otherwise `helm-buffer'."
+  (if (helm-action-window)
+      helm-action-buffer
+    helm-buffer))
+
+(defun helm-window ()
+  "Window of `helm-buffer'."
+  (get-buffer-window (helm-buffer-get) 0))
+
+(defun helm-action-window ()
+  "Window of `helm-action-buffer'."
+  (get-buffer-window helm-action-buffer 'visible))
+
+(defmacro with-helm-window (&rest body)
+  "Be sure BODY is excuted in the helm window."
+  (declare (indent 0) (debug t))
+  `(with-selected-window (helm-window)
+     ,@body))
+
 
 ;; Yank text at point.
 ;;
 ;;
 (defun helm-yank-text-at-point ()
-  "Yank text at point in `helm-current-buffer' into minibuffer.
-If `helm-yank-symbol-first' is non--nil the first yank
-grabs the entire symbol."
+  "Yank text at point in `helm-current-buffer' into minibuffer."
   (interactive)
   (with-helm-current-buffer
     (let ((fwd-fn (or helm-yank-text-at-point-function #'forward-word)))
@@ -659,6 +683,54 @@ grabs the entire symbol."
 
 (add-hook 'helm-cleanup-hook 'helm-reset-yank-point)
 (add-hook 'helm-after-initialize-hook 'helm-reset-yank-point)
+
+;;; Ansi
+;;
+;;
+(defvar helm--ansi-color-regexp
+  "\033\\[\\(K\\|[0-9;]*m\\)")
+(defvar helm--ansi-color-drop-regexp
+  "\033\\[\\([ABCDsuK]\\|[12][JK]\\|=[0-9]+[hI]\\|[0-9;]*[Hf]\\)")
+(defun helm--ansi-color-apply (string)
+  "A version of `ansi-color-apply' immune to upstream changes.
+
+Similar to the emacs-24.5 version without support to `ansi-color-context'
+which is buggy in emacs.
+
+Modify also `ansi-color-regexp' by using own variable `helm--ansi-color-regexp'
+that match whole STRING.
+
+This is needed to provide compatibility for both emacs-25 and emacs-24.5
+as emacs-25 version of `ansi-color-apply' is partially broken."
+  (let ((start 0)
+        codes end escape-sequence
+        result colorized-substring)
+    ;; Find the next escape sequence.
+    (while (setq end (string-match helm--ansi-color-regexp string start))
+      (setq escape-sequence (match-string 1 string))
+      ;; Colorize the old block from start to end using old face.
+      (when codes
+        (put-text-property
+         start end 'font-lock-face (ansi-color--find-face codes) string))
+      (setq colorized-substring (substring string start end)
+            start (match-end 0))
+      ;; Eliminate unrecognized ANSI sequences.
+      (while (string-match helm--ansi-color-drop-regexp colorized-substring)
+        (setq colorized-substring
+              (replace-match "" nil nil colorized-substring)))
+      (push colorized-substring result)
+      ;; Create new face, by applying escape sequence parameters.
+      (setq codes (ansi-color-apply-sequence escape-sequence codes)))
+    ;; If the rest of the string should have a face, put it there.
+    (when codes
+      (put-text-property
+       start (length string)
+       'font-lock-face (ansi-color--find-face codes) string))
+    ;; Save the remainder of the string to the result.
+    (if (string-match "\033" string start)
+        (push (substring string start (match-beginning 0)) result)
+        (push (substring string start) result))
+    (apply 'concat (nreverse result))))
 
 (provide 'helm-lib)
 
