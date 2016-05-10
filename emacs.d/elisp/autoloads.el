@@ -183,6 +183,10 @@
 ;; http://web-mode.org/
 (load-p "web-mode-settings")
 
+;; 非同期にファイルをコピー
+(when (load-p "dired-async-mode")
+  (dired-async-mode 1))
+
 ;; 表示設定をロードする
 (load-p "faces")
 

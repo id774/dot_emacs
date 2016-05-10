@@ -29,7 +29,8 @@ subdirectory under load-path.")
   (expand-file-name "~/.emacs.d/elisp/3rd-party/jade-mode")
   (expand-file-name "~/.emacs.d/elisp/3rd-party/nxhtml")
   (expand-file-name "~/.emacs.d/elisp/3rd-party/rhtml")
-  (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari")))
+  (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari")
+  (expand-file-name "~/.emacs.d/elisp/3rd-party/emacs-async")))
 (setq load-path (append my-load-path default-load-path))
 
 ;; custom
