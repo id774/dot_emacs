@@ -265,6 +265,9 @@
   (interactive "F")
   (set-buffer (find-file (concat "/sudo::" file))))
 
+;; yes/no の質問をすべて y/n に変更
+(defalias 'yes-or-no-p 'y-or-n-p)
+
 ;; その他の環境固有の設定をここに
 (if window-system
   (progn
