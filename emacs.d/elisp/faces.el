@@ -90,15 +90,15 @@
               (setq default-frame-alist ; 13inch MacBook Pro に最適化
                     (append (list '(top . 15) ; 起動時の表示位置（上から）
                                   '(left . 10) ; 起動時の表示位置（左から）
-                                  '(width . 175) ; 起動時のサイズ（幅）
-                                  '(height . 42) ; 起動時のサイズ（縦）
+                                  '(width . 205) ; 起動時のサイズ（幅）
+                                  '(height . 54) ; 起動時のサイズ（縦）
                                   )))
               ;; (set-input-method "MacOSX")
               (setq fixed-width-use-QuickDraw-for-ascii t)
               (setq mac-allow-anti-aliasing t)
               (set-face-attribute 'default nil
                                   :family "monaco"
-                                  :height 120) ; 相対的な文字の大きさを決定する
+                                  :height 100) ; 相対的な文字の大きさを決定する
               (set-fontset-font
                (frame-parameter nil 'font)
                'japanese-jisx0208
