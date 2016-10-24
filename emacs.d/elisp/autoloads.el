@@ -15,6 +15,9 @@
 ;; 同じキーバインド連打でラクをする
 (load-p "smartchr-settings")
 
+;; recentf-ext
+(load-p "recent-ext-settings")
+
 ;; multi-term
 (load-p "multi-term-settings")
 

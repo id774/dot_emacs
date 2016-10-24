@@ -136,6 +136,7 @@ byte_compile_all() {
       savekill.el \
       smartchr.el \
       sequential-command.el \
+      recentf-ext.el \
       web-mode.el \
       wb-line-number.el \
       zencoding-mode.el
@@ -156,6 +157,7 @@ byte_compile_all() {
       proxy.el \
       tab4.el \
       utils.el \
+      recentf-ext-settings.el \
       yatex-mode.el
 }
 
