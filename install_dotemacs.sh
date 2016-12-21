@@ -157,7 +157,6 @@ byte_compile_all() {
       proxy.el \
       tab4.el \
       utils.el \
-      recentf-ext-settings.el \
       yatex-mode.el
 }
 
