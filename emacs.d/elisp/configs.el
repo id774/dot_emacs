@@ -278,7 +278,6 @@
         (setenv "JAVA_HOME" "/usr/lib/jvm/java-6-sun")
         ;; 日本語入力切替のキーを定義
         (require 'mozc)
-        (set-language-environment "Japanese")
         (setq default-input-method "japanese-mozc")
         (global-set-key (kbd "<zenkaku-hankaku>") 'toggle-input-method)
         (add-hook 'mozc-mode-hook
