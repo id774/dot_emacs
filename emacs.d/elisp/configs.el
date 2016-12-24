@@ -276,13 +276,10 @@
       )
       ((eq system-type 'gnu/linux)
         (setenv "JAVA_HOME" "/usr/lib/jvm/java-6-sun")
-        ;; 日本語入力切替のキーを定義
+        ;; Mozc
         (require 'mozc)
         (setq default-input-method "japanese-mozc")
         (global-set-key (kbd "<zenkaku-hankaku>") 'toggle-input-method)
-        (add-hook 'mozc-mode-hook
-          (lambda()
-            (define-key mozc-mode-map (kbd "<zenkaku-hankaku>") 'toggle-input-method)))
       )
       ((eq system-type 'darwin)
         (setenv "JAVA_HOME" "/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Home")
