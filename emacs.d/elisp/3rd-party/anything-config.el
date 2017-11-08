@@ -2603,7 +2603,7 @@ MATCH match only filenames matching regexp MATCH."
                (relative 'file-relative-name)
                (full     'identity)
                (t        'file-name-nondirectory))))
-     (labels ((ls-R (dir)
+     (cl-labels ((ls-R (dir)
                 (loop with ls = (directory-files dir t directory-files-no-dot-files-regexp)
                       for f in ls
                       if (file-directory-p f)
@@ -2859,7 +2859,8 @@ Should be called after others transformers i.e (boring buffers)."
     (type . buffer)
     (match anything-c-buffer-match-major-mode)
     (candidate-transformer anything-c-skip-boring-buffers
-                           anything-c-highlight-buffers)
+                           anything-c-highlight-buffers
+                           anything-c-transform-buffer-display-string)
     (persistent-action . anything-c-buffers-list-persistent-action)
     (keymap . ,anything-c-buffer-map)
     (volatile)
@@ -3459,7 +3460,7 @@ See `anything-find-files-eshell-command-on-file-1' for more info."
 
 (defun anything-ff-switch-to-eshell (candidate)
   "Switch to eshell and cd to `anything-ff-default-directory'."
-  (flet ((cd-eshell ()
+  (cl-flet ((cd-eshell ()
            (goto-char (point-max))
            (insert
             (format "cd '%s'" anything-ff-default-directory))
@@ -3524,7 +3525,7 @@ will be treated with METHOD.
 Default METHOD is rename."
   ;; Maybe remove directories selected by error in collection.
   (setq collection (remove-if 'file-directory-p collection))
-  (flet ((symlink-file (file dest)
+  (cl-flet ((symlink-file (file dest)
            (let ((flist (list file)))
              (anything-dired-action
               dest :action 'symlink :files flist))))
@@ -4542,7 +4543,7 @@ If a prefix arg is given or `anything-follow-mode' is on open file."
         (new-pattern   (anything-get-selection))
         (num-lines-buf (with-current-buffer anything-buffer
                          (count-lines (point-min) (point-max)))))
-    (flet ((insert-in-minibuffer (fname)
+    (cl-flet ((insert-in-minibuffer (fname)
              (with-selected-window (minibuffer-window)
                (unless follow
                  (delete-minibuffer-contents)
@@ -5043,7 +5044,7 @@ Keys description:
   (when (eq must-match 'confirm-after-completion)
     (setq must-match 'confirm))
 
-  (flet ((action-fn (candidate)
+  (cl-flet ((action-fn (candidate)
            (if marked-candidates
                (anything-marked-candidates)
                (identity candidate))))
@@ -5845,7 +5846,7 @@ If a prefix arg is given run grep on all buffers ignoring non--file-buffers."
   "Yank text at point in minibuffer."
   (interactive)
   (let (input)
-    (flet ((insert-in-minibuffer (word)
+    (cl-flet ((insert-in-minibuffer (word)
              (with-selected-window (minibuffer-window)
                (let ((str anything-pattern))
                  (delete-minibuffer-contents)
@@ -7122,7 +7123,7 @@ http://ctags.sourceforge.net/")
 (defun anything-c-etags-find-tag-file-directory (current-dir)
   "Try to find the directory containing tag file.
 If not found in CURRENT-DIR search in upper directory."
-  (flet ((file-exists? (dir)
+  (cl-flet ((file-exists? (dir)
            (let ((tag-path (expand-file-name
                             anything-c-etags-tag-file-name dir)))
              (and (stringp tag-path)
@@ -7607,7 +7608,7 @@ replace with STR as yanked string."
 ;; `anything-all-mark-rings' instead.
 
 (defun anything-c-source-mark-ring-candidates ()
-  (flet ((get-marks (pos)
+  (cl-flet ((get-marks (pos)
            (save-excursion
              (goto-char pos)
              (beginning-of-line)
@@ -7660,7 +7661,7 @@ replace with STR as yanked string."
     (persistent-help . "Show this line")))
 
 (defun anything-c-source-global-mark-ring-candidates ()
-  (flet ((buf-fn (m)
+  (cl-flet ((buf-fn (m)
            (with-current-buffer (marker-buffer m)
              (goto-char m)
              (beginning-of-line)
@@ -8318,7 +8319,7 @@ Return an alist with elements like (data . number_results)."
         anything-ggs-max-length-num-flag 0)
   (let ((request (concat anything-c-google-suggest-url
                          (url-hexify-string input))))
-    (flet ((fetch ()
+    (cl-flet ((fetch ()
              (loop
                    with result-alist = (xml-get-children
                                         (car (xml-parse-region
@@ -8441,7 +8442,7 @@ See `anything-browse-url-default-browser-alist'.")
 Return an alist with elements like (data . number_results)."
   (let ((request (concat anything-c-yahoo-suggest-url
                          (url-hexify-string input))))
-    (flet ((fetch ()
+    (cl-flet ((fetch ()
              (loop
                    with result-alist = (xml-get-children
                                         (car (xml-parse-region
@@ -8737,6 +8738,7 @@ When nil, fallback to `browse-url-browser-function'.")
            (setq anything-candidate-number-limit 9999)
            (anything candidate nil nil nil nil
                      anything-source-select-buffer)))
+        ("Copy variable name" . anything-c-kill-new)
         ("Describe variable" . describe-variable)
         ("Find variable" . find-variable)))
     (persistent-action . describe-variable)
@@ -9557,6 +9559,22 @@ Support install, remove and purge actions."
 ;;; Anything `completing-read' replacement
 ;;
 ;;
+(defvar anything-comp-read-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map anything-map)
+    (define-key map (kbd "<C-return>") 'anything-cr-empty-string)
+    (define-key map (kbd "<M-RET>") 'anything-cr-empty-string)
+    map)
+  "Keymap for `anything-comp-read'.")
+
+(defun anything-cr-empty-string ()
+  "Return empty string."
+  (interactive)
+  (when anything-alive-p
+    (anything-exit-and-execute-action
+     (lambda (_candidate)
+       (identity "")))))
+
 (defun anything-comp-read-get-candidates (collection &optional test sort-fn alistp)
   "Convert COLLECTION to list removing elements that don't match TEST.
 See `anything-comp-read' about supported COLLECTION arguments.
@@ -9621,7 +9639,7 @@ Do nothing, just return candidate list unmodified."
                                    (persistent-action nil)
                                    (persistent-help "DoNothing")
                                    (mode-line anything-mode-line-string)
-                                   (keymap anything-map)
+                                   (keymap anything-comp-read-map)
                                    (name "Anything Completions")
                                    candidates-in-buffer
                                    exec-when-only-one
@@ -9701,7 +9719,7 @@ That's mean you can pass prefix args before or after calling a command
 that use `anything-comp-read' See `anything-M-x' for example."
   (when (get-buffer anything-action-buffer)
     (kill-buffer anything-action-buffer))
-  (flet ((action-fn (candidate)
+  (cl-flet ((action-fn (candidate)
            (if marked-candidates
                (anything-marked-candidates)
                (identity candidate))))
@@ -9783,29 +9801,41 @@ that use `anything-comp-read' See `anything-M-x' for example."
                                (if volatile
                                    (append src '((volatile)))
                                    src))))
-           (anything-execute-action-at-once-if-one exec-when-only-one))
-      (or
-       (anything
-        :sources src-list
-        :input initial-input
-        :default default
-        :preselect preselect
-        :prompt prompt
-        :resume 'noresume
-        :keymap anything-map
-        :history (and (symbolp input-history) input-history)
-        :buffer buffer)
-       (when (and (eq anything-exit-status 0)
-                  (eq must-match 'confirm))
-         ;; Return empty string only if it is the DEFAULT
-         ;; value and anything-pattern is empty.
-         ;; otherwise return anything-pattern
-         (if (and (string= anything-pattern "") default)
-             default (identity anything-pattern)))
-       (unless (or (eq anything-exit-status 1)
-                   must-match) ; FIXME this should not be needed now.
-         default)
-       (keyboard-quit)))))
+           (anything-execute-action-at-once-if-one exec-when-only-one)
+           (ret (or
+                 (anything
+                  :sources src-list
+                  :input initial-input
+                  :default default
+                  :preselect preselect
+                  :prompt prompt
+                  :resume 'noresume
+                  :keymap anything-map
+                  :history (and (symbolp input-history) input-history)
+                  :buffer buffer)
+                 (when (and (eq anything-exit-status 0)
+                            (eq must-match 'confirm))
+                   ;; Return empty string only if it is the DEFAULT
+                   ;; value and anything-pattern is empty.
+                   ;; otherwise return anything-pattern
+                   (if (and (string= anything-pattern "") default)
+                       default (identity anything-pattern)))
+                 (unless (or (eq anything-exit-status 1)
+                             must-match) ; FIXME this should not be needed now.
+                   default)
+                 (keyboard-quit)))
+           (not-uninternp (condition-case _
+                              (intern-soft ret)
+                            (error t)))
+           (retsym (if (stringp ret) (intern ret) ret)))
+      (unwind-protect
+          (if (and (listp collection)
+                   (or (memq retsym collection)
+                       (assq retsym collection)))
+              retsym
+            ret)
+        (unless not-uninternp
+          (unintern retsym obarray))))))
 
 ;; Generic completing-read
 ;;
@@ -9826,6 +9856,10 @@ that use `anything-comp-read' See `anything-M-x' for example."
 
 (defvar anything-completion-mode-start-message
   "Anything completion enabled")
+
+(defvar anything-completion-types '(complete file)
+  "If you do not want to use anything version of `read-file-name',
+set this variable to (complete).")
 
 ;;; Specialized handlers
 ;;
@@ -10073,9 +10107,14 @@ See documentation of `completing-read' and `all-completions' for details."
       (setq this-command current-command))
     fname))
 
+(defun anything-read-file-name-default (&rest them)
+  "Use normal `read-file-name' even if `anything-completion-mode' is enabled."
+  (let ((completing-read-function 'completing-read-default))
+    (apply 'read-file-name-default them)))
+
 ;;;###autoload
 (define-minor-mode anything-completion-mode
-    "Toggle generic anything completion.
+  "Toggle generic anything completion.
 
 All functions in Emacs that use `completing-read'
 or `read-file-name' and friends will use anything interface
@@ -10092,21 +10131,28 @@ e.g `ffap-alternate-file' and maybe others
 You can add such functions to `anything-completing-read-handlers-alist'
 with a nil value.
 
-Note: This mode will work only partially on Emacs23."
+If you do not want to use anything version of `read-file-name',
+set `anything-completion-types' to (complete)."
   :group 'anything
   :global t
   :lighter anything-completion-mode-string
   (declare (special completing-read-function))
-  (if anything-completion-mode
-      (progn
-        (setq completing-read-function 'anything-completing-read-default
-              read-file-name-function  'anything-generic-read-file-name)
-        (message anything-completion-mode-start-message))
-      (setq completing-read-function (and (fboundp 'completing-read-default)
-                                          'completing-read-default)
-            read-file-name-function  (and (fboundp 'read-file-name-default)
-                                          'read-file-name-default))
-      (message anything-completion-mode-quit-message)))
+  (cond ((and anything-completion-mode
+              (memq 'file anything-completion-types))
+         (setq completing-read-function 'anything-completing-read-default
+               read-file-name-function  'anything-generic-read-file-name)
+         (message anything-completion-mode-start-message))
+        ((and anything-completion-mode
+              (not (memq 'file anything-completion-types)))
+         (setq completing-read-function 'anything-completing-read-default
+               read-file-name-function  'anything-read-file-name-default)
+         (message anything-completion-mode-start-message))
+        ((null anything-completion-mode)
+         (setq completing-read-function (and (fboundp 'completing-read-default)
+                                             'completing-read-default)
+               read-file-name-function  (and (fboundp 'read-file-name-default)
+                                             'read-file-name-default))
+         (message anything-completion-mode-quit-message))))
 
 (defalias 'ac-mode 'anything-completion-mode)
 
@@ -11456,7 +11502,7 @@ If optional 2nd argument is non-nil, the file opened with `auto-revert-mode'.")
       (goto-char (point-min))
       (if (functionp regexp) (setq regexp (funcall regexp)))
       (let (hierarchy curhead)
-        (flet ((matched ()
+        (cl-flet ((matched ()
                  (if (numberp subexp)
                      (cons (match-string-no-properties subexp) (match-beginning subexp))
                      (cons (buffer-substring (point-at-bol) (point-at-eol))
@@ -12257,7 +12303,7 @@ It is `anything' replacement of regular `M-x' `execute-extended-command'."
                         for com = (intern i)
                         when (fboundp com)
                         collect i into hist finally return hist)))
-    (flet ((pers-help (candidate)
+    (cl-flet ((pers-help (candidate)
              (let ((hbuf (get-buffer (help-buffer))))
                (if (and in-help (string= candidate help-cand))
                    (progn

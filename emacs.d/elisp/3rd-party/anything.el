@@ -1,7 +1,7 @@
 ;;; anything.el --- open anything / QuickSilver-like candidate-selection framework
 
 ;; Copyright (C) 2007              Tamas Patrovics
-;;               2008 ~ 2012       rubikitch <rubikitch@ruby-lang.org>
+;;               2008 ~ 2016       rubikitch <rubikitch@ruby-lang.org>
 ;;               2011 ~ 2012       Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; Author: Tamas Patrovics
@@ -662,7 +662,7 @@ common attributes with a `file' type.")
 Alphabet shortcuts are available now in `anything-enable-shortcuts'.
 `anything-enable-digit-shortcuts' is retained for compatibility.")
 
-(defvar anything-enable-shortcuts nil
+(defvar anything-enable-shortcuts 'prefix
   "*Whether to use digit/alphabet shortcut to select the first nine matches.
 If t then they can be selected using Ctrl+<number>.
 
@@ -680,7 +680,7 @@ Keys (digit/alphabet) are listed in `anything-shortcut-keys-alist'.")
 
 (defvar anything-shortcut-keys-alist
   '((alphabet . "asdfghjklzxcvbnmqwertyuiop")
-    (prefix   . "asdfghjklzxcvbnmqwertyuiop1234567890")
+    (prefix   . "asdfghjklzxcvbnmqwertyuiop")
     (t        . "123456789")))
 
 (defvar anything-display-source-at-screen-top t
@@ -1158,10 +1158,12 @@ Otherwise make a list with one element."
   "Be sure BODY is excuted in the anything window."
   (declare (indent 0) (debug t))
   `(if anything-test-mode
-       (with-current-buffer (anything-buffer-get)
-         ,@body)
+       (when (get-buffer (anything-buffer-get))
+         (with-current-buffer (anything-buffer-get)
+           ,@body))
+     (when (window-live-p (anything-window))
        (with-selected-window (anything-window)
-         ,@body)))
+         ,@body))))
 
 (defmacro with-anything-current-buffer (&rest body)
   "Eval BODY inside `anything-current-buffer'."
@@ -1173,9 +1175,11 @@ Otherwise make a list with one element."
   "Restore `anything-restored-variables' after executing BODY.
 `post-command-hook' is handled specially."
   (declare (indent 0) (debug t))
-  `(let ((--orig-vars (mapcar (lambda (v)
-                                (cons v (symbol-value v)))
-                              anything-restored-variables))
+  `(let ((--orig-vars (delq nil
+                            (mapcar (lambda (v)
+                                      (and (boundp v) (cons v (symbol-value v))))
+                                    (append (mapcar 'car anything-let-variables)
+                                            anything-restored-variables))))
          (--post-command-hook-pair (cons post-command-hook
                                          (default-value 'post-command-hook))))
      (setq post-command-hook '(t))
@@ -1431,6 +1435,18 @@ LONG-DOC is displayed below attribute name and short documentation."
                " " short-doc "\n\n" long-doc "\n")))
 
 (put 'anything-document-attribute 'lisp-indent-function 2)
+
+(defun anything-exit-and-execute-action (action)
+  "Exit current anything session and execute ACTION.
+Argument ACTION is a function called with one arg (candidate)
+and part of the actions of current source.
+
+Use this on commands invoked from key-bindings, but not
+on action functions invoked as action from the action menu,
+i.e functions called with RET."
+  (setq anything-saved-action action)
+  (setq anything-saved-selection (or (anything-get-selection) ""))
+  (anything-exit-minibuffer))
 
 (defun anything-interpret-value (value &optional source)
   "Interpret VALUE as variable, function or literal.
@@ -1695,17 +1711,27 @@ It is used to set local variables via `anything-let-internal'.
 This allow to add arguments that are not part of `anything-argument-keys',
 but are valid anything attributes.
 i.e :candidate-number-limit will be bound to `anything-candidate-number-limit'
-in source."
-  ;; (anything-parse-keys '(:sources ((name . "test")
-  ;;                                  (candidates . (a b c)))
-  ;;                        :buffer "toto"
-  ;;                        :candidate-number-limit 4))
-  ;; ==> ((anything-candidate-number-limit . 4))
+in source.
+But the variable is bound, use it.
+
+  (anything-parse-keys '(:sources ((name . \"test\")
+                                   (candidates . (a b c)))
+                                  :buffer \"toto\"
+                                  :truncate-lines t
+                                  :anything-enable-shortcuts t
+                                  :candidate-number-limit 4))
+  => ((truncate-lines . t)
+      (anything-enable-shortcuts . t)
+      (anything-candidate-number-limit . 4))
+"
   (loop for (key value) on keys by #'cddr
         for symname = (substring (symbol-name key) 1)
-        for sym = (intern (if (string-match "^anything-" symname)
-                              symname
-                              (concat "anything-" symname)))
+        for origsym = (intern symname)
+        for sym = (if (boundp origsym)
+                      origsym
+                    (intern (if (string-match "^anything-" symname)
+                                symname
+                              (concat "anything-" symname))))
         unless (memq key anything-argument-keys)
         collect (cons sym value)))
 
@@ -1737,6 +1763,7 @@ ANY-KEYMAP ANY-DEFAULT ANY-HISTORY See `anything'."
                (with-anything-restore-variables
                  (anything-initialize any-resume any-input any-sources)
                  (anything-display-buffer anything-buffer)
+                 (anything-set-margin)
                  (anything-log "show prompt")
                  (unwind-protect
                       (anything-read-pattern-maybe
@@ -1745,6 +1772,7 @@ ANY-KEYMAP ANY-DEFAULT ANY-HISTORY See `anything'."
                        (when (and any-history (symbolp any-history)) any-history))
                    (anything-cleanup)))
                (prog1 (unless anything-quit
+                        (setq overriding-local-map old-overridding-local-map)
                         (anything-execute-selection-action-1))
                  (anything-log (concat "[End session] " (make-string 41 ?-)))))
            (quit
@@ -1861,10 +1889,18 @@ Call `anything' with only ANY-SOURCES and ANY-BUFFER as args."
 ;;
 (defvar anything-buffers nil
   "All of `anything-buffer' in most recently used order.")
+(defvar anything-shortcut-update-timer nil)
+
 (defun anything-initialize (any-resume any-input any-sources)
   "Start initialization of `anything' session.
 For ANY-RESUME ANY-INPUT and ANY-SOURCES See `anything'."
   (anything-log "start initialization: any-resume=%S any-input=%S" any-resume any-input)
+  (when anything-enable-shortcuts
+    (anything-new-timer
+     'anything-shortcut-update-timer
+     (run-with-idle-timer 0.03 0.03 'anything-move-digit-overlay-maybe)))
+  (loop for (var . val) in anything-let-variables
+        do (set var val))
   (anything-frame-or-window-configuration 'save)
   (setq anything-sources (anything-normalize-sources any-sources))
   (anything-log "sources = %S" anything-sources)
@@ -1872,7 +1908,7 @@ For ANY-RESUME ANY-INPUT and ANY-SOURCES See `anything'."
   (anything-current-position 'save)
   (if (anything-resume-p any-resume)
       (anything-initialize-overlays (anything-buffer-get))
-      (anything-initial-setup))
+    (anything-initial-setup))
   (unless (eq any-resume 'noresume)
     (anything-recent-push anything-buffer 'anything-buffers)
     (setq anything-last-buffer anything-buffer))
@@ -2099,11 +2135,17 @@ If TEST-MODE is non-nil, clear `anything-candidate-cache'."
                        for overlay = (make-overlay (point-min) (point-min)
                                                    (get-buffer buffer))
                        do (overlay-put overlay 'before-string
-                                       (format "%s - " (upcase (make-string 1 key))))
-                       collect overlay))))
+                                       (propertize " " 'display
+                                                   `((margin left-margin) ,(upcase (make-string 1 key)))))
+                       collect overlay)))
+         )
         (anything-digit-overlays
          (mapc 'delete-overlay anything-digit-overlays)
          (setq anything-digit-overlays nil))))
+
+(defun anything-set-margin ()
+  (when anything-enable-shortcuts
+    (set-window-margins (get-buffer-window (anything-buffer-get)) 1)))
 
 (defun anything-hooks (setup-or-cleanup)
   "Add or remove hooks according to SETUP-OR-CLEANUP value.
@@ -2134,6 +2176,7 @@ hooks concerned are `post-command-hook' and `minibuffer-setup-hook'."
     (bury-buffer)
     ;; Be sure we call this from anything-buffer.
     (anything-funcall-foreach 'cleanup))
+  (anything-new-timer 'anything-shortcut-update-timer nil)
   (anything-new-timer 'anything-check-minibuffer-input-timer nil)
   (anything-kill-async-processes)
   (anything-log-run-hook 'anything-cleanup-hook)
@@ -2157,14 +2200,15 @@ hooks concerned are `post-command-hook' and `minibuffer-setup-hook'."
 ;; (@* "Core: input handling")
 (defun anything-check-minibuffer-input ()
   "Extract input string from the minibuffer and check if it needs to be handled."
-  (let ((delay (with-current-buffer anything-buffer
-                 (and anything-input-idle-delay
-                      (max anything-input-idle-delay 0.1)))))
-    (if (or (not delay) (anything-action-window))
-        (anything-check-minibuffer-input-1)
+  (when anything-reading-pattern
+    (let ((delay (with-current-buffer anything-buffer
+                   (and anything-input-idle-delay
+                        (max anything-input-idle-delay 0.1)))))
+      (if (or (not delay) (anything-action-window))
+          (anything-check-minibuffer-input-1)
         (anything-new-timer
          'anything-check-minibuffer-input-timer
-         (run-with-idle-timer delay nil 'anything-check-minibuffer-input-1)))))
+         (run-with-idle-timer delay nil 'anything-check-minibuffer-input-1))))))
 
 (defun anything-check-minibuffer-input-1 ()
   "Check minibuffer content."
@@ -2445,7 +2489,6 @@ if ITEM-COUNT reaches LIMIT, exit from inner loop."
 
 (defun anything-insert-match-with-digit-overlay (match)
   (declare (special source))
-  (anything-put-digit-overlay-maybe)
   (anything-insert-match match 'insert source))
 
 (defun anything-put-digit-overlay-maybe ()
@@ -2457,6 +2500,18 @@ if ITEM-COUNT reaches LIMIT, exit from inner loop."
                   (point-at-bol)
                   (point-at-bol))
     (incf anything-digit-shortcut-count)))
+
+(defun anything-move-digit-overlay-maybe ()
+  (with-anything-window
+    (save-excursion
+      (goto-char (window-start))
+      (loop for overlay in anything-digit-overlays
+            unless (eobp)
+            do
+            (anything-skip-noncandidate-line 'forward)
+            (move-overlay overlay (point-at-bol) (point-at-bol)
+                          (get-buffer (anything-buffer-get)))
+            (anything-next-candidate-internal)))))
 
 (defun anything-process-source--direct-insert-match (source)
   "[EXPERIMENTAL] Insert candidates from `anything-candidate-buffer' in SOURCE."
@@ -2549,7 +2604,8 @@ is done on whole `anything-buffer' and not on current source."
                 ;; or 0.1 if == to 0.
                 (max anything-idle-delay anything-input-idle-delay 0.1) nil
                 'anything-process-delayed-sources delayed-sources preselect))))
-        (anything-log "end update")))))
+        (anything-log "end update"))))
+  (anything-move-digit-overlay-maybe))
 
 (defun anything-update-source-p (source)
   "Wheter SOURCE need updating or not."
@@ -2802,10 +2858,13 @@ If action buffer is selected, back to the anything buffer."
          (let ((actions (anything-get-action)))
            (if (functionp actions)
                (message "Sole action: %s" actions)
-               (anything-show-action-buffer actions)
-               (anything-delete-minibuffer-contents)
-               (setq anything-pattern 'dummy) ; so that it differs from the previous one
-               (anything-check-minibuffer-input))))))
+             (anything-show-action-buffer actions)
+             (anything-delete-minibuffer-contents)
+             (setq anything-pattern 'dummy) ; so that it differs from the previous one
+             (anything-check-minibuffer-input))))))
+
+(defun anything-fall-back-to-minibuffer-complete ()
+  (call-interactively 'minibuffer-complete))
 
 (defun anything-show-action-buffer (actions)
   (with-current-buffer (get-buffer-create anything-action-buffer)
@@ -2820,6 +2879,7 @@ If action buffer is selected, back to the anything buffer."
     (set (make-local-variable 'anything-source-filter) nil)
     (set (make-local-variable 'anything-selection-overlay) nil)
     (set (make-local-variable 'anything-digit-overlays) nil)
+    (anything-set-margin)
     (anything-initialize-overlays anything-action-buffer)))
 
 
@@ -2875,11 +2935,13 @@ It is determined by UNIT and DIRECTION."
             anything-mode-line-string-real
             (substitute-command-keys (if (listp anything-mode-line-string)
                                          (cadr anything-mode-line-string)
-                                         anything-mode-line-string)))
-      (setq mode-line-format
-            (default-value 'mode-line-format)))
+                                       anything-mode-line-string)))
+    (setq mode-line-format
+          (default-value 'mode-line-format)))
   (setq header-line-format
-        (anything-interpret-value (assoc-default 'header-line source) source)))
+        (if (anything-action-window)
+            "Select Action"
+          (anything-interpret-value (assoc-default 'header-line source) source))))
 
 (defun anything-show-candidate-number (&optional name)
   "Used to display candidate number in mode-line.
@@ -2909,21 +2971,24 @@ it is \"Candidate\(s\)\" by default."
              (forward-line 1)))))
    'line 'previous))
 
+(defun anything-next-candidate-internal ()
+  "Go to next candidate line.
+Skip candidate separators for multiline sources.
+Do `forward-line' for non-multiline sources."
+  (if (not (anything-pos-multiline-p))
+      (forward-line 1)
+    (let ((header-pos (anything-get-next-header-pos))
+          (separator-pos (anything-get-next-candidate-separator-pos)))
+      (cond ((and separator-pos
+                  (or (null header-pos) (< separator-pos header-pos)))
+             (goto-char separator-pos))
+            (header-pos
+             (goto-char header-pos))))))
+
 (defun anything-next-line ()
   "Move selection to the next line."
   (interactive)
-  (anything-move-selection-common
-   (lambda ()
-     (if (not (anything-pos-multiline-p))
-         (forward-line 1)
-         (let ((header-pos (anything-get-next-header-pos))
-               (separator-pos (anything-get-next-candidate-separator-pos)))
-           (cond ((and separator-pos
-                       (or (null header-pos) (< separator-pos header-pos)))
-                  (goto-char separator-pos))
-                 (header-pos
-                  (goto-char header-pos))))))
-   'line 'next))
+  (anything-move-selection-common 'anything-next-candidate-internal 'line 'next))
 
 (defun anything-previous-page ()
   "Move selection back with a pageful."
@@ -3015,31 +3080,40 @@ to mark candidates."
   (anything-follow-execute-persistent-action-maybe))
 
 (defun anything-this-command-key ()
-  (event-basic-type (elt (this-command-keys-vector) 0)))
+  (cons (event-basic-type (elt (this-command-keys-vector) 0)) 0))
 ;; (progn (read-key-sequence "Key: ") (p (anything-this-command-key)))
+
+(defun anything-read-prefix-shortcut ()
+  (let ((key0 (read-event "Select shortcut key (1-9 for action): ")))
+    (if (<= ?1 key0 ?9)
+        (cons (read-event "Select shortcut key (candidate): ") (- key0 ?1))
+      (cons key0 0))))
 
 (defun anything-select-with-shortcut-internal (types get-key-func)
   (if (memq anything-enable-shortcuts types)
       (save-selected-window
         (select-window (anything-window))
-        (let* ((key (funcall get-key-func))
+        (let* ((pair (funcall get-key-func))
+               (key (car pair))
+               (action-index (cdr pair))
                (overlay (ignore-errors (nth (position key anything-shortcut-keys)
                                             anything-digit-overlays))))
           (if (not (and overlay (overlay-buffer overlay)))
               (when (numberp key)
                 (select-window (minibuffer-window))
                 (self-insert-command 1))
-              (goto-char (overlay-start overlay))
-              (anything-mark-current-line)
-              (anything-exit-minibuffer))))
-      (self-insert-command 1)))
+            (goto-char (overlay-start overlay))
+            (anything-mark-current-line)
+            (if (anything-action-window)
+                (anything-exit-minibuffer)
+              (anything-select-nth-action action-index)))))
+    (self-insert-command 1)))
 
 (defun anything-select-with-prefix-shortcut ()
   "Invoke default action with prefix shortcut."
   (interactive)
   (anything-select-with-shortcut-internal
-   '(prefix)
-   (lambda () (read-event "Select shortcut key: "))))
+   '(prefix) 'anything-read-prefix-shortcut))
 
 (defun anything-select-with-digit-shortcut ()
   "Invoke default action with digit/alphabet shortcut."
@@ -3271,6 +3345,7 @@ if optional NOUPDATE is non-nil, anything buffer is not changed."
     (delete-minibuffer-contents)
     (insert pattern))
   (when noupdate
+    (anything-set-margin)
     (setq anything-pattern pattern)
     (anything-hooks 'cleanup)
     (run-with-idle-timer 0 nil 'anything-hooks 'setup)))
@@ -3576,7 +3651,8 @@ Acceptable values of CREATE-OR-BUFFER:
                             (setq anything-split-window-state 'vertical))
                           (setq anything-split-window-state 'horizontal)
                           (split-window-horizontally)))
-       anything-buffer))))
+       anything-buffer)
+      (anything-set-margin))))
 
 ;; (@* "Utility: Resize anything window.")
 (defun anything-enlarge-window-1 (n)
