@@ -1,6 +1,6 @@
 ;;; helm-config.el --- Applications library for `helm.el' -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2016 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2017 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -144,12 +144,14 @@
      ("(\\<\\(with-helm-buffer\\)\\>" 1 font-lock-keyword-face)
      ("(\\<\\(with-helm-show-completion\\)\\>" 1 font-lock-keyword-face)
      ("(\\<\\(with-helm-default-directory\\)\\>" 1 font-lock-keyword-face)
-     ("(\\<\\(with-helm-display-same-window\\)\\>" 1 font-lock-keyword-face)
      ("(\\<\\(with-helm-restore-variables\\)\\>" 1 font-lock-keyword-face)
-     ("(\\<\\(define-helm-type-attribute\\)\\>" 1 font-lock-keyword-face)
      ("(\\<\\(helm-multi-key-defun\\)\\>" 1 font-lock-keyword-face)
      ("(\\<\\(helm-while-no-input\\)\\>" 1 font-lock-keyword-face)
-     ("(\\<\\(helm-aif\\)\\>" 1 font-lock-keyword-face))))
+     ("(\\<\\(helm-aif\\)\\>" 1 font-lock-keyword-face)
+     ("(\\<\\(helm-awhile\\)\\>" 1 font-lock-keyword-face)
+     ("(\\<\\(helm-acond\\)\\>" 1 font-lock-keyword-face)
+     ("(\\<\\(helm-aand\\)\\>" 1 font-lock-keyword-face)
+     ("(\\<\\(helm-with-gensyms\\)\\>" 1 font-lock-keyword-face))))
 
 
 ;;; Load the autoload file
@@ -161,7 +163,7 @@
 (provide 'helm-config)
 
 ;; Local Variables:
-;; byte-compile-warnings: (not cl-functions obsolete)
+;; byte-compile-warnings: (not obsolete)
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:

@@ -1,6 +1,6 @@
 ;;; helm-color.el --- colors and faces -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2016 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2017 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 (require 'cl-lib)
 (require 'helm)
 (require 'helm-help)
+(require 'helm-elisp)
 
 ;;; Customize Face
 ;;
@@ -41,6 +42,11 @@
   (helm-build-in-buffer-source "Customize Face"
     :init 'helm-custom-faces-init
     :get-line 'buffer-substring
+    :persistent-action (lambda (candidate)
+                         (helm-elisp--persistent-help
+                          (intern (car (split-string candidate)))
+                          'helm-describe-face))
+    :persistent-help "Describe face"
     :action '(("Customize"
                . (lambda (line)
                    (customize-face (intern (car (split-string line))))))
@@ -156,7 +162,7 @@
 (provide 'helm-color)
 
 ;; Local Variables:
-;; byte-compile-warnings: (not cl-functions obsolete)
+;; byte-compile-warnings: (not obsolete)
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:

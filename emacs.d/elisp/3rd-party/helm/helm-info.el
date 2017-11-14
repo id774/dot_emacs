@@ -1,6 +1,6 @@
 ;;; helm-info.el --- Browse info index with helm -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2016 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2017 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 (require 'cl-lib)
 (require 'helm)
 (require 'helm-lib)
-(require 'helm-plugin)
+(require 'helm-utils)
 (require 'info)
 
 (declare-function Info-index-nodes "info" (&optional file))
@@ -56,18 +56,28 @@ files with `helm-info-at-point'."
     (save-window-excursion
       (info file)
       (let ((tobuf (helm-candidate-buffer 'global))
-            (infobuf (current-buffer))
             Info-history
-            start end)
+            start end line)
         (cl-dolist (node (Info-index-nodes))
           (Info-goto-node node)
           (goto-char (point-min))
           (while (search-forward "\n* " nil t)
             (unless (search-forward "Menu:\n" (1+ (point-at-eol)) t)
               (setq start (point-at-bol)
-                    end (point-at-eol))
+                    ;; Fix issue #1503 by getting the invisible
+                    ;; info displayed on next line in long strings.
+                    ;; e.g "* Foo.\n   (line 12)" instead of
+                    ;;     "* Foo.(line 12)"
+                    end (or (save-excursion
+                              (goto-char (point-at-bol))
+                              (re-search-forward "(line +[0-9]+)" nil t))
+                            (point-at-eol))
+                    ;; Long string have a new line inserted before the
+                    ;; invisible spec, remove it.
+                    line (replace-regexp-in-string
+                          "\n" "" (buffer-substring start end)))
               (with-current-buffer tobuf
-                (insert-buffer-substring infobuf start end)
+                (insert line)
                 (insert "\n")))))))))
 
 (defun helm-info-goto (node-line)
@@ -176,11 +186,24 @@ helm-info-<CANDIDATE>."
     :action '(("Search index" . helm-info-search-index))))
 
 ;;;###autoload
-(defun helm-info ()
-  "Preconfigured `helm' for searching Info files' indices."
-  (interactive)
+(defun helm-info (&optional refresh)
+  "Preconfigured `helm' for searching Info files' indices.
+
+With a prefix argument \\[universal-argument], set REFRESH to non-nil.
+
+Optional parameter REFRESH, when non-nil, reevaluates
+`helm-default-info-index-list'.  If the variable has been
+customized, set it to its saved value.  If not, set it to its
+standard value.  See `custom-reevaluate-setting' for more.
+
+REFRESH is useful when new Info files are installed.  If
+`helm-default-info-index-list' has not been customized, the new
+Info files are made available."
+  (interactive "P")
   (let ((default (unless (ring-empty-p helm-info-searched)
                    (ring-ref helm-info-searched 0))))
+    (when refresh
+      (custom-reevaluate-setting 'helm-default-info-index-list))
     (helm :sources (helm-def-source--info-files)
           :buffer "*helm Info*"
           :preselect (and default
@@ -230,7 +253,7 @@ With a prefix-arg insert symbol at point."
 (provide 'helm-info)
 
 ;; Local Variables:
-;; byte-compile-warnings: (not cl-functions obsolete)
+;; byte-compile-warnings: (not obsolete)
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
