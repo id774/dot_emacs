@@ -42,7 +42,7 @@
 
 ;; jsp
 (cond
-  ((>= emacs-major-version '23)
+  ((< emacs-major-version '25)
     (load-p "autostart")))
 
 ;; gtags-mode : global
