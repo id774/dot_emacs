@@ -25,10 +25,8 @@
 ;; FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 ;; details.
 ;;
-;; You should have received a copy of the GNU General Public License along with
-;; this program; see the file COPYING.  If not, write to the Free Software
-;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-;; USA.
+;; A copy of the GNU General Public License is available at
+;; http://www.r-project.org/Licenses/
 ;;
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -39,6 +37,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 (require 'compile); for compilation-* below
+(require 'ess-r-mode)
 
 
 ;;; Code:
@@ -419,7 +418,7 @@ end keywords as associated values.")
   '((paragraph-start		  . (concat "\\s-*$\\|" page-delimiter))
     (paragraph-separate		  . (concat "\\s-*$\\|" page-delimiter))
     (paragraph-ignore-fill-prefix . t)
-    (require-final-newline	  . t)
+    (require-final-newline	  . mode-require-final-newline)
     (comment-start		  . "# ")
     (comment-add                  . 1)
     (comment-start-skip		  . "\\s<+\\s-*")
@@ -478,7 +477,7 @@ end keywords as associated values.")
            (gretl--get-words-from-command "help functions\n" "Accessors:" "^Functions")
            (gretl--get-words-from-command "help functions\n" "^Functions" "^For")
            )))
-  
+
 ;; (defvar ess-gretl-error-regexp-alist '(gretl-in gretl-at)
 ;;   "List of symbols which are looked up in `compilation-error-regexp-alist-alist'.")
 
@@ -501,7 +500,6 @@ end keywords as associated values.")
     ;; (ess-dump-error-re			. "in \\w* at \\(.*\\):[0-9]+")
     ;; (ess-error-regexp			. "\\(^\\s-*at\\s-*\\(?3:.*\\):\\(?2:[0-9]+\\)\\)")
     ;; (ess-error-regexp-alist		. ess-gretl-error-regexp-alist)
-    (ess-send-string-function		. 'gretl-send-string-function)
     ;; (inferior-ess-objects-command	. inferior-gretl-objects-command)
     ;; (inferior-ess-search-list-command	. "search()\n")
     ;; inferior-ess-help-command		. gretl-help-command)
@@ -509,20 +507,19 @@ end keywords as associated values.")
     (ess-language			. "gretl")
     (ess-dialect			. "gretl")
     (ess-suffix				. "inp")
-    (ess-dump-filename-template		. (ess-replace-regexp-in-string
+    (ess-dump-filename-template		. (replace-regexp-in-string
 					   "S$" ess-suffix ; in the one from custom:
 					   ess-dump-filename-template-proto))
     (ess-mode-syntax-table		. gretl-syntax-table)
     (ess-mode-editing-alist	        . gretl-editing-alist)
-    (ess-change-sp-regexp		. nil );ess-R-change-sp-regexp)
-    (ess-help-sec-regex			. ess-help-R-sec-regex)
-    (ess-help-sec-keys-alist		. ess-help-R-sec-keys-alist)
+    (ess-change-sp-regexp		. nil );ess-r-change-sp-regexp)
+    (ess-help-sec-regex			. ess-help-r-sec-regex)
+    (ess-help-sec-keys-alist		. ess-help-r-sec-keys-alist)
     (ess-loop-timeout			. ess-S-loop-timeout);fixme: dialect spec.
-    (ess-cmd-delay			. ess-R-cmd-delay)
-    (ess-function-pattern		. ess-R-function-pattern)
+    (ess-function-pattern		. ess-r-function-pattern)
     (ess-object-name-db-file		. "ess-r-namedb.el" )
     ;; (ess-imenu-mode-function		. nil)
-    (ess-smart-operators		. ess-R-smart-operators)
+    (ess-smart-operators		. ess-r-smart-operators)
     (inferior-ess-help-filetype        . nil)
     (inferior-ess-exit-command		. "exit\n")
     ;;harmful for shell-mode's C-a: -- but "necessary" for ESS-help?
@@ -588,7 +585,7 @@ Optional prefix (C-u) allows to set command line arguments, such as
 If you have certain command line arguments that should always be passed
 to gretl, put them in the variable `inferior-gretl-args'."
   (interactive "P")
-  ;; get settings, notably inferior-R-program-name :
+  ;; get settings, notably inferior-ess-r-program-name :
   ;; (if (null inferior-gretl-program-name)
   ;;     (error "'inferior-gretl-program-name' does not point to 'gretl-release-basic' executable")
     (setq ess-customize-alist gretl-customize-alist)
@@ -604,7 +601,7 @@ to gretl, put them in the variable `inferior-gretl-args'."
 				 inferior-gretl-args
 				 "'] ? "))
 		      nil))))
-      (inferior-ess r-start-args) 
+      (inferior-ess r-start-args)
       (set (make-local-variable 'indent-line-function) 'gretl-indent-line)
       (set (make-local-variable 'gretl-basic-offset) 4)
       (setq indent-tabs-mode nil)

@@ -24,9 +24,8 @@
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
 
-;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to
-;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+;; A copy of the GNU General Public License is available at
+;; http://www.r-project.org/Licenses/
 
 ;;; Commentary:
 
@@ -44,9 +43,6 @@
 
 (defvar ess-noweb-use-font-lock font-lock-mode
   "Set to t if you want to use font-locking in ESS noweb buffers.")
-
-;; this helps with XEmacs barfing, sigh...
-;; but is *NOT* okay to do *globally*: (setq global-font-lock-mode t)
 
 (if ess-noweb-use-font-lock
     (require 'ess-noweb-font-lock-mode))
@@ -98,17 +94,17 @@ Arg has same meaning as for `ess-eval-region'."
 
 ;;*;; Thread code chunk evaluation
 
-;;;
-;;; Threads are code chunks which fit into the same "buffer" (I'm (AJR)
-;;; abusing terminology, but what I mean is things like:
-;;; <<thing1>>=
-;;;   code for thing1
-;;; @
-;;; Documentation
-;;; <<thing1>>=
-;;;   continuing code for thing1
-;;; @
-;;;
+;;
+;; Threads are code chunks which fit into the same "buffer" (I'm (AJR)
+;; abusing terminology, but what I mean is things like:
+;; <<thing1>>=
+;;   code for thing1
+;; @
+;; Documentation
+;; <<thing1>>=
+;;   continuing code for thing1
+;; @
+;;
 
 (defun ess-eval-thread (vis)
   "Tangle all chunks in the current chunk-thread and send to the ESS process.
@@ -133,19 +129,19 @@ and go there.  Arg has same meaning as for `ess-eval-region'."
 
  ; Local variables section
 
-;;; This file is automatically placed in Outline minor mode.
-;;; The file is structured as follows:
-;;; Chapters:     ^L ;
-;;; Sections:    ;;*;;
-;;; Subsections: ;;;*;;;
-;;; Components:  defuns, defvars, defconsts
-;;;              Random code beginning with a ;;;;* comment
+;; This file is automatically placed in Outline minor mode.
+;; The file is structured as follows:
+;; Chapters:     ^L ;
+;; Sections:    ;;*;;
+;; Subsections: ;;;*;;;
+;; Components:  defuns, defvars, defconsts
+;;              Random code beginning with a ;;;;* comment
 
-;;; Local variables:
-;;; mode: emacs-lisp
-;;; outline-minor-mode: nil
-;;; mode: outline-minor
-;;; outline-regexp: "\^L\\|\\`;\\|;;\\*\\|;;;\\*\\|(def[cvu]\\|(setq\\|;;;;\\*"
-;;; End:
+;; Local variables:
+;; mode: emacs-lisp
+;; outline-minor-mode: nil
+;; mode: outline-minor
+;; outline-regexp: "\^L\\|\\`;\\|;;\\*\\|;;;\\*\\|(def[cvu]\\|(setq\\|;;;;\\*"
+;; End:
 
 ;;; ess-noweb.el ends here

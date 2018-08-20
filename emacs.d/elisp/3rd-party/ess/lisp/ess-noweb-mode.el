@@ -23,10 +23,9 @@
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
 ;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; if not, write to the Free Software
-;; Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-;;
+;; A copy of the GNU General Public License is available at
+;; http://www.r-project.org/Licenses/
+
 ;; See bottom of this file for information on language-dependent
 ;; highlighting, and recent changes.
 ;;
@@ -89,9 +88,8 @@
 ;;; Code:
 
 ;; Want to use these now in order to cater for all obscure kinds of emacsen
-(eval-and-compile
-  (require 'ess-compat))
-
+(require 'ess-compat)
+(autoload 'ess-write-to-dribble-buffer "ess")
 
 
 ;;; Variables
@@ -231,9 +229,7 @@ replaced by sequences of '*'.")
   (ess-noweb-indent-line))
 
 (defvar ess-noweb-mode-prefix-map
-  (let ((map (if (featurep 'xemacs)
-                 (make-keymap) ;; XEmacs/Emacs problems...
-               (make-sparse-keymap))))
+  (let ((map (make-sparse-keymap)))
     (define-key map "\C-\M-x" 'ess-eval-chunk)
     (define-key map "\C-c" 'ess-eval-chunk-and-step)
     (define-key map "\C-n" 'ess-noweb-next-chunk)
@@ -344,20 +340,6 @@ replaced by sequences of '*'.")
           (cons (cons 'ess-noweb-mode ess-noweb-minor-mode-map)
                 minor-mode-map-alist)))
 
-;; Old XEmacs hacks.
-(defun ess-noweb-mode-xemacs-menu ()
-  "Hook to install ess-noweb-mode menu for XEmacs (w/ easymenu)."
-  (if 'ess-noweb-mode
-      (easy-menu-add ess-noweb-minor-mode-menu)
-    (easy-menu-remove ess-noweb-minor-mode-menu)
-    ))
-
-(if (string-match "XEmacs" emacs-version)
-    (progn
-      (add-hook 'ess-noweb-select-mode-hook 'ess-noweb-mode-xemacs-menu)
-      ;; Next line handles some random problems...
-      (easy-menu-add ess-noweb-minor-mode-menu)))
-
 (defun ess-noweb-minor-mode (&optional arg)
   "Minor meta mode for editing noweb files. See ess-noweb-mode."
   (interactive)
@@ -432,7 +414,7 @@ Misc:
 ;; ess-noweb-mode on
 (cond
  (ess-noweb-mode                            ;Setup the minor-mode
-  (mapcar 'ess-noweb-make-variable-permanent-local
+  (mapc 'ess-noweb-make-variable-permanent-local
           '(ess-noweb-mode
             ess-local-process-name ;; also made permanent in ess-mode, but let it be
             ess-dialect
@@ -449,9 +431,8 @@ Misc:
             ess-noweb-default-code-mode
             ess-noweb-last-chunk-index))
   (ess-noweb-update-chunk-vector)
-  (if (equal 0 (ess-noweb-find-chunk-index-buffer))
-      (setq ess-noweb-last-chunk-index 1)
-    (setq ess-noweb-last-chunk-index 0))
+  (setq ess-noweb-last-chunk-index
+        (if (equal 0 (ess-noweb-find-chunk-index-buffer)) 1 0))
   (if font-lock-mode
       (progn
         (font-lock-mode -1)
@@ -459,10 +440,6 @@ Misc:
         (ess-noweb-font-lock-mode 1)))
   (add-hook 'post-command-hook 'ess-noweb-post-command-function)
 
-  (when (or (<= emacs-major-version 20)
-            (featurep 'xemacs)) ;; Xemacs or very old GNU Emacs
-    (make-local-hook 'after-change-functions)
-    (make-local-hook 'before-change-functions))
   (add-hook 'after-change-functions 'ess-noweb-after-change-function nil t)
   (add-hook 'before-change-functions 'ess-noweb-before-change-function nil t)
 
@@ -479,12 +456,8 @@ Misc:
  (t
   (remove-hook 'post-command-hook 'ess-noweb-post-command-function)
 
-  (if (fboundp 'remove-local-hook)
-      (progn
-        (remove-local-hook 'after-change-functions 'ess-noweb-after-change-function)
-        (remove-local-hook 'before-change-functions 'ess-noweb-before-change-function))
-    (remove-hook 'after-change-functions 'ess-noweb-after-change-function t)
-    (remove-hook 'before-change-functions 'ess-noweb-before-change-function t))
+  (remove-hook 'after-change-functions 'ess-noweb-after-change-function t)
+  (remove-hook 'before-change-functions 'ess-noweb-before-change-function t)
 
   (remove-hook 'ess-noweb-select-doc-mode-hook 'ess-noweb-auto-fill-doc-mode)
   (remove-hook 'ess-noweb-select-code-mode-hook 'ess-noweb-auto-fill-code-mode)
@@ -948,10 +921,17 @@ indent according to mode."
   (if auto-fill-function
       (setq auto-fill-function 'ess-noweb-auto-fill-doc-chunk)))
 
+(defun ess-noweb-auto-fill-code-chunk ()
+  "Replacement for do-auto-fill. Cancel filling in chunk headers"
+  (unless (save-excursion
+            (beginning-of-line)
+            (looking-at "<<"))
+    (do-auto-fill)))
+
 (defun ess-noweb-auto-fill-code-mode ()
   "Install the default auto fill function, iff necessary."
   (if auto-fill-function
-      (setq auto-fill-function 'do-auto-fill)))
+      (setq auto-fill-function 'ess-noweb-auto-fill-code-chunk)))
 
 ;;; Marking
 
@@ -1076,7 +1056,7 @@ switch narrowing on."
   "If in a documentation chunk, goto to the Nth documentation
 chunk from point, else goto to the Nth code chunk from point."
   (interactive "p")
-  (dbg (current-buffer))
+  ;; (dbg (current-buffer))
   (if (ess-noweb-in-code-chunk)
       (ess-noweb-next-code-chunk n)
     (ess-noweb-next-doc-chunk n)))
@@ -1613,31 +1593,21 @@ This may be useful in shell scripts, where the first line (or two) must have a
             (if (string-match
                  "mode:[ \t]*\\([^\t ]*\\)" this-line)
                 (setq ess-noweb-code-mode
-                      (if (featurep 'xemacs)
-                          (match-string 1 this-line)
-                        (match-string-no-properties 1 this-line))
-                      ))
+                      (match-string-no-properties 1 this-line)))
             (if (string-match
                  "ess-noweb-line-number-format:[ \t]*\"\\([^\"]*\\)\"" this-line)
                 (setq ess-noweb-line-number-format
-                      (if (featurep 'xemacs)
-                          (match-string 1 this-line)
-                        (match-string-no-properties 1 this-line))
-                      ))
+                      (match-string-no-properties 1 this-line)))
             (if (string-match
                  "ess-noweb-line-number-skip-lines:[ \t]*\\([^\t ]*\\)" this-line)
                 (setq ess-noweb-line-number-skip-lines
                       (string-to-number
-                       (if (featurep 'xemacs)
-                           (match-string 1 this-line)
-                         (match-string-no-properties 1 this-line)))))
+                       (match-string-no-properties 1 this-line))))
             (if (string-match
                  "ess-noweb-tab-width:[ \t]*\\([^\t ]*\\)" this-line)
                 (setq ess-noweb-tab-width
                       (string-to-number
-                       (if (featurep 'xemacs)
-                           (match-string 1 this-line)
-                         (match-string-no-properties 1 this-line)))))
+                       (match-string-no-properties 1 this-line))))
             (beginning-of-line 2)))))))
 
 (defun ess-noweb-reset-thread-local-variables ()

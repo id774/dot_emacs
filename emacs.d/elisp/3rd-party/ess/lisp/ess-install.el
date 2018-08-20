@@ -18,9 +18,9 @@
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
 ;;
-;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to
-;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+;; A copy of the GNU General Public License is available at
+;; http://www.r-project.org/Licenses/
+;;
 ;;
 ;; In short: you may use this code any way you like, as long as you
 ;; don't charge more than a distribution fee for it, do distribute the
@@ -49,7 +49,7 @@
 ;;    within Windows explorer and selecting "Extract all".  On unix, use
 ;;    "unzip ess-5.2.12.zip".
 ;;
-;; 4. Start a new emacs (or xemacs).
+;; 4. Start a new Emacs.
 ;;
 ;; 5. In the new emacs, you need to open the file "ess-install.el" which
 ;;    is part of ESS.  To do this, type:
@@ -113,8 +113,8 @@ Do not include .el extension in case there is also a .elc around.")
   "Byte compile the ESS files.
 This will probably generate warnings, but they can hopefully be
 ignored."
-  ;; To do byte compilation, XEmacs seems to want the files on its
-  ;; load-path so that it can do the (require 'xyz) statements.
+  ;; To do byte compilation, we want the files on the
+  ;; load-path so that we can process the (require 'xyz) statements.
   (add-to-list 'load-path ess-lisp-dir)
   (byte-recompile-directory ess-lisp-dir 0))
 
@@ -122,10 +122,10 @@ ignored."
 ;; i.e. need to change c:\\some\\dir\\ess-site.el to
 ;; c:/some/dir/ess-site.el
 ;; To do this, we have to load in ess-replace-in-string, from
-;; the file ess-inf.el
+;; the file ess-utils.el
 
 (save-window-excursion
-  (find-file (concat ess-lisp-dir "ess-inf.el"))
+  (find-file (concat ess-lisp-dir "ess-utils.el"))
   (goto-char (point-min))
   (search-forward-regexp "^(defun ess-replace-in-string " nil t)
   (eval-defun nil)
@@ -151,14 +151,6 @@ ignored."
 ;;; Highlighting (copied from reftex.el -- cheers Carsten!)
 ;; Only one highlight region is needed, whereas two are provided here,
 ;; so this code could be simplified.  But we may want it again later.
-
-;; Highlighting uses overlays.  If this is for XEmacs, we need to load
-;; the overlay library, available in version 19.15
-(and (not (fboundp 'make-overlay))
-     (condition-case nil
-         (require 'overlay)
-       ('error
-        (error "Fm needs overlay emulation (available in XEmacs 19.15)"))))
 
 ;; We keep a vector with several different overlays to do our highlighting.
 (defvar ess-highlight-overlays [nil nil])

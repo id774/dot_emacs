@@ -21,10 +21,8 @@
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
 
-;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-;; Boston, MA 02111-1307, USA.
+;; A copy of the GNU General Public License is available at
+;; http://www.r-project.org/Licenses/
 
 ;; This provides a dired-like buffer for R objects.  Instead of
 ;; operating on files, we operate on R objects in the current
@@ -65,8 +63,6 @@
 ;; and can be altered to provide other information if you so need it.
 ;; (Martin Maechler suggested providing output from str() here.)
 
-;; Tested on Emacs 21.2, 21.3 pretest and XEmacs 21.1.14, using R 1.6.
-
 ;; Todo - compare functionality with ess-mouse-me (ess-mous.el).
 
 ;; Todo - How to select alternative environments?  Currently only
@@ -94,7 +90,9 @@
     eval( parse( text=sprintf('data.class(get(\"%s\"))', my.x))) })
   length <- sapply(objs, function(my.x) {
     eval( parse( text=sprintf('length(get(\"%s\"))', my.x))) })
-  d <- data.frame(mode, length)
+  size <- sapply(objs, function(my.x) {
+    eval( parse( text=sprintf('format(object.size(get(\"%s\")), units=\"auto\")', my.x))) })
+  d <- data.frame(mode, length, size)
 
   var.names <- row.names(d)
 
@@ -117,7 +115,8 @@ function which prints the output for rdired.")
 
 (defvar ess-rdired-mode-map
   (let ((ess-rdired-mode-map (make-sparse-keymap)))
-
+    (if (require 'hide-lines nil t)
+        (define-key ess-rdired-mode-map "/" 'hide-lines))
     (define-key ess-rdired-mode-map "?" 'ess-rdired-help)
     (define-key ess-rdired-mode-map "d" 'ess-rdired-delete)
     (define-key ess-rdired-mode-map "u" 'ess-rdired-undelete)
@@ -128,6 +127,7 @@ function which prints the output for rdired.")
     (define-key ess-rdired-mode-map "V" 'ess-rdired-View)
     (define-key ess-rdired-mode-map "p" 'ess-rdired-plot)
     (define-key ess-rdired-mode-map "s" 'ess-rdired-sort)
+    (define-key ess-rdired-mode-map "r" 'ess-rdired-reverse)
     (define-key ess-rdired-mode-map "q" 'ess-rdired-quit)
     (define-key ess-rdired-mode-map "y" 'ess-rdired-type) ;what type?
     (define-key ess-rdired-mode-map " "  'ess-rdired-next-line)
@@ -145,10 +145,7 @@ function which prints the output for rdired.")
     (define-key ess-rdired-mode-map [down] 'ess-rdired-next-line)
     (define-key ess-rdired-mode-map [up] 'ess-rdired-previous-line)
     (define-key ess-rdired-mode-map "g" 'revert-buffer)
-    (if (featurep 'xemacs)
-        (define-key ess-rdired-mode-map [button2] 'ess-rdired-mouse-view)
-      (define-key ess-rdired-mode-map [mouse-2] 'ess-rdired-mouse-view)
-      )
+    (define-key ess-rdired-mode-map [mouse-2] 'ess-rdired-mouse-view)
     ess-rdired-mode-map))
 
 (defun ess-rdired-mode ()
@@ -162,7 +159,11 @@ can then examine these objects, plot them, and so on.
   (setq revert-buffer-function 'ess-rdired-revert-buffer)
   (use-local-map ess-rdired-mode-map)
   (setq major-mode 'ess-rdired-mode)
-  (setq mode-name (concat "RDired " ess-local-process-name)))
+  (setq mode-name (concat "RDired " ess-local-process-name))
+  (run-mode-hooks 'ess-rdired-mode-hook))
+
+(defun ess-rdired-mode-hook  nil
+  "Run upon entering `ess-rdired-mode'.")
 
 (defvar ess-rdired-sort-num nil)        ;silence the compiler.
 ;; but see following defun -- maybe it should be buffer local.
@@ -415,15 +416,28 @@ Rotate between the alternative sorting methods."
                (forward-line 1)
                (point)))
         (end (point-max)))
-    (if (> ess-rdired-sort-num 3)
+    (if (> ess-rdired-sort-num 4)
         (setq ess-rdired-sort-num 1))
     (cond ((eq ess-rdired-sort-num 1)
            (sort-fields 1 beg end))
           ((eq ess-rdired-sort-num 2)
            (sort-fields 2 beg end))
           ((eq ess-rdired-sort-num 3)
-           (sort-numeric-fields 3 beg end)))))
-
+           (sort-numeric-fields 3 beg end))
+          ((eq ess-rdired-sort-num 4)
+           (sort-numeric-fields 4 beg end)))))
+           
+(defun ess-rdired-reverse ()
+  "Reverse the current sort order."
+  (interactive)
+  (let ((buffer-read-only nil)
+        (beg (save-excursion
+               (goto-char (point-min))
+               (forward-line 1)
+               (point)))
+        (end (point-max)))
+    (reverse-region beg end)))
+    
 (defun ess-rdired-next-line (arg)
   "Move down lines then position at object.
 Optional prefix ARG says how many lines to move; default is one line."
@@ -449,13 +463,8 @@ Optional prefix ARG says how many lines to move; default is one line."
   (interactive "e")
   (let (window pos)
     (save-excursion
-      (if (featurep 'xemacs)
-          ;; XEmacs
-          (setq window (event-window event)
-                pos (event-point event))
-        ;; Emacs
-        (setq window (posn-window (event-end event))
-              pos (posn-point (event-end event))))
+      (setq window (posn-window (event-end event))
+            pos (posn-point (event-end event)))
       (if (not (windowp window))
           (error "No file chosen"))
       (set-buffer (window-buffer window))

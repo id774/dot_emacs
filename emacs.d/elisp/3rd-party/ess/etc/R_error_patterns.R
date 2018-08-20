@@ -26,14 +26,22 @@ Error in source("basicModel.R") : basicModel.R:95:1: unexpected symbol
 95: ixQ
    ^            
 
-## 5
+## 5.a
 > + Error in source(file = "/home/vitoshka/works/pbm/R/S4.R") (from #1) : 
   /home/vitoshka/works/pbm/R/S4.R:36:62: unexpected ')'
 35:                           }, list(vname = as.name(".pix_v")), 
 36:                                   pname = as.name(".pix_p"))))
                                                                 ^
+
+## 5.b
+> + Error in source(file = "/home/vitoshka/works/pbm/R/S4.R") (from #1) : 
+  c:/home/vitoshka/works/pbm/R/S4.R:36:62: unexpected ')'
+35:                           }, list(vname = as.name(".pix_v")), 
+36:                                   pname = as.name(".pix_p"))))
+                                                                ^
 >             
 
+                             
 ## 6 first line is not a pattern!
 + . + Error in base::source(file = file, echo = echo, local = local, print.eval = print.eval,  (from #95) : 
   /tmp/model_mixture.R@4:5:13: unexpected symbol
@@ -50,3 +58,10 @@ Error in source("basicModel.R") : basicModel.R:95:1: unexpected symbol
  3rd Qu.:295.75   3rd Qu.:27.41   3rd Qu.: 153.66   01/06/1997 04:31:13:  1  
  Max.   :394.00   Max.   :39.84   Max.   : 179.93   01/06/1997 06:12:56:  1  
                                                     (Other)            :388  
+
+## 8 valgrind errors
+==25269== Invalid read of size 8
+==25269==    at 0x9EC363C: inner_product<double const*, double const*, double> (stl_numeric.h:183)
+==25269==    by 0x9EC363C: distance(RcppParallel::RMatrix<double> const&, unsigned long, unsigned long, DistType) (rwmd.cpp:21)
+==25269==    by 0x9EC90C9: RelaxedWordMoverDistanceSparse::operator()(unsigned long, unsigned long) (rwmd.cpp:137)
+                                                    

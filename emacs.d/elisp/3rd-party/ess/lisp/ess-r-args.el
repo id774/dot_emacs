@@ -16,10 +16,8 @@
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
 
-;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-;; Boston, MA 02111-1307, USA.
+;; A copy of the GNU General Public License is available at
+;; http://www.r-project.org/Licenses/
 
 ;; Last update: 2012-02-27
 
@@ -34,13 +32,6 @@
 ;; installation, configuration and troubleshooting, please visit
 ;; http://www.svenhartenstein.de/emacs-ess.php
 
-;; Users of XEmacs (or maybe non-GNU-Emacs users): The code below must
-;; be slightly adapted in order to work in XEmacs (i.e. comment out
-;; the delete-trailing-whitespace function call by putting a semicolon
-;; at the beginning of the line). Furthermore, the tooltip option does
-;; NOT work in XEmacs (yet) (and will probably only ever work if the
-;; ESS-core team will adapt the code for XEmacs compatibility).
-
 ;; == Requirements ==
 
 ;; * ESS mode must be loaded and running.
@@ -48,8 +39,6 @@
 ;; * For the tooltip option to work, Emacs must not run within a
 ;;   terminal but (directly) under the X window system (in case of
 ;;   GNU/Linux).
-;; * The tooltip option currently requires GNU Emacs (i.e. not XEmacs
-;;   or a similar other derivate).
 
 ;; == Installation ==
 
@@ -181,12 +170,9 @@
 
 ;;; Code:
 
-(eval-and-compile
-  (require 'ess-custom))
-
+(require 'ess-custom)
 (eval-when-compile
-  (if ess-has-tooltip
-      (require 'tooltip))); for tooltip-show
+  (require 'tooltip)); for tooltip-show
 
 (require 'ess)
 
@@ -206,7 +192,7 @@ found."
 (defun ess-r-args-get (&optional function trim)
   "Returns string of arguments and their default values of R
 function FUNCTION or nil if no possible function name
-found. Calls ess-r-args-current-function if no argument given.
+found. Calls `ess-r-args-current-function' if no argument given.
 If TRIM is non-nill remove tabs and newlines and replace ' = '
 with '=' (useful for display in minibuffer to avoid window and
 buffer readjustments for multiline string)."
@@ -217,31 +203,9 @@ buffer readjustments for multiline string)."
                  (interactive-p)))
     (ess-force-buffer-current "R process to use: ")
     ;; ^^^^^^^^^^^^^^^ has own error handler
-    (cadr (ess-function-arguments function))
-    ))
-
-;;     (let ((ess-nuke-trailing-whitespace-p t)
-;;        (args))
-;;       (ess-command (format "try({fun<-\"%s\"; fundef<-paste(fun, '.default',sep='')
-;; if(exists(fundef, mode = \"function\")) args(fundef) else args(fun)}, silent=F)\n" function)
-;;                 (get-buffer-create "*ess-r-args-tmp*"))
-;;       (with-current-buffer "*ess-r-args-tmp*"
-;;      (goto-char (point-min))
-;;      (if (null (search-forward "function" 20 t))
-;;          (message ess-r-args-noargsmsg)
-;;        (goto-char (point-min))
-;;        (search-forward "(" nil t)
-;;        (delete-region (point-min) (point))
-;;        (goto-char (point-max))
-;;        (search-backward ")" nil t)
-;;        (delete-region (point) (point-max))
-;;        (ess-nuke-trailing-whitespace); should also work in Xemacs
-;;        (setq args (buffer-string))
-;;        (if trim
-;;            (replace-regexp-in-string " = " "="
-;;                                      (replace-regexp-in-string "[\n \t]+" " " args))
-;;          args)
-;; )))))
+    (mapconcat (lambda (arg) (concat (car arg) "=" (cdr arg)))
+               (cadr (ess-function-arguments function))
+               ", ")))
 
 (defun ess-r-args-show (&optional function)
   "Show arguments and their default values of R function. Calls
@@ -252,9 +216,9 @@ buffer readjustments for multiline string)."
       (setq function (ess-r-args-current-function)))
   (ess-message ".... function='%s'" function)
   (when function
-    (let* ((tt (and (equal ess-r-args-show-as 'tooltip)
-                    ess-has-tooltip))
-           (args (concat ess-r-args-show-prefix (ess-r-args-get function (not tt)))))
+    (let* ((tt (equal ess-r-args-show-as 'tooltip))
+           (args (concat ess-r-args-show-prefix
+                         (ess-r-args-get function (not tt)))))
       (ess-message "(ess-r-args-show): args='%s'" args)
       (when  args
         (if (not tt)

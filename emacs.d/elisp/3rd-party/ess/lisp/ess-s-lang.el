@@ -1,8 +1,8 @@
-;;; ess-s-l.el --- Support for editing S source code
+;;; ess-s-lang.el --- Support for editing S source code
 
 ;; Copyright (C) 1989-1997 D. Bates, Kademan, Ritter, D.M. Smith, K. Hornik,
 ;;      R.M. Heiberger, M. Maechler, and A.J. Rossini.
-;; Copyright (C) 1998-2005 A.J. Rossini, Richard M. Heiberger, Martin
+;; Copyright (C) 1998-2015 A.J. Rossini, Richard M. Heiberger, Martin
 ;;      Maechler, Kurt Hornik, Rodney Sparapani, and Stephen Eglen.
 
 ;; Author: A.J. Rossini <rossini@biostat.washington.edu>
@@ -21,9 +21,8 @@
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
 
-;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to
-;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+;; A copy of the GNU General Public License is available at
+;; http://www.r-project.org/Licenses/
 
 ;;; Commentary:
 
@@ -33,7 +32,8 @@
 
  ; Requires and autoloads
 
-(ess-message "[ess-s-l:] (def** ) only ...")
+(require 'ess-utils)
+(ess-message "[ess-s-lang:] (def** ) only ...")
 
  ; Configuration variables
 
@@ -71,7 +71,7 @@
   '((paragraph-start              . (concat "\\s-*$\\|" page-delimiter))
     (paragraph-separate           . (concat "\\s-*$\\|" page-delimiter))
     (paragraph-ignore-fill-prefix . t)
-    (require-final-newline        . t)
+    (require-final-newline        . mode-require-final-newline)
     ;;(comment-indent-function  . 'S-comment-indent)
     ;;(ess-comment-indent           . 'S-comment-indent)
     ;;(ess-indent-line                      . 'S-indent-line)
@@ -121,13 +121,13 @@
     ;; inferior-ess-prompt is used by comint for navigation, only if
     ;; comint-use-prompt-regexp is t; (transcript-mode also relies on this regexp)
     (inferior-ess-prompt           . inferior-S-prompt) ;customizable
-    (ess-get-help-topics-function  . 'ess-get-S-help-topics-function)
+    (ess-get-help-topics-function  . #'ess-s-get-help-topics-function)
     (ess-getwd-command          . "getwd()\n")
     (ess-setwd-command          . "setwd('%s')\n")
     (ess-funargs-command        . ".ess_funargs(\"%s\")\n")
-    
     (fill-nobreak-predicate     . 'ess-inside-string-p)
     (normal-auto-fill-function  . 'ess-do-auto-fill)
+    (ess-execute-screen-options-command . "options(width=%d, length=99999)\n")
     )
   "S-language common settings for all <dialect>-customize-alist s")
 
@@ -138,12 +138,9 @@
      (ess-help-sec-regex        . ess-help-S+-sec-regex)
      (ess-help-sec-keys-alist   . ess-help-S+sec-keys-alist)
      (ess-change-sp-regexp      . ess-S+-change-sp-regexp)
-     (ess-cmd-delay             . (if (featurep 'xemacs); needs much less delay
-                                      (* 0.1 ess-S+-cmd-delay)
-                                    ess-S+-cmd-delay))
-     (ess-function-pattern      . ess-S-function-pattern)
+     (ess-function-pattern      . ess-s-function-pattern)
      (ess-function-template     . " <- \n#\nfunction()\n{\n\n}\n")
-     (ess-dump-filename-template . (ess-replace-regexp-in-string
+     (ess-dump-filename-template . (replace-regexp-in-string
                                     "S$" ess-suffix ; in the one from custom:
                                     ess-dump-filename-template-proto))
      (ess-traceback-command     . "traceback()\n")
@@ -163,7 +160,7 @@
   "Common settings for all S+<*>-customize-alist s"
   )
 
-;;; Changes from S to S-PLUS 3.x.  (standard S3 should be in ess-s-l!).
+;;; Changes from S to S-PLUS 3.x.  (standard S3 should be in ess-s-lang!).
 
 (defconst ess-help-S+sec-keys-alist
   '((?a . "ARGUMENTS:")
@@ -217,41 +214,12 @@
     (?v . "VALUE:"))
   "Help section keys for S4.")
 
-;; R
-(defconst ess-help-R-sec-keys-alist
-  '((?a . "\\s *Arguments:")
-    (?d . "\\s *Description:")
-    (?D . "\\s *Details:")
-    (?t . "\\s *Details:")
-    (?e . "\\s *Examples:")
-    (?n . "\\s *Note:")
-    (?r . "\\s *References:")
-    (?s . "\\s *See Also:")
-    (?u . "\\s *Usage:")
-    (?v . "\\s *Value[s]?")     ;
-    )
-  "Alist of (key . string) pairs for use in help section searching.")
-
 
 (defconst ess-help-S+-sec-regex "^[A-Z. ---]+:$"
   "Reg(ular) Ex(pression) of section headers in help file.")
 
-(defconst ess-help-R-sec-regex "^[A-Z][A-Za-z].+:$"
-  "Reg(ular) Ex(pression) of section headers in help file.")
-
 ;;; S-mode extras of Martin Maechler, Statistik, ETH Zurich.
 ;;; See also ./ess-utils.el
-
-(defvar ess-function-outline-file
-  (concat ess-etc-directory  "/function-outline.S")
-  "The file name of the ess-function outline that is to be inserted at point,
-when \\[ess-insert-function-outline] is used.
-Placeholders (substituted `at runtime'): $A$ for `Author', $D$ for `Date'.")
-
-;; Use the user's own ~/S/emacs-fun.outline  if (s)he has one : ---
-(let ((outline-file (concat (getenv "HOME") "/S/function-outline.S")))
-  (if (file-exists-p outline-file)
-      (setq ess-function-outline-file outline-file)))
 
 ;; Seth's idea; see ess-toggle-S-assign-key below
 (defvar ess-S-assign-key [?\C-=] ;; = "\C-c=" ; old-default:  "_"
@@ -292,12 +260,12 @@ when \\[ess-toggle-S-assign-key] is called.")
 ;;         (setq indent (current-indentation)))
 ;;        (t
 ;;         (skip-chars-forward " \t")
-;;         (cond ((and ess-fancy-comments ;; ### or #!
+;;         (cond ((and ess-indent-with-fancy-comments ;; ### or #!
 ;;                     (or (looking-at "###")
 ;;                         (and (looking-at "#!") (= 1 (line-number-at-pos)))))
 ;;                (setq indent 0))
 ;;               ;; Single # comment
-;;               ((and ess-fancy-comments
+;;               ((and ess-indent-with-fancy-comments
 ;;                     (looking-at "#") (not (looking-at "##")))
 ;;                (setq indent comment-column))
 ;;               (t
@@ -311,7 +279,7 @@ when \\[ess-toggle-S-assign-key] is called.")
 ;;                      ((= (following-char) ?})
 ;;                       (setq indent
 ;;                             (+ indent
-;;                                (- ess-close-brace-offset ess-indent-level))))
+;;                                (- ess-close-brace-offset ess-indent-offset))))
 ;;                      ((= (following-char) ?{)
 ;;                       (setq indent (+ indent ess-brace-offset))))))))
 ;;     (skip-chars-forward " \t")
@@ -429,14 +397,14 @@ when \\[ess-toggle-S-assign-key] is called.")
 ;;               ;; If no previous statement,
 ;;               ;; indent it relative to line brace is on.
 ;;               ;; For open brace in column zero, don't let statement
-;;               ;; start there too.  If ess-indent-level is zero, use
+;;               ;; start there too.  If ess-indent-offset is zero, use
 ;;               ;; ess-brace-offset + ess-continued-statement-offset
 ;;               ;; instead.
 ;;               ;; For open-braces not the first thing in a line,
 ;;               ;; add in ess-brace-imaginary-offset.
-;;               (+ (if (and (bolp) (zerop ess-indent-level))
+;;               (+ (if (and (bolp) (zerop ess-indent-offset))
 ;;                      (+ ess-brace-offset ess-continued-statement-offset)
-;;                    ess-indent-level)
+;;                    ess-indent-offset)
 ;;                  ;; Move back over whitespace before the openbrace.
 ;;                  ;; If openbrace is not first nonwhite thing on the line,
 ;;                  ;; add the ess-brace-imaginary-offset.
@@ -451,40 +419,29 @@ when \\[ess-toggle-S-assign-key] is called.")
 ;;                    ;; Get initial indentation of the line we are on.
 ;;                    (current-indentation))))))))))
 
-(defun ess-insert-function-outline ()
-  "Insert an S function definition `outline' at point.
-Uses the file given by the variable `ess-function-outline-file'."
-  (interactive)
-  (let ((oldpos (point)))
-    (save-excursion
-      (insert-file-contents ess-function-outline-file)
-      (if (search-forward "$A$" nil t)
-          (replace-match (user-full-name) 'not-upcase 'literal))
-      (goto-char oldpos)
-      (if (search-forward "$D$" nil t)
-          (replace-match (ess-time-string 'clock) 'not-upcase 'literal)))
-    (goto-char (1+ oldpos))))
 
-
-;; typically bound to M-Enter
 (defun ess-use-this-dir (&optional no-force-current)
-  "Synchronise the current directory of the S or R process to the one of the current
-buffer. If that buffer has no associated *R* process, use \\[ess-force-buffer-current],
-unless prefix argument NO-FORCE-CURRENT is non-nil."
+  "Set the current process directory to `default-directory'.
+If that buffer has no associated *R* process, use
+\\[ess-force-buffer-current], unless prefix argument
+NO-FORCE-CURRENT is non-nil."
   (interactive "P")
-  (unless no-force-current (ess-force-buffer-current "R process to use: "))
+  (ess-use-dir default-directory))
+
+(defun ess-use-dir (dir &optional no-force-current)
+  (interactive "P")
+  (unless (string= ess-language "S")
+    ;; FIXME: generalize this for Stata, SAS, Xlispstat... -- then move to ess-mode.el
+    (error "ESS setting working directory in *%s* not yet implemented for language %s"
+           ess-local-process-name
+           ess-language))
+  (unless no-force-current
+    (ess-force-buffer-current "R process to use: "))
   (if ess-local-process-name
-      (let ((cmd (format "setwd('%s')\n" default-directory))
-            )
-        (unless (string= ess-language "S")
-          ;; FIXME: generalize this for Stata, SAS, Xlispstat... -- then move to ess-mode.el
-          (error
-           "ESS setting working directory in *%s* not yet implemented for language %s"
-           ess-local-process-name ess-language))
+      (let ((cmd (format "setwd('%s')\n" dir)))
         (ess-command cmd)
         (message "Directory of *%s* process set to %s"
-                 ess-local-process-name default-directory))
-    ;; no local process
+                 ess-local-process-name dir))
     (message "No *%s* process associated with this buffer." ess-dialect)))
 
 
@@ -598,7 +555,7 @@ and one that is well formatted in emacs ess-mode."
 
     (if (string= ess-dialect "R")
         (progn
-          (require 'ess-r-d)
+          (require 'ess-r-mode)
           (R-fix-T-F from (not verbose))))
 
     ;; activate by (setq ess-verbose t)
@@ -611,8 +568,9 @@ and one that is well formatted in emacs ess-mode."
     (ess-if-verbose-write "ess-fix-misc: after ';' before #\n");___D___
 
     ;;from R 1.9.x "_" is valid in names; here assume no initial / trailing '_'
-    (goto-char from) (ess-rep-regexp " +_ *" " <- " nil 'literal verbose)
-    (goto-char from) (ess-rep-regexp   "_ +" " <- " nil 'literal verbose)
+    ;; BUG: The following changes "beta_ " or " _abc"
+    ;; (goto-char from) (ess-rep-regexp " +_ *" " <- " nil 'literal verbose)
+    ;; (goto-char from) (ess-rep-regexp   "_ +" " <- " nil 'literal verbose)
 
     (ess-if-verbose-write "ess-fix-misc: before 'around \"<-\"' :\n");___D___
     ;; ensure space around  "<-"  ---- but only replace if necessary:
@@ -686,11 +644,11 @@ toggle between the new and the previous assignment."
 
 (defvar polymode-mode)
 (defun ess-smart-S-assign ()
-  "Smart \\[ess-smart-S-assign] key: insert `ess-S-assign', unless in string/comment.
+  "Act as smart `ess-S-assign' key: insert `ess-S-assign', unless in string/comment.
 If the underscore key is pressed a second time, the assignment
 operator is removed and replaced by the underscore.  `ess-S-assign',
 typically \" <- \", can be customized.  In ESS modes other than R/S,
-the  underscore is always inserted. "
+the underscore is always inserted."
   (interactive)
   ;;(insert (if (ess-inside-string-or-comment-p (point)) "_" ess-S-assign))
   (save-restriction
@@ -714,8 +672,7 @@ the  underscore is always inserted. "
 
 (defun ess-insert-S-assign ()
   "Insert the assignment operator `ess-S-assign', unless it is already there.
-In that case, the it is removed and replaced by
-  `ess-smart-S-assign-key', \\[ess-smart-S-assign-key].
+In that case, it is removed and replaced by `ess-smart-S-assign-key'.
   `ess-S-assign', typically \" <- \", can be customized."
   (interactive)
   ;; one keypress produces ess-S-assign; a second keypress will delete
@@ -736,33 +693,48 @@ In that case, the it is removed and replaced by
           (delete-horizontal-space))
       (insert ess-S-assign))))
 
+;;; Setting / Unsetting the smart S-assign-key behavior -----------------
+
+;; Two basic building blocks, used below:
+(defun ess--unset-smart-S-assign-key ()
+  (define-key ess-mode-map          "_" nil)
+  (define-key inferior-ess-mode-map "_" nil)
+  (define-key ess-mode-map          ess-smart-S-assign-key nil); 'self-insert-command
+  (define-key inferior-ess-mode-map ess-smart-S-assign-key nil))
+(defun ess--activate-smart-S-assign-key ()
+  (define-key ess-mode-map          ess-smart-S-assign-key 'ess-smart-S-assign)
+  (define-key inferior-ess-mode-map ess-smart-S-assign-key 'ess-smart-S-assign))
+
+
+;; Written such that whimps can have (ess-disable-smart-S-assign) in .emacs :
+(defun ess-disable-smart-S-assign (activate)
+  "Disable or activate (if prefix argument ACTIVATE is set) the smart assignment
+operator `ess-S-assign'.  That, typically \" <- \", can be customized."
+  (interactive "P")
+  (if activate
+      (ess--activate-smart-S-assign-key)
+    (ess--unset-smart-S-assign-key)))
+(defalias 'ess-disable-smart-underscore 'ess-disable-smart-S-assign)
+
 (defun ess-toggle-S-assign (force)
   "Set the `ess-smart-S-assign-key' (by default \"_\"
-[underscore]) key to \\[ess-smart-S-assign] or back to
+ [underscore]) key to \\[ess-smart-S-assign] or back to
 `ess-smart-S-assign-key'.  Toggle the current definition, unless
 FORCE is non-nil, where \\[ess-smart-S-assign] is set
 unconditionally.
 
-  If you as per default have `ess-smart-S-assign-key' set to
-  underscore, note that using \"C-q _\" will always just insert the
-  underscore character."
+If you as per default have `ess-smart-S-assign-key' set to
+underscore, note that using \"C-q _\" will always just insert the
+underscore character."
   (interactive "P")
   (let ((current-key (lookup-key ess-mode-map ess-smart-S-assign-key))
-        (default-key (lookup-key ess-mode-map "_"))
-        )
+        (default-key (lookup-key ess-mode-map "_")))
     (if (and (or default-key current-key)
              ;; (stringp current-key) (string= current-key ess-S-assign)
              (not force))
-        (progn
-          (define-key ess-mode-map          "_" nil)
-          (define-key inferior-ess-mode-map "_" nil)
-          (define-key ess-mode-map          ess-smart-S-assign-key nil); 'self-insert-command
-          (define-key inferior-ess-mode-map ess-smart-S-assign-key nil))
+        (ess--unset-smart-S-assign-key)
       ;; else : "force" or current-key is "nil", i.e. default
-      (define-key ess-mode-map          ess-smart-S-assign-key
-        'ess-smart-S-assign)
-      (define-key inferior-ess-mode-map ess-smart-S-assign-key
-        'ess-smart-S-assign))))
+      (ess--activate-smart-S-assign-key))))
 (defalias 'ess-toggle-underscore 'ess-toggle-S-assign)
 ;; NOTA BENE: "_" is smart *by default* :
 ;; -----  The user can always customize `ess-S-assign' ...
@@ -806,6 +778,8 @@ and I need to relearn emacs lisp (but I had to, anyway."
     (set-syntax-table ess-mode-syntax-table)
     ))
 
+(defun ess-chm-display-help-on-object (object &rest args)
+  (ess-eval-linewise (concat "help(" object ")")))
 
 
 ;;; S imenu support
@@ -851,7 +825,6 @@ and I need to relearn emacs lisp (but I had to, anyway."
       (progn
         (require 'speedbar)
         (when (featurep 'speedbar)
-          (message "enabling speedbar support")
 
           (defun S-speedbar-buttons (buffer)
             "attempted hack."
@@ -868,7 +841,69 @@ and I need to relearn emacs lisp (but I had to, anyway."
           (ess-S-initialize-speedbar)))
     (error nil)))
 
-(provide 'ess-s-l)
+(defun ess-s-get-help-topics-function (name)
+  "Return a list of current S help topics associated with process NAME.
+If 'sp-for-help-changed?' process variable is non-nil or
+`ess-help-topics-list' is nil, (re)-populate the latter and
+return it.  Otherwise, return `ess-help-topics-list'."
+  (with-ess-process-buffer nil
+    (ess-write-to-dribble-buffer
+     (format "(ess-get-help-topics-list %s) .." name))
+    (ess-help-r--check-last-help-type)
+    (cond
+     ;; (Re)generate the list of topics
+     ((or (not ess-help-topics-list)
+          (ess-process-get 'sp-for-help-changed?))
+      (ess-process-put 'sp-for-help-changed? nil)
+      (setq ess-help-topics-list
+            (ess-uniq-list
+             (append (ess-get-object-list name 'exclude-1st)
+                     (ess-get-help-files-list)
+                     (ess-get-help-aliases-list)))))
+     (t
+      ess-help-topics-list))))
+
+;;; On a PC, the default is S+.
+;; Elsewhere (unix and linux) the default is S+
+(cond  (ess-microsoft-p
+        ;; MS-Windows-------------------------------------------------
+
+        ;;        (fset 'S
+        ;;           (if (equal (file-name-nondirectory shell-file-name) "cmdproxy.exe")
+        ;;               'S+-msdos
+        ;;             'S+))
+        (defun S-by-icon (&rest x)
+          (interactive)
+          (message "Please start S+ from the icon.
+ Then you can connect emacs to it with `M-x S-existing'.")
+          )
+        (fset 'S 'S-by-icon)
+        (fset 'S-existing
+              (if (equal (file-name-nondirectory shell-file-name) "cmdproxy.exe")
+                  'S+-msdos-existing
+                'S+-existing))
+        (fset 'Sqpe 'Sqpe+)
+        (fset 's-mode 'S+-mode)
+        (fset 's-transcript-mode 'S+-transcript-mode))
+
+       (t ;;((eq system-type 'gnu/linux)
+        ;; Linux etc (including Mac OSX !?) --------------------------
+        (fset 'S 'S+)
+        (fset 's-mode 'S+-mode)
+        (fset 's-transcript-mode 'S+-transcript-mode)))
+
+;;;;* Alias S-mode to s-mode
+;;; Emacs will set the mode for a file based on the file's header.
+;;; The mode name is indicated by putting it between -*- on the top line.
+;;; (Other commands can go here too, see an Emacs manual.)
+;;; For a file you also load, you will want a leading # (comment to S)
+;;; Emacs will downcase the name of the mode, e.g., S, so we must provide
+;;; s-mode in lower case too.  That is, "#-*- S-*-" invokes s-mode and
+;;; not S-mode.
+(fset 'S-transcript-mode 's-transcript-mode)
+(fset 'S-mode 's-mode)
+
+(provide 'ess-s-lang)
 
  ; Local variables section
 
@@ -887,4 +922,4 @@ and I need to relearn emacs lisp (but I had to, anyway."
 ;;; outline-regexp: "\^L\\|\\`;\\|;;\\*\\|;;;\\*\\|(def[cvu]\\|(setq\\|;;;;\\*"
 ;;; End:
 
-;;; ess-s-l.el ends here
+;;; ess-s-lang.el ends here

@@ -22,9 +22,8 @@
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
 
-;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to
-;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+;; A copy of the GNU General Public License is available at
+;; http://www.r-project.org/Licenses/
 
 ;;; Commentary:
 
@@ -48,7 +47,7 @@
     (ess-dialect                   . "omegahat")
     (ess-suffix                    . "omg")
     (ess-loop-timeout              . 5000)
-    (ess-dump-filename-template    . (ess-replace-regexp-in-string
+    (ess-dump-filename-template    . (replace-regexp-in-string
                                       "S$" ess-suffix ; in the one from custom:
                                       ess-dump-filename-template-proto))
     (ess-mode-editing-alist        . OMG-editing-alist)

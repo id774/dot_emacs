@@ -18,9 +18,8 @@
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
 ;;
-;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to
-;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+;; A copy of the GNU General Public License is available at
+;; http://www.r-project.org/Licenses/
 
 ;;; Code:
 
@@ -259,6 +258,39 @@
   (if (not (w32-shell-dos-semantics))
       (add-hook 'comint-output-filter-functions 'ess-bugs-exit-notify-sh))
   )
+
+(defun ess-sci-to-dec ()
+  "For BUGS/S family: Express +/-0.000E+/-0 or +/-0.0e+/-00 as a decimal."
+  (interactive)
+  (setq buffer-read-only nil)
+  (save-excursion (goto-char 0)
+                  (save-match-data (let ((ess-temp-replacement-string nil)
+                                         (ess-temp-replacement-9 0)
+                                         (ess-temp-replacement-diff 0))
+                                     (while (search-forward-regexp "-?[0-9][.][0-9][0-9]?[0-9]?[Ee][+-][0-9][0-9]?" nil t)
+                                       (setq ess-temp-replacement-string
+                                             (int-to-string (string-to-number (match-string 0))))
+                                       (setq ess-temp-replacement-diff (- (match-end 0) (match-beginning 0)))
+                                       (save-match-data
+                                         (setq ess-temp-replacement-9
+                                               (string-match "99999999999$" ess-temp-replacement-string))
+
+                                         (if (not ess-temp-replacement-9)
+                                             (setq ess-temp-replacement-9
+                                                   (string-match "000000000001$" ess-temp-replacement-string))))
+
+                                       (if ess-temp-replacement-9
+                                           (setq ess-temp-replacement-string
+                                                 (substring ess-temp-replacement-string 0 ess-temp-replacement-9)))
+
+                                       (setq ess-temp-replacement-diff
+                                             (- ess-temp-replacement-diff (string-width ess-temp-replacement-string)))
+
+                                       (while (> ess-temp-replacement-diff 0)
+                                         (setq ess-temp-replacement-string (concat ess-temp-replacement-string " "))
+                                         (setq ess-temp-replacement-diff (- ess-temp-replacement-diff 1)))
+
+                                       (replace-match ess-temp-replacement-string))))))
 
 (setq features (delete 'ess-bugs-d features))
 (provide 'ess-bugs-d)

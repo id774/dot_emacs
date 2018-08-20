@@ -1,4 +1,4 @@
-;;; ess-sta-d.el --- Stata customization
+;;; ess-stata-mode.el --- Stata customization
 
 ;; Copyright (C) 1997--1999 A. J. Rossini, Thomas Lumley
 ;; Copyright (C) 1997--2004 A.J. Rossini, Richard M. Heiberger, Martin
@@ -22,9 +22,8 @@
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
 
-;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to
-;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+;; A copy of the GNU General Public License is available at
+;; http://www.r-project.org/Licenses/
 
 ;;; Commentary:
 
@@ -36,7 +35,8 @@
 (autoload 'inferior-ess "ess-inf" "Run an ESS process.")
 (autoload 'ess-mode     "ess-mode" "Edit an ESS process.")
 
-(require 'ess-sta-l)
+(require 'ess-mode)
+(require 'ess-stata-lang)
 
 (defvar STA-dialect-name "stata"
   "Name of 'dialect' for Stata.");easily changeable in a user's .emacs
@@ -54,6 +54,7 @@
     (ess-loop-timeout              . 500000 )
     (ess-object-name-db-file       . "ess-sta-namedb.el" )
     (ess-help-web-search-command   . "http://www.stata.com/search/?q=%s&restrict=&btnG=Search&client=stata&num=&output=xml_no_dtd&site=stata&ie=&oe=UTF-8&sort=&proxystylesheet=stata")
+    (ess-eval-linewise-function    . #'stata-eval-linewise)
     (inferior-ess-font-lock-defaults . ess-STA-mode-font-lock-defaults)
     (inferior-ess-program          . inferior-STA-program-name)
     (inferior-ess-objects-command  . "describe\n")
@@ -71,6 +72,7 @@
     (comment-end                  . " \*/")
     (comment-start-skip           . "/\\*+ *")
     (comment-use-syntax           . t) ;; needed for multiline
+    (ess-execute-screen-options-command . "set linesize %s\n")
     )
   "Variables to customize for Stata.")
 
@@ -126,9 +128,7 @@ This function is placed in `ess-presend-filter-functions'.
       (goto-char (point-max))
       (with-current-buffer (process-buffer proc)
         (add-hook 'ess-presend-filter-functions 'ess-sta-remove-comments nil 'local)
-        (run-mode-hooks 'ess-stata-post-run-hook))
-      )
-    ))
+        (run-mode-hooks 'ess-stata-post-run-hook)))))
 
 
 (defun STA-transcript-mode ()
@@ -152,12 +152,20 @@ This function is placed in `ess-presend-filter-functions'.
   (or (ess-process-get 'help-topics)
       (progn
         (ess-process-put 'help-topics (ess--STA-retrive-topics-from-search))
-        (ess-process-get 'help-topics))
-      ))
+        (ess-process-get 'help-topics))))
+
+(defun stata-eval-linewise (text &optional invisibly &rest args)
+  ;; The following is required to make sure things work!
+  (let ((ess-eval-linewise-function nil)
+        ;; RAS: mindless replacement of semi-colons
+        (text (if ess-sta-delimiter-friendly
+                  (ess-replace-in-string text ";" "\n")
+                text)))
+    (apply #'ess-eval-linewise text t args)))
 
  ; Provide package
 
-(provide 'ess-sta-d)
+(provide 'ess-stata-mode)
 
  ; Local variables section
 
@@ -176,4 +184,4 @@ This function is placed in `ess-presend-filter-functions'.
 ;;; outline-regexp: "\^L\\|\\`;\\|;;\\*\\|;;;\\*\\|(def[cvu]\\|(setq\\|;;;;\\*"
 ;;; End:
 
-;;; ess-sta-d.el ends here
+;;; ess-stata-mode.el ends here

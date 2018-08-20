@@ -28,6 +28,7 @@
 
 ;; To stave off byte compiler errors
 (eval-when-compile (require 'ess-help))
+(require 'ess-utils)
 
 (defvar essddr-version "0.9-1"
   "Current version of ess-rd.el.")
@@ -36,17 +37,6 @@
   "ESS Core Team <ess-core@r-project.org>"
   "Current maintainer of ess-rd.el.")
 
-(defun Rd-active-mark () nil)           ;silence compiler.
-(if (featurep 'xemacs)
-    ;; Special support for XEmacs (curtesy of auctex):
-    (defun Rd-active-mark ()
-      (and zmacs-regions (mark)))
-
-  ;; else:  special support for GNU Emacs
-  (defun Rd-active-mark ()
-    (and transient-mark-mode mark-active))
-  )
-
 (autoload 'ess-eval-region              "ess-inf" "[autoload]" t)
 (autoload 'ess-eval-line-and-step       "ess-inf" "[autoload]" t)
 (autoload 'ess-switch-process           "ess-inf" "[autoload]" t)
@@ -54,7 +44,7 @@
 (autoload 'ess-switch-to-end-of-ESS     "ess-inf" "[autoload]" t)
 
 (autoload 'ess-help-mode                "ess-help" "[autoload]" t)
-(autoload 'ess-nuke-help-bs             "ess-help" "[autoload]" t)
+(autoload 'ess-help-underline           "ess-help" "[autoload]" t)
 
 (defvar Rd-mode-abbrev-table nil
   "Abbrev table for R documentation keywords.
@@ -143,7 +133,7 @@ All Rd mode abbrevs start with a grave accent (`).")
     ;; "Alpha" "Gamma" "alpha" "beta" "epsilon" "lambda" "mu" "pi" "sigma"
     ;; "ge" "le" "left" "right"
     ;;
-    "CRANpkg" "R" "RdOpts" "S3method" "S4method" "Sexpr" "acronym"
+    "R" "RdOpts" "S3method" "S4method" "Sexpr" "acronym"
     "bold" "cite" "code" "command" "cr" "dQuote" "deqn" "dfn" "dontrun"
     "dontshow" "donttest" "dots" "email" "emph" "enc" "env" "eqn" "figure" "file"
     "href" "if" "ifelse"
@@ -151,6 +141,10 @@ All Rd mode abbrevs start with a grave accent (`).")
     "newcommand" "option" "out"
     "pkg" "sQuote" "renewcommand"
     "samp" "strong" "tab" "url" "var" "verb"
+    ;; System macros (from <R>/share/Rd/macros/system.Rd ):
+    "CRANpkg" "PR" "sspace" "doi"
+    "packageTitle" "packageDescription" "packageAuthor"
+    "packageMaintainer" "packageDESCRIPTION" "packageIndices"
     ))
 
 ;; Need to fix Rd-bold-face problem.
@@ -292,7 +286,7 @@ following lines to your `.emacs' file:
   (interactive)
   (text-mode)
   (kill-all-local-variables)
-  (ess-setq-vars-local R-customize-alist) ;same functionality is availabe as in R buffers
+  (ess-setq-vars-local ess-r-customize-alist) ;same functionality is available as in R buffers
   (use-local-map Rd-mode-map)
   (setq mode-name "Rd")
   (setq major-mode 'Rd-mode)
@@ -307,6 +301,14 @@ following lines to your `.emacs' file:
   (set (make-local-variable 'font-lock-defaults)
        '(Rd-font-lock-keywords nil nil))
   ;; (set (make-local-variable 'parse-sexp-ignore-comments) t)
+
+  ;; Here is a workaround for an Emacs bug related to indirect buffers and
+  ;; spurious lockfiles that rears its ugly head with .Rd files
+  ;; http://lists.gnu.org/archive/html/bug-gnu-emacs/2013-02/msg01368.html
+  ;; http://debbugs.gnu.org/cgi/bugreport.cgi?bug=14328
+  (unless (featurep 'xemacs)
+    (make-local-variable 'create-lockfiles)
+    (setq create-lockfiles nil))
 
   (require 'easymenu)
   (easy-menu-define Rd-mode-menu-map Rd-mode-map
@@ -460,7 +462,7 @@ following lines to your `.emacs' file:
                (set-buffer "*Help*")
                (insert help))))
 
-          ((Rd-active-mark)
+          ((region-active-p)
            (save-excursion
              (cond ((> (mark) (point))
                     (insert before)
@@ -475,31 +477,49 @@ following lines to your `.emacs' file:
            (save-excursion
              (insert after))))))
 
-(defun Rd-preview-help ()
-  "Preview the current buffer contents using `Rd-to-help-command'.
+(defun Rd-preview-help (&optional via-shell)
+  "Preview the current Rd buffer contents as help.
+If optional VIA-SHELL is set, using `Rd-to-help-command'.
 If the current buffer is not associated with a file, create a
 temporary one in `temporary-file-directory'.
 "
-  (interactive)
+  (interactive "P")
   (require 'ess-help)
-  (let ((file  buffer-file-name)
+  (let ((file buffer-file-name)
         (pbuf (get-buffer-create "R Help Preview"))
-        del-p shcmd)
+        del-p)
     (unless file
-      (setq file  (make-temp-file "RD_" nil ".Rd"))
+      (setq file (make-temp-file "RD_" nil ".Rd"))
       (write-region (point-min) (point-max) file)
       (setq del-p t))
-    (setq shcmd (format "%s '%s'" Rd-to-help-command file))
-    (set-buffer pbuf)
-    (erase-buffer)
-    (ess-write-to-dribble-buffer
-     (format "Rd-preview-help: (shell-command |%s| t)" shcmd))
-    (shell-command shcmd t)
-    (ess-setq-vars-local R-customize-alist)
-    (setq ess-help-sec-regex ess-help-R-sec-regex
-          ess-help-sec-keys-alist ess-help-R-sec-keys-alist)
-    (ess-nuke-help-bs)
+
+    (if via-shell ;; FIXME eventually get rid of this option
+        ;; only method in ESS <= 14.09 -- calls "R" even if in "R-devel"; slower
+        (let ((shcmd (format "%s '%s'" Rd-to-help-command file)))
+          (set-buffer pbuf)
+          (erase-buffer)
+          (ess-write-to-dribble-buffer
+           (format "Rd-preview-help: (shell-command |%s| t)" shcmd))
+          (shell-command shcmd t))
+      ;; else directly:
+      (ess-force-buffer-current "R process to use: ")
+      (ess-command (format ".ess_Rd2txt(\"%s\")\n" file) pbuf)
+      (set-buffer pbuf))
+
+    ;; FIXME(2): once got rid of via-shell, consider
+    ;; (ess--flush-help-into-current-buffer file "tools::Rd2txt(\"%s\")\n")
+    ;; instead of all this :
+    (ess-setq-vars-local ess-r-customize-alist)
+    ;; FIXME: Is this really needed?
+    (setq ess-help-sec-regex ess-help-r-sec-regex
+          ess-help-sec-keys-alist ess-help-r-sec-keys-alist)
+    ;; mostly cut'n'paste from ess--flush-help* (see FIXME(2)):
+    (ess-help-underline)
     (ess-help-mode)
+    (goto-char (point-min))
+    (set-buffer-modified-p 'nil)
+    (setq buffer-read-only t)
+    (setq truncate-lines nil)
     (when del-p (delete-file file))
     (unless (get-buffer-window pbuf 'visible)
       (display-buffer pbuf t))))
@@ -520,6 +540,8 @@ temporary one in `temporary-file-directory'.
 
 
 ;; Provide ourself
+(provide 'ess-rd)
+;; Legacy feature
 (provide 'essddr)
 
 ;; ess-rd.el ends here
