@@ -155,7 +155,9 @@
 (load-p "persistent-scratch")
 
 ;; ESS
-(load-p "ess-site")
+(cond
+  ((>= emacs-major-version '24)
+    (load-p "ess-site")))
 
 ;; Anything.el & Helm
 (load-p "anything-helm")
