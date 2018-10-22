@@ -111,6 +111,7 @@ byte_compile_all() {
       ruby-block.el \
       jaspace.el \
       auto-async-byte-compile.el \
+      auto-save-buffers-enhanced.el \
       actionscript-mode.el \
       flymake-cursor.el \
       fuzzy.el \

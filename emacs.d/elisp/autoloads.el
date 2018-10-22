@@ -184,6 +184,8 @@
 ;; Kill Ring を保存する
 (require 'savekill)
 
+(load-p "auto-save-buffers-settings")
+
 ;; web-mode
 ;; http://web-mode.org/
 (load-p "web-mode-settings")
