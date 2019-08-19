@@ -1,6 +1,6 @@
 (require 'web-mode)
 
-(when (< emacs-major-version 24)
+(when (< emacs-major-version '24)
   (defalias 'prog-mode 'fundamental-mode))
 
 (add-to-list 'auto-mode-alist '("\\.phtml$"     . web-mode))

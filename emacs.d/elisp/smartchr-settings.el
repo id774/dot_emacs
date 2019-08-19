@@ -1,3 +1,6 @@
+(cond
+  ((< emacs-major-version '25)
+
 ;; sequential-command
 (when (require 'sequential-command-config)
   (global-set-key "\C-a" 'seq-home)
@@ -14,3 +17,5 @@
   (global-set-key (kbd "{") (smartchr '("{" "{)" "{ `!!' }")))
   (global-set-key (kbd ">") (smartchr '(">" "=>" " => " " => '`!!''" " => \"`!!'\"")))
   (global-set-key (kbd "F") (smartchr '("F" "$" "$_" "$_->" "@$"))))
+
+))
