@@ -1,6 +1,6 @@
 ;; HTML メール
 (require 'mew-w3m)
-(defadvice mew-summary-display 
+(defadvice mew-summary-display
   (after mew-auto-analize-again activate)
   (mew-summary-analyze-again))
 ;; 起動時にメール取得する/しない
