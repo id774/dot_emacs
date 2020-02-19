@@ -5,7 +5,7 @@
                                anything-c-source-recentf
                                anything-c-source-file-name-history
                                anything-c-source-locate))
-  (define-key global-map "\C-x\C-b" 'anything)
+  (define-key global-map "\C-x\ b" 'anything)
   (define-key anything-map (kbd "C-p") 'anything-previous-line)
   (define-key anything-map (kbd "C-n") 'anything-next-line)
   (define-key anything-map (kbd "C-v") 'anything-next-source)
@@ -22,7 +22,7 @@
         (define-key global-map [remap list-buffers] 'helm-buffers-list)
         (define-key lisp-interaction-mode-map [remap completion-at-point] 'helm-lisp-completion-at-point)
         (define-key emacs-lisp-mode-map       [remap completion-at-point] 'helm-lisp-completion-at-point))
-        (define-key global-map "\C-x\ b" 'helm-for-files)
+        (define-key global-map "\C-x\C-b" 'helm-for-files)
         (global-set-key (kbd "C-;") 'helm-find-files)
         (global-set-key (kbd "C-:") 'helm-mini)
         ;; 自動補完を無効
