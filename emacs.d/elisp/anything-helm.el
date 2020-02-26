@@ -39,7 +39,7 @@
     ))
   ((< emacs-major-version '24)
     (progn
-      (define-key global-map "\C-x\ b" 'electric-buffer-list)
+      (define-key global-map "\C-x\C-b" 'electric-buffer-list)
     )
   )
 )
