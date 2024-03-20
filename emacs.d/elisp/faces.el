@@ -60,9 +60,9 @@
 ;; Bitstream Vera Sans Mono/VL ゴシックを指定
 ;; (要 :ttf-bitstream-vera パッケージ)
       ((eq system-type 'gnu/linux)
-        (setq default-frame-alist ; ThinkPad X60/X61 に最適化
-              (append (list '(top . 10) ; 起動時の表示位置（上から）
-                            '(left . 10) ; 起動時の表示位置（左から）
+        (setq default-frame-alist ; GNU/Linux ではデスクトップ環境にあわせて調整する
+              (append (list '(top . 15) ; 起動時の表示位置（上から）
+                            '(left . 15) ; 起動時の表示位置（左から）
                             '(width . 120) ; 起動時のサイズ（幅）
                             '(height . 40) ; 起動時のサイズ（縦）
                             )))
@@ -78,7 +78,7 @@
         (cond
           ((< emacs-major-version '23)
             (progn
-              (setq default-frame-alist
+              (setq default-frame-alist ; 以前のバージョンの互換性のため
                     (append (list '(top . 10) ; 起動時の表示位置（上から）
                                   '(left . 10) ; 起動時の表示位置（左から）
                                   '(width . 180) ; 起動時のサイズ（幅）
@@ -87,11 +87,11 @@
               ))
           ((>= emacs-major-version '23)
             (progn
-              (setq default-frame-alist ; 13inch MacBook Pro に最適化
-                    (append (list '(top . 15) ; 起動時の表示位置（上から）
-                                  '(left . 10) ; 起動時の表示位置（左から）
-                                  '(width . 205) ; 起動時のサイズ（幅）
-                                  '(height . 54) ; 起動時のサイズ（縦）
+              (setq default-frame-alist ; iMac/MacBook のサイズにあわせて調整する
+                    (append (list '(top . 25) ; 起動時の表示位置（上から）
+                                  '(left . 20) ; 起動時の表示位置（左から）
+                                  '(width . 200) ; 起動時のサイズ（幅）
+                                  '(height . 50) ; 起動時のサイズ（縦）
                                   )))
               ;; (set-input-method "MacOSX")
               (setq fixed-width-use-QuickDraw-for-ascii t)
