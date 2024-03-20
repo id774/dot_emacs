@@ -8,14 +8,10 @@
 (setq exec-path (cons (expand-file-name "/opt/python/current/bin") exec-path))
 
 ;; python-mode
-(cond
-  ((>= emacs-major-version '23)
-    (progn
-      (setq python-mode-hook
-        (function (lambda ()
-          (local-set-key "\C-c\ p" 'python-pep8)
-          (require 'py-autopep8)
-          (define-key python-mode-map (kbd "C-c F") 'py-autopep8)
-          (define-key python-mode-map (kbd "C-c f") 'py-autopep8-region)
-        ))))
-  ))
+(setq python-mode-hook
+  (function (lambda ()
+    (local-set-key "\C-c\ p" 'python-pep8)
+    (require 'py-autopep8)
+    (define-key python-mode-map (kbd "C-c F") 'py-autopep8)
+    (define-key python-mode-map (kbd "C-c f") 'py-autopep8-region)
+)))
