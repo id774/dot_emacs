@@ -1,67 +1,114 @@
-DOT_EMACS
-=========
+# DOT\_EMACS
 
-This is my dot emacs includes a third-party libraries.
-The goal is to create The All-in-One Emacs environment.
+A pluggable and comprehensive configuration for Emacs that includes third-party libraries to create an all-in-one Emacs environment.
 
+---
 
-Usage
------
+## Contents
 
-To get started -- checkout http://github.com/id774/dot_emacs
+1. Overview
+2. Supported Environments
+3. Installation
+4. Default Behavior
+5. Versioning
+6. Contribution
+7. License
+8. Authors
 
-You can install dot emacs in one of two ways:
+---
 
-``` html
+## 1. Overview
+
+DOT\_EMACS is designed to:
+
+- Simplify the setup of a powerful Emacs environment with preconfigured settings.
+- Include third-party libraries for enhanced functionality.
+- Provide a modular and customizable structure for user preferences.
+
+---
+
+## 2. Supported Environments
+
+DOT\_EMACS is confirmed to work on:
+
+- Emacs on Debian/Ubuntu stable.
+- Emacs built from source (23.x or later).
+- Emacs for macOS (from [emacsformacosx.com](http://emacsformacosx.com/), 23.x or later).
+- Meadow based on Emacs 22.3.1 or later on Windows 7 (partial support).
+
+The currently supported versions are Emacs 23.4 and 24.3.
+
+---
+
+## 3. Installation
+
+Run the `install_dotemacs.sh` script to install DOT\_EMACS:
+
+### Usage:
+
+```bash
+# Install dot_emacs
+#  $1 = emacs's binary path
+#  $2 = installation target
+#  $3 = nosudo
+```
+
+### Default Installation:
+
+```bash
 ~/dot_emacs/install_dotemacs.sh
 ```
 
-Or if you install in your home directory
+This installs DOT\_EMACS to the default location. Root privileges (via `sudo`) are required.
 
-``` html
+### Custom Installation:
+
+```bash
 ~/dot_emacs/install_dotemacs.sh /usr/bin/emacs ~/.emacs.d nosudo
 ```
 
-For more info, refer to the script.
+This installs DOT\_EMACS to `~/.emacs.d`, bypassing the need for `sudo`.
 
+---
 
-Versioning
-----------
+## 4. Default Behavior
 
-After 11.09, releases will be numbered with the follow format:
+DOT\_EMACS:
 
-`<year>.<month>`
+- Configures Emacs with preinstalled third-party libraries for enhanced functionality.
+- Loads user-specific configurations from the `emacs.d/` directory if available.
 
-This naming convention is to mimic the Ubuntu.
+---
 
+## 5. Versioning
 
-Environment
------------
+DOT\_EMACS uses the `<year>.<month>` versioning format starting from version `11.09`.
+Example: `24.12`
 
-This platforms on which this is known to work include:
+---
 
-+ Emacs on Debian/Ubuntu stable.
-+ Emacs building from source 23.x or later.
-+ Emacs for Mac OS X ( http://emacsformacosx.com/ ) 23.x or later.
-+ Meadow based on Emacs 22.3.1 or later on Windows 7 (Partially support).
+## 6. Contribution
 
-The current main supported version is Emacs 23.4/24.3.
+Contributions are welcome! Here’s how you can help:
 
+1. Fork the repository.
+2. Add or improve a feature, or fix an issue.
+3. Submit a pull request with clear documentation and changes.
 
-Authors
--------
+Please ensure your code is well-structured and documented.
+
+---
+
+## 7. License
+
+This project is licensed under the [GNU Lesser General Public License v3 (LGPLv3)](https://www.gnu.org/licenses/lgpl-3.0.html).
+You are free to use, modify, and distribute this project under the terms of the license.
+
+---
+
+## 8. Authors
 
 **774**
 
-+ http://id774.net
-+ http://github.com/id774
-
-
-Copyright and license
----------------------
-
-Licensed under the GNU GENERAL PUBLIC LICENSE, Version 3.0.
-
-  http://www.gnu.org/copyleft/gpl.html
-
-
+- [Website](http://id774.net)
+- [GitHub](http://github.com/id774)
