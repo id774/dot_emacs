@@ -9,7 +9,7 @@
 
 ;; path 系
 (setq exec-path (append '("/usr/local/bin" "/opt/local/bin") exec-path))
-(setenv "PATH" (concat '"/usr/local/bin:/opt/local/bin:/usr/bin:" (getenv "PATH")))
+(setenv "PATH" (concat "/usr/local/bin:/opt/local/bin:/usr/bin:" (getenv "PATH")))
 
 ;;; my-load-path
 (defvar default-load-path load-path
