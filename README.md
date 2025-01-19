@@ -6,14 +6,14 @@ A pluggable and comprehensive configuration for Emacs that includes third-party 
 
 ## Contents
 
-1. Overview
-2. Supported Environments
-3. Installation
-4. Default Behavior
-5. Versioning
-6. Contribution
-7. License
-8. Authors
+1. [Overview](#1-overview)
+2. [Supported Environments](#2-supported-environments)
+3. [Installation](#3-installation)
+4. [Default Behavior](#4-default-behavior)
+5. [Versioning](#5-versioning)
+6. [Contribution](#6-contribution)
+7. [License](#7-license)
+8. [Authors](#8-authors)
 
 ---
 
