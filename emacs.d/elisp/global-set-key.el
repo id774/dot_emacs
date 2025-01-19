@@ -182,6 +182,9 @@
 (define-key global-map "\C-c\C-c\C-r" 'redo)
 (define-key global-map "\C-c\C-c\ r" 'redo)
 
+;; バイトコンパイル
+(global-set-key (kbd "C-c C-b") 'byte-compile-file)
+
 ;; バッファ再読み込み
 (defun revert-current-buffer ()
   (interactive)
