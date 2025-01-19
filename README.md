@@ -76,7 +76,7 @@ This installs DOT\_EMACS to `~/.emacs.d`, bypassing the need for `sudo`.
 DOT\_EMACS:
 
 - Configures Emacs with preinstalled third-party libraries for enhanced functionality.
-- Loads user-specific configurations from the `emacs.d/` directory if available.
+- Loads user-specific configurations from the ~/.emacs.d/elisp/ directory, including init.el and additional settings if available.
 
 ---
 
