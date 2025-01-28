@@ -32,9 +32,9 @@ DOT\_EMACS is designed to:
 DOT_EMACS is confirmed to work on:
 
 - Emacs on Debian/Ubuntu stable.
-- Emacs built from source (23.x or later).
+- Emacs built from source (23.4 or later).
 - Emacs for macOS (from [emacsformacosx.com](http://emacsformacosx.com/)).
-- Meadow based on Emacs 22.3.1 or later on Windows 7 (partial support).
+- Meadow based on Emacs 22.3.1 or later on Windows 7 (partial support, with limited functionality)
 
 Supported Emacs versions:
 - Emacs 23.4 and later (including future releases).
