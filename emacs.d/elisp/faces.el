@@ -27,7 +27,12 @@
        ;; (要 :ttf-bitstream-vera パッケージ)
        ((eq system-type 'gnu/linux)
         (setq default-frame-alist
-              (append (list '(font . "Bitstream Vera Sans Mono-8")) default-frame-alist)))
+              (append (list '(top . 45)
+                            '(left . 20)
+                            '(width . 100)
+                            '(height . 30)
+                            '(font . "Bitstream Vera Sans Mono-8"))
+                      default-frame-alist)))
        ;; macOS 用設定（Menlo フォントを使用）
        ((eq system-type 'darwin)
         (setq default-frame-alist
