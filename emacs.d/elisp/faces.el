@@ -28,7 +28,7 @@
        ((eq system-type 'gnu/linux)
         (setq default-frame-alist
               (append (list '(font . "Bitstream Vera Sans Mono-8")) default-frame-alist)))
-       ;; macOS 用設定（Menloフォントを使用）
+       ;; macOS 用設定（Menlo フォントを使用）
        ((eq system-type 'darwin)
         (setq default-frame-alist
               (append (list '(top . 45)
@@ -45,16 +45,16 @@
                             :weight 'normal
                             :slant 'normal)
 
-        ;; 日本語フォントを Osaka−等幅 に設定
+        ;; 日本語フォントを Hiragino Kaku Gothic ProN W3 に設定
         (set-fontset-font (frame-parameter nil 'font)
                           'japanese-jisx0208
-                          '("Osaka−等幅" . "iso10646-1"))
+                          '("Hiragino Kaku Gothic ProN W3" . "iso10646-1"))
         (set-fontset-font (frame-parameter nil 'font)
                           'japanese-jisx0212
-                          '("Osaka−等幅" . "iso10646-1"))
+                          '("Hiragino Kaku Gothic ProN W3" . "iso10646-1"))
         (set-fontset-font (frame-parameter nil 'font)
                           'katakana-jisx0201
-                          '("Osaka−等幅" . "iso10646-1"))
+                          '("Hiragino Kaku Gothic ProN W3" . "iso10646-1"))
 
         ;; 斜体の無効化
         (set-face-attribute 'italic nil :slant 'normal)
@@ -99,4 +99,3 @@
                                         (set-face-foreground 'font-lock-warning-face "magenta")
                                         (set-face-bold-p 'font-lock-function-name-face t)
                                         (set-face-bold-p 'font-lock-warning-face nil)))))
-
