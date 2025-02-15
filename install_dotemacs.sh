@@ -175,11 +175,6 @@ slink_elisp() {
     test -d $HOME/.emacs.d/auto-save-list || mkdir $HOME/.emacs.d/auto-save-list
     $SUDO chmod 750 $HOME/.emacs.d
     $SUDO chmod 750 $HOME/.emacs.d/site-lisp
-    cp $DOT_EMACS/emacs.d/site-lisp/loader.el $HOME/.emacs.d/site-lisp/
-    cp $DOT_EMACS/emacs.d/site-lisp/auto-install.el $HOME/.emacs.d/site-lisp/
-    cd $HOME/.emacs.d/site-lisp
-    $EMACS --batch -Q -f batch-byte-compile loader.el
-    $EMACS --batch -Q -f batch-byte-compile auto-install.el
     $SUDO chmod 750 $HOME/.emacs.d/anything
     $SUDO chmod 750 $HOME/.emacs.d/backups
     $SUDO chmod 750 $HOME/.emacs.d/tmp
