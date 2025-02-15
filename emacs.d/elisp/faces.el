@@ -14,160 +14,89 @@
 (prefer-coding-system 'utf-8-unix)
 
 (if window-system
-  (progn
-    (cond
-;; Windows(Meadow3) 用設定
-;; VL ゴシックフォント必要
-;; http://dicey.org/vlgothic/
-      ((eq system-type 'windows-nt)
-        (w32-add-font
-         "vl-gothic-12"
-         '((spec
-            ((:char-spec ascii :height any)
-             strict
-             (w32-logfont "VL ゴシック" 0 -12 400 0 nil nil nil 128 1 3 49))
-             ((:char-spec ascii :height any :weight bold)
-              strict
-              (w32-logfont "VL ゴシック" 0 -12 700 0 nil nil nil 128 1 3 49))
-             ((:char-spec ascii :height any :slant italic)
-             strict
-             (w32-logfont "VL ゴシック" 0 -12 400 0 t nil nil 128 1 3 49))
-             ((:char-spec ascii :height any :weight bold :slant italic)
-              strict
-              (w32-logfont "VL ゴシック" 0 -12 700 0 t nil nil 128 1 3 49))
-             ((:char-spec japanese-jisx0208 :height any)
-              strict
-              (w32-logfont "VL ゴシック" 0 -12 400 0 nil nil nil 128 1 3 49))
-             ((:char-spec japanese-jisx0208 :height any :weight bold)
-              strict
-              (w32-logfont "VL ゴシック" 0 -12 700 0 nil nil nil 128 1 3 49))
-             ((:char-spec japanese-jisx0208 :height any :slant italic)
-             strict
-             (w32-logfont "VL ゴシック" 0 -12 400 0 t nil nil 128 1 3 49))
-             ((:char-spec japanese-jisx0208 :height any :weight bold :slant italic)
-              strict
-              (w32-logfont "VL ゴシック" 0 -12 700 0 t nil nil 128 1 3 49)
-              ((spacing . -1))
-             ))))
+    (progn
+      (cond
+       ;; Windows(Meadow3) 用設定
+       ;; VL ゴシックフォント必要
+       ;; http://dicey.org/vlgothic/
+       ((eq system-type 'windows-nt)
         (setq default-frame-alist
-              (append (list '(top . 10) ; 起動時の表示位置（上から）
-                            '(left . 10) ; 起動時の表示位置（左から）
-                            '(width . 120) ; 起動時のサイズ（幅）
-                            '(height . 40) ; 起動時のサイズ（縦）
-                            '(font . "vl-gothic-12"); VL Gothic
-                            ))))
-;; GNU/Linux 用設定
-;; Bitstream Vera Sans Mono/VL ゴシックを指定
-;; (要 :ttf-bitstream-vera パッケージ)
-      ((eq system-type 'gnu/linux)
-        (setq default-frame-alist ; GNU/Linux ではデスクトップ環境にあわせて調整する
-              (append (list '(top . 15) ; 起動時の表示位置（上から）
-                            '(left . 15) ; 起動時の表示位置（左から）
-                            '(width . 120) ; 起動時のサイズ（幅）
-                            '(height . 40) ; 起動時のサイズ（縦）
-                            )))
-        (set-default-font "Bitstream Vera Sans Mono-10")
-        ;; (set-default-font "DejaVu Sans Mono-10") ;; Ubuntu Lucid
+              (append (list '(font . "VL ゴシック-12")) default-frame-alist)))
+       ;; GNU/Linux 用設定
+       ;; Bitstream Vera Sans Mono/VL ゴシックを指定
+       ;; (要 :ttf-bitstream-vera パッケージ)
+       ((eq system-type 'gnu/linux)
+        (setq default-frame-alist
+              (append (list '(font . "Bitstream Vera Sans Mono-8")) default-frame-alist)))
+       ;; macOS 用設定（Menloフォントを使用）
+       ((eq system-type 'darwin)
+        (setq default-frame-alist
+              (append (list '(top . 45)
+                            '(left . 20)
+                            '(width . 230)
+                            '(height . 65)
+                            '(font . "Menlo-12"))
+                      default-frame-alist))
+
+        ;; Menlo を設定
+        (set-face-attribute 'default nil
+                            :family "Menlo"
+                            :height 120
+                            :weight 'normal
+                            :slant 'normal)
+
+        ;; 日本語フォントを Osaka−等幅 に設定
         (set-fontset-font (frame-parameter nil 'font)
                           'japanese-jisx0208
-                          '("VL ゴシック" . "unicode-bmp"))
-      )
-      ((eq system-type 'darwin)
-;; Mac OS X Cocoa/Carbon Emacs 用設定
-;; http://diary.mrmt.net/item/1356
-        (cond
-          ((< emacs-major-version '23)
-            (progn
-              (setq default-frame-alist ; 以前のバージョンの互換性のため
-                    (append (list '(top . 10) ; 起動時の表示位置（上から）
-                                  '(left . 10) ; 起動時の表示位置（左から）
-                                  '(width . 180) ; 起動時のサイズ（幅）
-                                  '(height . 45) ; 起動時のサイズ（縦）
-                                  )))
-              ))
-          ((>= emacs-major-version '23)
-            (progn
-              (setq default-frame-alist ; iMac/MacBook のサイズにあわせて調整する
-                    (append (list '(top . 25) ; 起動時の表示位置（上から）
-                                  '(left . 20) ; 起動時の表示位置（左から）
-                                  '(width . 200) ; 起動時のサイズ（幅）
-                                  '(height . 50) ; 起動時のサイズ（縦）
-                                  )))
-              ;; (set-input-method "MacOSX")
-              (setq fixed-width-use-QuickDraw-for-ascii t)
-              (setq mac-allow-anti-aliasing t)
-              (set-face-attribute 'default nil
-                                  :family "monaco"
-                                  :height 100) ; 相対的な文字の大きさを決定する
-              (set-fontset-font
-               (frame-parameter nil 'font)
-               'japanese-jisx0208
-               '("Hiragino Kaku Gothic Pro" . "iso10646-1"))
-              (set-fontset-font
-               (frame-parameter nil 'font)
-               'japanese-jisx0212
-               '("Hiragino Kaku Gothic Pro" . "iso10646-1"))
-              ;;; Unicode フォント
-              (set-fontset-font
-               (frame-parameter nil 'font)
-               'mule-unicode-0100-24ff
-               '("monaco" . "iso10646-1"))
-             ;;; キリル，ギリシア文字設定
-             ;;; 注意： この設定だけでは古代ギリシア文字、コプト文字は表示できない
-             ;;; http://socrates.berkeley.edu/~pinax/greekkeys/NAUdownload.html が必要
-             ;;; キリル文字
-              (set-fontset-font
-               (frame-parameter nil 'font)
-               'cyrillic-iso8859-5
-               '("monaco" . "iso10646-1"))
-             ;;; ギリシア文字
-              (set-fontset-font
-               (frame-parameter nil 'font)
-               'greek-iso8859-7
-               '("monaco" . "iso10646-1"))
-              (setq face-font-rescale-alist
-                    '(("^-apple-hiragino.*" . 1.2)
-                      (".*osaka-bold.*" . 1.2)
-                      (".*osaka-medium.*" . 1.2)
-                      (".*courier-bold-.*-mac-roman" . 1.0)
-                      (".*monaco cy-bold-.*-mac-cyrillic" . 0.9)
-                      (".*monaco-bold-.*-mac-roman" . 0.9)
-                      ("-cdac$" . 1.3)))
-              (setq ns-command-modifier (quote meta))
-              (setq ns-alternate-modifier (quote super))
-          ))
-        ))
-      )
-;; フレーム設定
-    (setq default-frame-alist
-          (append (list '(foreground-color . "#00FF00") ; 文字の色
-                        '(background-color . "#000000") ; 背景の色
-                        '(border-color . "#000000") ;
-                        '(mouse-color . "#00FFFF") ;
-                        '(cursor-color . "#FF0000") ; カーソルの色
-                        '(vertical-scroll-bars . nil) ;
-                   )
-                  default-frame-alist))
-;;リージョンに色を付ける
-    (setq transient-mark-mode t)
-;;フォントロック
-    (global-font-lock-mode 1)
-    (setq font-lock-support-mode 'jit-lock-mode)
-;; 色づけは最大限に
-    (setq font-lock-maximum-decoration t)
-;; デフォルトの色づけを変える
-    (add-hook 'font-lock-mode-hook '(lambda ()
-      (set-face-foreground 'font-lock-builtin-face "spring green")
-      (set-face-foreground 'font-lock-comment-face "slate gray")
-      (set-face-foreground 'font-lock-string-face  "spring green")
-      (set-face-foreground 'font-lock-keyword-face "khaki")
-      (set-face-foreground 'font-lock-constant-face "violet")
-      (set-face-foreground 'font-lock-function-name-face "hot pink")
-      (set-face-foreground 'font-lock-variable-name-face "hot pink")
-      (set-face-foreground 'font-lock-type-face "cyan")
-      (set-face-foreground 'font-lock-warning-face "magenta")
-      (set-face-bold-p 'font-lock-function-name-face t)
-      (set-face-bold-p 'font-lock-warning-face nil)
-    ))
-))
+                          '("Osaka−等幅" . "iso10646-1"))
+        (set-fontset-font (frame-parameter nil 'font)
+                          'japanese-jisx0212
+                          '("Osaka−等幅" . "iso10646-1"))
+        (set-fontset-font (frame-parameter nil 'font)
+                          'katakana-jisx0201
+                          '("Osaka−等幅" . "iso10646-1"))
+
+        ;; 斜体の無効化
+        (set-face-attribute 'italic nil :slant 'normal)
+        (set-face-attribute 'font-lock-comment-face nil :slant 'normal)
+        (set-face-attribute 'font-lock-string-face nil :slant 'normal)
+
+        ;; Mac用の追加設定
+        (setq fixed-width-use-QuickDraw-for-ascii t)
+        (setq mac-allow-anti-aliasing t)
+        (setq ns-command-modifier 'meta)
+        (setq ns-alternate-modifier 'super)
+       ))
+
+      ;; フレームの基本設定
+      (setq default-frame-alist
+            (append (list '(foreground-color . "#00FF00")
+                          '(background-color . "#000000")
+                          '(border-color . "#000000")
+                          '(mouse-color . "#00FFFF")
+                          '(cursor-color . "#FF0000")
+                          '(vertical-scroll-bars . nil))
+                    default-frame-alist))
+
+      ;; リージョンに色を付ける
+      (setq transient-mark-mode t)
+
+      ;; フォントロックの設定
+      ;; 色づけは最大限に
+      (global-font-lock-mode 1)
+      (setq font-lock-support-mode 'jit-lock-mode)
+      (setq font-lock-maximum-decoration t)
+      ;; デフォルトの色づけを変える
+      (add-hook 'font-lock-mode-hook '(lambda ()
+                                        (set-face-foreground 'font-lock-builtin-face "spring green")
+                                        (set-face-foreground 'font-lock-comment-face "slate gray")
+                                        (set-face-foreground 'font-lock-string-face  "spring green")
+                                        (set-face-foreground 'font-lock-keyword-face "khaki")
+                                        (set-face-foreground 'font-lock-constant-face "violet")
+                                        (set-face-foreground 'font-lock-function-name-face "hot pink")
+                                        (set-face-foreground 'font-lock-variable-name-face "hot pink")
+                                        (set-face-foreground 'font-lock-type-face "cyan")
+                                        (set-face-foreground 'font-lock-warning-face "magenta")
+                                        (set-face-bold-p 'font-lock-function-name-face t)
+                                        (set-face-bold-p 'font-lock-warning-face nil)))))
 
