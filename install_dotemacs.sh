@@ -8,6 +8,8 @@
 #
 #  Maintainer: id774 <idnanashi@gmail.com>
 #
+# v1.20 2025-03-05
+#       Added sudo privilege check when --sudo option is specified.
 # v1.19 5/22,2014
 #       Clean up obsolete code.
 # v1.18 2/4,2014
@@ -49,6 +51,14 @@
 #  v1.0 5/18,2009
 #       Stable.
 ########################################################################
+
+# Check if the user has sudo privileges (password may be required)
+check_sudo() {
+    if ! sudo -v 2>/dev/null; then
+        echo "Error: This script requires sudo privileges. Please run as a user with sudo access."
+        exit 1
+    fi
+}
 
 setup_dotemacs() {
     test -d $TARGET && $SUDO rm -rf $TARGET/
@@ -207,6 +217,12 @@ setup_environment() {
     test -n "$3" || SUDO=sudo
     test -n "$3" && SUDO=
     test "$3" = "sudo" && SUDO=sudo
+
+    # Check sudo privileges if sudo is required
+    if [ "$SUDO" = "sudo" ]; then
+        check_sudo
+    fi
+
     GITHUB=$TARGET/elisp/3rd-party
     DOT_EMACS=$HOME/dot_emacs
 }
