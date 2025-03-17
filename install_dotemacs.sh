@@ -254,7 +254,7 @@ main() {
 
     cd | exit 1
 
-    check_commands sudo cp mkdir chmod chown ln id dirname
+    check_commands sudo cp mkdir chmod chown ln rm id dirname
     setup_environment "$@"
     setup_dotemacs
     emacs_private_settings
