@@ -71,6 +71,22 @@
 #
 ########################################################################
 
+# Display help message
+show_help() {
+    cat <<EOF
+Usage: $(basename "$0") [emacs_binary] [installation_target] [nosudo]
+
+Options:
+  -h, --help    Show this help message and exit.
+
+Description:
+  This script installs the dot_emacs configuration files to the specified
+  target directory, compiles Emacs Lisp scripts, sets appropriate permissions,
+  and optionally removes existing configurations.
+EOF
+    exit 0
+}
+
 # Function to check required commands
 check_commands() {
     for cmd in "$@"; do
@@ -106,13 +122,16 @@ setup_dotemacs() {
 
 # Apply user-specific settings for Emacs
 emacs_private_settings() {
-    [ -f "$PRIVATE/dot_files/dot_mew.el" ] && cp "$PRIVATE/dot_files/dot_mew.el" "$HOME/.mew.el"
     [ -f "$HOME/etc/config.local/dot_mew.el" ] && cp "$HOME/etc/config.local/dot_mew.el" "$HOME/.mew.el"
 
     chmod 600 "$HOME/.mew.el"
 
     if [ -f "$HOME/etc/config.local/proxy.el" ]; then
-        $SUDO cp $OPTIONS "$HOME/etc/config.local/"*.el "$TARGET/elisp/"
+        $SUDO cp $OPTIONS "$HOME/etc/config.local/proxy.el" "$TARGET/elisp/"
+    fi
+
+    if [ -f "$HOME/etc/config.local/faces.el" ]; then
+        $SUDO cp $OPTIONS "$HOME/etc/config.local/faces.el" "$TARGET/elisp/"
     fi
 }
 
@@ -222,45 +241,61 @@ slink_elisp() {
 
 # Initialize environment variables
 setup_environment() {
-    SCRIPTS="$HOME/scripts"
-    PRIVATE="$HOME/private/scripts"
-
     case "$OSTYPE" in
         *darwin*)
             OPTIONS=-Rv
             OWNER=root:wheel
-            EMACS=${1:-/usr/bin/emacs}
             ;;
         *)
             OPTIONS=-Rvd
             OWNER=root:root
-            EMACS=${1:-emacs}
             ;;
     esac
 
+    EMACS=${1:-emacs}
+    check_commands "$EMACS"
+
     TARGET=${2:-/usr/local/etc/emacs.d}
-    SUDO=${3:+""}
-    [ "$3" = "sudo" ] && SUDO=sudo
+    if [ -n "$3" ]; then
+        SUDO=""
+    else
+        SUDO="sudo"
+    fi
+    echo "Using sudo: ${SUDO:-no}"
 
     if [ "$SUDO" = "sudo" ]; then
         check_sudo
+    else
+        OWNER="$(id -un):$(id -gn)"
     fi
+    echo "Copy options: $OPTIONS, Owner: $OWNER"
 
     GITHUB="$TARGET/elisp/3rd-party"
-    DOT_EMACS="$HOME/dot_emacs"
+    export DOT_EMACS=$(dirname "$(realpath "$0" 2>/dev/null || readlink -f "$0")")
 }
 
 # Set file permissions
 set_permission() {
     $SUDO chown -R "$OWNER" "$TARGET"
-    $SUDO chown "$USER" "$TARGET/elisp/3rd-party/nxhtml/etc/schema/xhtml-loader.rnc"
-    $SUDO chown -R "$USER" "$TARGET/elisp/3rd-party/ruby-mode/"
+    $SUDO chown "$(id -un):$(id -gn)" "$TARGET/elisp/3rd-party/nxhtml/etc/schema/xhtml-loader.rnc"
+    $SUDO chown -R "$(id -un):$(id -gn)" "$TARGET/elisp/3rd-party/ruby-mode/"
 }
 
 # Main function to execute the script
 main() {
+    # Parse command-line arguments
+    for arg in "$@"; do
+        case "$arg" in
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+        esac
+    done
+
     cd | exit 1
-    check_commands emacs sudo cp mkdir chmod chown ln
+
+    check_commands sudo cp mkdir chmod chown ln id dirname
     setup_environment "$@"
     setup_dotemacs
     emacs_private_settings
