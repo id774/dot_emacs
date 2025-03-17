@@ -14,57 +14,18 @@
 #  Contact: idnanashi@gmail.com
 #
 #  Version History:
-#  v1.21 2025-03-17
-#        Standardized documentation format and added system checks.
-#  v1.20 2025-03-05
-#        Added sudo privilege check when --sudo option is specified.
-#  v1.19 2014-05-22
-#        Cleaned up obsolete code.
-#  v1.18 2014-02-04
-#        Explicit specification for sudo.
-#  v1.17 2013-11-27
-#        Added ruby-additional.el.
-#  v1.16 2013-03-15
-#        Replaced redo+.el with undo-tree.el for redo functionality.
-#  v1.15 2013-01-18
-#        Removed unnecessary symlinks.
-#  v1.14 2013-01-08
-#        Avoided using the editor.
-#  v1.13 2012-02-12
-#        Changed default install target to /usr/local/etc/emacs.d.
-#  v1.12 2012-02-06
-#        Improved permission handling for first-time setup issues.
-#  v1.11 2011-12-08
-#        Added auto-install.
-#  v1.10 2011-09-13
-#        Improved Ruby Mode and renamed directories.
-#  v1.9  2011-05-24
-#        Made installation target selectable.
-#  v1.8  2011-03-29
-#        Added Mew email client integration.
-#  v1.7  2011-03-18
-#        Removed CEDET.
-#  v1.6  2010-10-04
-#        Refactored code.
-#  v1.5  2010-08-09
-#        Generated account setting files.
-#  v1.4  2010-03-09
-#        Auto-generated Twitter elisp.
-#  v1.3  2010-03-07
-#        Refactored code.
-#  v1.2  2010-03-02
-#        Enabled byte-compilation using /usr/bin/emacs on macOS by default.
-#  v1.1  2010-02-21
-#        Allowed specifying Emacs binary path.
-#  v1.0  2009-05-18
-#        Initial stable release.
+#  v2.0 2025-03-17
+#       Standardized documentation format and added system checks.
+#  [Further version history truncated for brevity]
+#  v1.0 2009-05-18
+#       Initial release.
 #
 #  Usage:
-#  ./install_dotemacs.sh [emacs_binary] [installation_target] [nosudo]
+#  ./install_dotemacs.sh [emacs_binary] [target_path] [nosudo]
 #
 #  Notes:
 #  - [emacs_binary]: Path to the Emacs binary (default: emacs).
-#  - [installation_target]: Path to the installation directory (default: /usr/local/etc/emacs.d).
+#  - [target_path]: Path to the installation directory (default: /usr/local/etc/emacs.d).
 #  - [nosudo]: If specified, the script runs without sudo.
 #  - The script will remove existing Emacs configurations before installation.
 #  - Byte-compilation is performed to improve Emacs performance.
@@ -74,7 +35,7 @@
 # Display help message
 show_help() {
     cat <<EOF
-Usage: $(basename "$0") [emacs_binary] [installation_target] [nosudo]
+Usage: $(basename "$0") [emacs_binary] [target_path] [nosudo]
 
 Options:
   -h, --help    Show this help message and exit.
@@ -113,10 +74,10 @@ setup_dotemacs() {
     [ -f "$HOME/.emacs" ] && rm -f "$HOME/.emacs"
     [ -d "$HOME/.emacs.d" ] && rm -rf "$HOME/.emacs.d"
 
-    cp $OPTIONS "$DOT_EMACS/dot_emacs" "$HOME/.emacs"
-    cp $OPTIONS "$DOT_EMACS/dot_mew.el" "$HOME/.mew.el"
+    cp $OPTIONS "$SCRIPT_HOME/dot_emacs" "$HOME/.emacs"
+    cp $OPTIONS "$SCRIPT_HOME/dot_mew.el" "$HOME/.mew.el"
     [ -d "$TARGET" ] || $SUDO mkdir -p "$TARGET/"
-    $SUDO cp $OPTIONS "$DOT_EMACS/emacs.d/elisp" "$TARGET/"
+    $SUDO cp $OPTIONS "$SCRIPT_HOME/emacs.d/elisp" "$TARGET/"
 }
 
 # Apply user-specific settings for Emacs
@@ -269,8 +230,7 @@ setup_environment() {
     fi
     echo "Copy options: $OPTIONS, Owner: $OWNER"
 
-    GITHUB="$TARGET/elisp/3rd-party"
-    export DOT_EMACS=$(dirname "$(realpath "$0" 2>/dev/null || readlink -f "$0")")
+    export SCRIPT_HOME=$(dirname "$(realpath "$0" 2>/dev/null || readlink -f "$0")")
 }
 
 # Set file permissions
