@@ -82,7 +82,7 @@ setup_dotemacs() {
 
 # Apply user-specific settings for Emacs
 emacs_private_settings() {
-    [ -f "$HOME/etc/config.local/dot_mew.el" ] && cp "$HOME/etc/config.local/dot_mew.el" "$HOME/.mew.el"
+    [ -f "$HOME/etc/config.local/dot_mew.el" ] && cp $OPTIONS "$HOME/etc/config.local/dot_mew.el" "$HOME/.mew.el"
 
     chmod 600 "$HOME/.mew.el"
 
