@@ -84,7 +84,6 @@ Description:
   target directory, compiles Emacs Lisp scripts, sets appropriate permissions,
   and optionally removes existing configurations.
 EOF
-    exit 0
 }
 
 # Function to check required commands
