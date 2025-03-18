@@ -87,6 +87,10 @@ emacs_private_settings() {
 
     chmod 600 "$HOME/.mew.el"
 
+    if [ -f "$HOME/etc/config.local/emacs-w3m.el" ]; then
+        $SUDO cp $OPTIONS "$HOME/etc/config.local/emacs-w3m.el" "$TARGET/elisp/"
+    fi
+
     if [ -f "$HOME/etc/config.local/proxy.el" ]; then
         $SUDO cp $OPTIONS "$HOME/etc/config.local/proxy.el" "$TARGET/elisp/"
     fi
