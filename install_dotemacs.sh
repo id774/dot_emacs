@@ -206,8 +206,8 @@ slink_elisp() {
 
 # Initialize environment variables
 setup_environment() {
-    case "$OSTYPE" in
-        *darwin*)
+    case "$(uname)" in
+        Darwin)
             OPTIONS=-Rv
             OWNER=root:wheel
             ;;
@@ -259,7 +259,7 @@ main() {
 
     cd | exit 1
 
-    check_commands sudo cp mkdir chmod chown ln rm id dirname
+    check_commands sudo cp mkdir chmod chown ln rm id dirname uname
     setup_environment "$@"
     setup_dotemacs
     emacs_private_settings
