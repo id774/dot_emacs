@@ -13,7 +13,6 @@ A pluggable and comprehensive configuration for Emacs that includes third-party 
 5. [Versioning](#5-versioning)
 6. [Contribution](#6-contribution)
 7. [License](#7-license)
-8. [Authors](#8-authors)
 
 ---
 
@@ -102,14 +101,7 @@ Please ensure your code is well-structured and documented.
 
 ## 7. License
 
-This project is licensed under the [GNU Lesser General Public License v3 (LGPLv3)](https://www.gnu.org/licenses/lgpl-3.0.html).
-You are free to use, modify, and distribute this project under the terms of the license.
+This repository is dual licensed under the [GPL version 3](https://www.gnu.org/licenses/gpl-3.0.html) or the [LGPL version 3](https://www.gnu.org/licenses/lgpl-3.0.html), at your option.
+For full details, please refer to the [LICENSE](doc/LICENSE) file.
 
----
-
-## 8. Authors
-
-**774**
-
-- [Website](http://id774.net)
-- [GitHub](http://github.com/id774)
+Thank you for using and contributing to this repository!
