@@ -14,6 +14,9 @@
 #  Contact: idnanashi@gmail.com
 #
 #  Version History:
+#  v2.2 2025-04-27
+#       Add strict error checking for all critical filesystem operations
+#       and unify log output with [INFO] and [ERROR] tags.
 #  v2.1 2025-03-22
 #       Unify usage information by extracting help text from header comments.
 #  v2.0 2025-03-17
@@ -53,10 +56,10 @@ check_commands() {
     for cmd in "$@"; do
         cmd_path=$(command -v "$cmd" 2>/dev/null)
         if [ -z "$cmd_path" ]; then
-            echo "Error: Command '$cmd' is not installed. Please install $cmd and try again." >&2
+            echo "[ERROR] Command '$cmd' is not installed. Please install $cmd and try again." >&2
             exit 127
         elif [ ! -x "$cmd_path" ]; then
-            echo "Error: Command '$cmd' is not executable. Please check the permissions." >&2
+            echo "[ERROR] Command '$cmd' is not executable. Please check the permissions." >&2
             exit 126
         fi
     done
@@ -65,40 +68,56 @@ check_commands() {
 # Check if the user has sudo privileges (password may be required)
 check_sudo() {
     if ! sudo -v 2>/dev/null; then
-        echo "Error: This script requires sudo privileges. Please run as a user with sudo access." >&2
+        echo "[ERROR] This script requires sudo privileges. Please run as a user with sudo access." >&2
         exit 1
     fi
 }
 
 # Install dot_emacs files to the target directory
 setup_dotemacs() {
+    echo "[INFO] Setting up dot_emacs configuration..."
+
     [ -d "$TARGET" ] && $SUDO rm -rf "$TARGET/"
     [ -f "$HOME/.emacs" ] && rm -f "$HOME/.emacs"
     [ -d "$HOME/.emacs.d" ] && rm -rf "$HOME/.emacs.d"
 
-    cp $OPTIONS "$SCRIPT_HOME/dot_emacs" "$HOME/.emacs"
-    cp $OPTIONS "$SCRIPT_HOME/dot_mew.el" "$HOME/.mew.el"
-    [ -d "$TARGET" ] || $SUDO mkdir -p "$TARGET/"
-    $SUDO cp $OPTIONS "$SCRIPT_HOME/emacs.d/elisp" "$TARGET/"
+    if ! cp $OPTIONS "$SCRIPT_HOME/dot_emacs" "$HOME/.emacs"; then
+        echo "[ERROR] Failed to copy dot_emacs to $HOME/.emacs" >&2
+        exit 1
+    fi
+
+    if ! cp $OPTIONS "$SCRIPT_HOME/dot_mew.el" "$HOME/.mew.el"; then
+        echo "[ERROR] Failed to copy dot_mew.el to $HOME/.mew.el" >&2
+        exit 1
+    fi
+
+    [ -d "$TARGET" ] || $SUDO mkdir -p "$TARGET/" || {
+        echo "[ERROR] Failed to create target directory $TARGET" >&2
+        exit 1
+    }
+
+    if ! $SUDO cp $OPTIONS "$SCRIPT_HOME/emacs.d/elisp" "$TARGET/"; then
+        echo "[ERROR] Failed to copy elisp directory to $TARGET/" >&2
+        exit 1
+    fi
 }
 
 # Apply user-specific settings for Emacs
 emacs_private_settings() {
+    echo "[INFO] Applying private Emacs settings..."
+
     [ -f "$HOME/etc/config.local/dot_mew.el" ] && cp $OPTIONS "$HOME/etc/config.local/dot_mew.el" "$HOME/.mew.el"
 
     chmod 600 "$HOME/.mew.el"
 
-    if [ -f "$HOME/etc/config.local/emacs-w3m.el" ]; then
-        $SUDO cp $OPTIONS "$HOME/etc/config.local/emacs-w3m.el" "$TARGET/elisp/"
-    fi
-
-    if [ -f "$HOME/etc/config.local/proxy.el" ]; then
-        $SUDO cp $OPTIONS "$HOME/etc/config.local/proxy.el" "$TARGET/elisp/"
-    fi
-
-    if [ -f "$HOME/etc/config.local/faces.el" ]; then
-        $SUDO cp $OPTIONS "$HOME/etc/config.local/faces.el" "$TARGET/elisp/"
-    fi
+    for file in emacs-w3m.el proxy.el faces.el; do
+        if [ -f "$HOME/etc/config.local/$file" ]; then
+            if ! $SUDO cp $OPTIONS "$HOME/etc/config.local/$file" "$TARGET/elisp/"; then
+                echo "[ERROR] Failed to copy $file to $TARGET/elisp/" >&2
+                exit 1
+            fi
+        fi
+    done
 }
 
 # Compile an Emacs Lisp file
@@ -111,6 +130,8 @@ emacs_batch_byte_compile() {
 
 # Byte-compile all necessary Emacs Lisp files
 byte_compile_all() {
+    echo "[INFO] Byte-compiling Emacs Lisp files..."
+
     cd "$TARGET/elisp/3rd-party/helm" && $SUDO make
 
     cd "$TARGET/elisp/3rd-party/jade-mode" && emacs_batch_byte_compile \
@@ -190,6 +211,8 @@ byte_compile_all() {
 
 # Create symbolic links for Emacs configuration files
 slink_elisp() {
+    echo "[INFO] Creating symlinks for Emacs configuration..."
+
     [ -d "$HOME/.emacs.d" ] || mkdir "$HOME/.emacs.d"
 
     if [ "$TARGET" != "$HOME/.emacs.d" ]; then
@@ -208,14 +231,8 @@ slink_elisp() {
 # Initialize environment variables
 setup_environment() {
     case "$(uname)" in
-        Darwin)
-            OPTIONS=-Rv
-            OWNER=root:wheel
-            ;;
-        *)
-            OPTIONS=-Rvd
-            OWNER=root:root
-            ;;
+        Darwin) OPTIONS=-Rv; OWNER=root:wheel ;;
+        *) OPTIONS=-Rvd; OWNER=root:root ;;
     esac
 
     EMACS=${1:-emacs}
@@ -227,14 +244,14 @@ setup_environment() {
     else
         SUDO="sudo"
     fi
-    echo "Using sudo: ${SUDO:-no}"
+    echo "[INFO] Using sudo: ${SUDO:-no}"
 
     if [ "$SUDO" = "sudo" ]; then
         check_sudo
     else
         OWNER="$(id -un):$(id -gn)"
     fi
-    echo "Copy options: $OPTIONS, Owner: $OWNER"
+    echo "[INFO] Copy options: $OPTIONS, Owner: $OWNER"
 
     export SCRIPT_HOME=$(dirname "$(realpath "$0" 2>/dev/null || readlink -f "$0")")
 }
