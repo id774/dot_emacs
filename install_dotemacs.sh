@@ -213,23 +213,57 @@ byte_compile_all() {
 slink_elisp() {
     echo "[INFO] Creating symlinks for Emacs configuration..."
 
-    [ -d "$HOME/.emacs.d" ] || mkdir "$HOME/.emacs.d"
+    if [ ! -d "$HOME/.emacs.d" ]; then
+        echo "[INFO] Creating directory: $HOME/.emacs.d"
+        if ! mkdir "$HOME/.emacs.d"; then
+            echo "[ERROR] Failed to create $HOME/.emacs.d" >&2
+            exit 1
+        fi
+    fi
 
     if [ "$TARGET" != "$HOME/.emacs.d" ]; then
-        ln -fs "$TARGET/elisp" "$HOME/.emacs.d/elisp"
-        [ -L "$TARGET/elisp/elisp" ] && $SUDO rm "$TARGET/elisp/elisp"
+        echo "[INFO] Creating symlink: $HOME/.emacs.d/elisp -> $TARGET/elisp"
+        if ! ln -fs "$TARGET/elisp" "$HOME/.emacs.d/elisp"; then
+            echo "[ERROR] Failed to create symlink for elisp" >&2
+            exit 1
+        fi
+
+        if [ -L "$TARGET/elisp/elisp" ]; then
+            echo "[INFO] Removing redundant symlink: $TARGET/elisp/elisp"
+            if ! $SUDO rm "$TARGET/elisp/elisp"; then
+                echo "[ERROR] Failed to remove redundant symlink $TARGET/elisp/elisp" >&2
+                exit 1
+            fi
+        fi
     fi
 
     for dir in site-lisp anything backups tmp tramp-auto-save auto-save-list; do
-        [ -d "$HOME/.emacs.d/$dir" ] || mkdir "$HOME/.emacs.d/$dir"
-        $SUDO chmod 750 "$HOME/.emacs.d/$dir"
+        if [ ! -d "$HOME/.emacs.d/$dir" ]; then
+            echo "[INFO] Creating directory: $HOME/.emacs.d/$dir"
+            if ! mkdir "$HOME/.emacs.d/$dir"; then
+                echo "[ERROR] Failed to create $HOME/.emacs.d/$dir" >&2
+                exit 1
+            fi
+        fi
+        if ! $SUDO chmod 750 "$HOME/.emacs.d/$dir"; then
+            echo "[ERROR] Failed to set permission for $HOME/.emacs.d/$dir" >&2
+            exit 1
+        fi
     done
 
-    touch "$HOME/.emacs.d/anything/anything-c-adaptive-history"
+    echo "[INFO] Creating adaptive history file: $HOME/.emacs.d/anything/anything-c-adaptive-history"
+    if ! touch "$HOME/.emacs.d/anything/anything-c-adaptive-history"; then
+        echo "[ERROR] Failed to create anything-c-adaptive-history file" >&2
+        exit 1
+    fi
+
+    echo "[INFO] Symlink setup for Emacs configuration completed successfully."
 }
 
 # Initialize environment variables
 setup_environment() {
+    echo "[INFO] Starting environment setup..."
+
     case "$(uname)" in
         Darwin) OPTIONS=-Rv; OWNER=root:wheel ;;
         *) OPTIONS=-Rvd; OWNER=root:root ;;
@@ -254,13 +288,27 @@ setup_environment() {
     echo "[INFO] Copy options: $OPTIONS, Owner: $OWNER"
 
     export SCRIPT_HOME=$(dirname "$(realpath "$0" 2>/dev/null || readlink -f "$0")")
+
+    echo "[INFO] Environment setup completed."
 }
 
 # Set file permissions
 set_permission() {
-    $SUDO chown -R "$OWNER" "$TARGET"
-    $SUDO chown "$(id -un):$(id -gn)" "$TARGET/elisp/3rd-party/nxhtml/etc/schema/xhtml-loader.rnc"
-    $SUDO chown -R "$(id -un):$(id -gn)" "$TARGET/elisp/3rd-party/ruby-mode/"
+    echo "[INFO] Setting ownership for $TARGET"
+    if ! $SUDO chown -R "$OWNER" "$TARGET"; then
+        echo "[ERROR] Failed to change ownership for $TARGET" >&2
+        exit 1
+    fi
+
+    if ! $SUDO chown "$(id -un):$(id -gn)" "$TARGET/elisp/3rd-party/nxhtml/etc/schema/xhtml-loader.rnc"; then
+        echo "[ERROR] Failed to change ownership for xhtml-loader.rnc" >&2
+        exit 1
+    fi
+
+    if ! $SUDO chown -R "$(id -un):$(id -gn)" "$TARGET/elisp/3rd-party/ruby-mode/"; then
+        echo "[ERROR] Failed to change ownership for ruby-mode directory" >&2
+        exit 1
+    fi
 }
 
 # Main function to execute the script
@@ -278,6 +326,8 @@ main() {
     byte_compile_all
     slink_elisp
     [ -n "$3" ] || set_permission
+
+    echo "[INFO] Installation completed successfully."
 }
 
 # Execute main function
