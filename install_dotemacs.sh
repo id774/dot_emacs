@@ -82,22 +82,22 @@ setup_dotemacs() {
     [ -d "$HOME/.emacs.d" ] && rm -rf "$HOME/.emacs.d"
 
     if ! cp $OPTIONS "$SCRIPT_HOME/dot_emacs" "$HOME/.emacs"; then
-        echo "[ERROR] Failed to copy dot_emacs to $HOME/.emacs" >&2
+        echo "[ERROR] Failed to copy dot_emacs to $HOME/.emacs." >&2
         exit 1
     fi
 
     if ! cp $OPTIONS "$SCRIPT_HOME/dot_mew.el" "$HOME/.mew.el"; then
-        echo "[ERROR] Failed to copy dot_mew.el to $HOME/.mew.el" >&2
+        echo "[ERROR] Failed to copy dot_mew.el to $HOME/.mew.el." >&2
         exit 1
     fi
 
     [ -d "$TARGET" ] || $SUDO mkdir -p "$TARGET/" || {
-        echo "[ERROR] Failed to create target directory $TARGET" >&2
+        echo "[ERROR] Failed to create target directory $TARGET." >&2
         exit 1
     }
 
     if ! $SUDO cp $OPTIONS "$SCRIPT_HOME/emacs.d/elisp" "$TARGET/"; then
-        echo "[ERROR] Failed to copy elisp directory to $TARGET/" >&2
+        echo "[ERROR] Failed to copy elisp directory to $TARGET/." >&2
         exit 1
     fi
 }
@@ -113,7 +113,7 @@ emacs_private_settings() {
     for file in emacs-w3m.el proxy.el faces.el; do
         if [ -f "$HOME/etc/config.local/$file" ]; then
             if ! $SUDO cp $OPTIONS "$HOME/etc/config.local/$file" "$TARGET/elisp/"; then
-                echo "[ERROR] Failed to copy $file to $TARGET/elisp/" >&2
+                echo "[ERROR] Failed to copy $file to $TARGET/elisp/." >&2
                 exit 1
             fi
         fi
@@ -216,7 +216,7 @@ slink_elisp() {
     if [ ! -d "$HOME/.emacs.d" ]; then
         echo "[INFO] Creating directory: $HOME/.emacs.d"
         if ! mkdir "$HOME/.emacs.d"; then
-            echo "[ERROR] Failed to create $HOME/.emacs.d" >&2
+            echo "[ERROR] Failed to create $HOME/.emacs.d." >&2
             exit 1
         fi
     fi
@@ -230,8 +230,8 @@ slink_elisp() {
 
         if [ -L "$TARGET/elisp/elisp" ]; then
             echo "[INFO] Removing redundant symlink: $TARGET/elisp/elisp"
-            if ! $SUDO rm "$TARGET/elisp/elisp"; then
-                echo "[ERROR] Failed to remove redundant symlink $TARGET/elisp/elisp" >&2
+            if ! $SUDO rm -f "$TARGET/elisp/elisp"; then
+                echo "[ERROR] Failed to remove redundant symlink $TARGET/elisp/elisp." >&2
                 exit 1
             fi
         fi
@@ -239,21 +239,21 @@ slink_elisp() {
 
     for dir in site-lisp anything backups tmp tramp-auto-save auto-save-list; do
         if [ ! -d "$HOME/.emacs.d/$dir" ]; then
-            echo "[INFO] Creating directory: $HOME/.emacs.d/$dir"
+            echo "[INFO] Creating directory: $HOME/.emacs.d/$dir."
             if ! mkdir "$HOME/.emacs.d/$dir"; then
-                echo "[ERROR] Failed to create $HOME/.emacs.d/$dir" >&2
+                echo "[ERROR] Failed to create $HOME/.emacs.d/$dir." >&2
                 exit 1
             fi
         fi
         if ! $SUDO chmod 750 "$HOME/.emacs.d/$dir"; then
-            echo "[ERROR] Failed to set permission for $HOME/.emacs.d/$dir" >&2
+            echo "[ERROR] Failed to set permission for $HOME/.emacs.d/$dir." >&2
             exit 1
         fi
     done
 
     echo "[INFO] Creating adaptive history file: $HOME/.emacs.d/anything/anything-c-adaptive-history"
     if ! touch "$HOME/.emacs.d/anything/anything-c-adaptive-history"; then
-        echo "[ERROR] Failed to create anything-c-adaptive-history file" >&2
+        echo "[ERROR] Failed to create anything-c-adaptive-history file." >&2
         exit 1
     fi
 
@@ -296,17 +296,17 @@ setup_environment() {
 set_permission() {
     echo "[INFO] Setting ownership for $TARGET"
     if ! $SUDO chown -R "$OWNER" "$TARGET"; then
-        echo "[ERROR] Failed to change ownership for $TARGET" >&2
+        echo "[ERROR] Failed to change ownership for $TARGET." >&2
         exit 1
     fi
 
     if ! $SUDO chown "$(id -un):$(id -gn)" "$TARGET/elisp/3rd-party/nxhtml/etc/schema/xhtml-loader.rnc"; then
-        echo "[ERROR] Failed to change ownership for xhtml-loader.rnc" >&2
+        echo "[ERROR] Failed to change ownership for xhtml-loader.rnc." >&2
         exit 1
     fi
 
     if ! $SUDO chown -R "$(id -un):$(id -gn)" "$TARGET/elisp/3rd-party/ruby-mode/"; then
-        echo "[ERROR] Failed to change ownership for ruby-mode directory" >&2
+        echo "[ERROR] Failed to change ownership for ruby-mode directory." >&2
         exit 1
     fi
 }
