@@ -329,7 +329,9 @@ main() {
     [ -n "$3" ] || set_permission
 
     echo "[INFO] Installation completed successfully."
+    return 0
 }
 
 # Execute main function
 main "$@"
+exit $?
