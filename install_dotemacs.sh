@@ -13,6 +13,19 @@
 #  License: The GPL version 3, or LGPL version 3 (Dual License).
 #  Contact: idnanashi@gmail.com
 #
+#  Usage:
+#      ./install_dotemacs.sh [emacs_binary] [target_path] [nosudo]
+#
+#  Options:
+#      -h, --help    Show this help message and exit.
+#
+#  Notes:
+#  - [emacs_binary]: Path to the Emacs binary (default: emacs).
+#  - [target_path]: Path to the installation directory (default: /usr/local/etc/emacs.d).
+#  - [nosudo]: If specified, the script runs without sudo.
+#  - The script will remove existing Emacs configurations before installation.
+#  - Byte-compilation is performed to improve Emacs performance.
+#
 #  Version History:
 #  v2.3 2025-06-23
 #       Unified usage output to display full script header and support common help/version options.
@@ -26,19 +39,6 @@
 #  [Further version history truncated for brevity]
 #  v1.0 2009-05-18
 #       Initial release.
-#
-#  Usage:
-#      ./install_dotemacs.sh [emacs_binary] [target_path] [nosudo]
-#
-#  Options:
-#      -h, --help    Show this help message and exit.
-#
-#  Notes:
-#  - [emacs_binary]: Path to the Emacs binary (default: emacs).
-#  - [target_path]: Path to the installation directory (default: /usr/local/etc/emacs.d).
-#  - [nosudo]: If specified, the script runs without sudo.
-#  - The script will remove existing Emacs configurations before installation.
-#  - Byte-compilation is performed to improve Emacs performance.
 #
 ########################################################################
 
