@@ -1,5 +1,11 @@
 ;; anything-helm.el
 
+;; Provide with-eval-after-load for Emacs versions prior to 24.4
+(unless (fboundp 'with-eval-after-load)
+  (defmacro with-eval-after-load (file &rest body)
+    `(eval-after-load ,file
+       '(progn ,@body))))
+
 (cond
  ;; Helm
  ((and (>= emacs-major-version 24)
