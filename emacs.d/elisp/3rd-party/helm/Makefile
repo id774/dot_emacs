@@ -25,7 +25,7 @@
 # Emacs invocation
 EMACS_COMMAND   := emacs
 
-# Use -q to have /usr/local/share/emacs/site-lisp and subdirs in load-path 
+# Use -q to have /usr/local/share/emacs/site-lisp and subdirs in load-path
 EMACS		:= $(EMACS_COMMAND) -q -batch
 
 EVAL := $(EMACS) --eval
@@ -34,13 +34,30 @@ PKGDIR := .
 
 # Additional emacs loadpath
 LOADPATH	:= -L $(PKGDIR)
-ELPA_DIR        =  $(HOME)/.emacs.d/elpa
+
+# Prefer emacs config folder in XDG_CONFIG_HOME to ~/.emacs.d
+# Assume emacs-user-directory is ~/.emacs.d
+# Try to find ELPA directory or STRAIGHT directory.
+XDG_ELPA_DIR	:= $(if $(XDG_CONFIG_HOME), $(XDG_CONFIG_HOME)/emacs/elpa, $(HOME)/.config/emacs/elpa)
+ELPA_DIR := $(if $(shell test -d $(XDG_ELPA_DIR)), $(XDG_ELPA_DIR), $(HOME)/.emacs.d/elpa)
+
+XDG_STRAIGHT_DIR := $(if $(XDG_CONFIG_HOME), $(XDG_CONFIG_HOME)/emacs/straight/build, $(HOME)/.config/emacs/straight/build)
+STRAIGHT_DIR := $(if $(shell test -d $(XDG_STRAIGHT_DIR)), $(XDG_STRAIGHT_DIR), $(HOME)/.emacs.d/straight/build)
+
 ASYNC_ELPA_DIR  =  $(shell \
 	test -d $(ELPA_DIR) && \
 	find -L $(ELPA_DIR) -maxdepth 1 -regex '.*/async-[.0-9]*' 2> /dev/null | \
 	sort | tail -n 1)
 ifneq "$(ASYNC_ELPA_DIR)" ""
 	LOADPATH += -L $(ASYNC_ELPA_DIR)
+endif
+
+ASYNC_STRAIGHT_DIR  =  $(shell \
+	test -d $(STRAIGHT_DIR) && \
+	find -L $(STRAIGHT_DIR) -maxdepth 1 -regex '.*/async' 2> /dev/null | \
+	sort | tail -n 1)
+ifneq "$(ASYNC_STRAIGHT_DIR)" ""
+	LOADPATH += -L $(ASYNC_STRAIGHT_DIR)
 endif
 
 # Files to compile
@@ -62,6 +79,7 @@ compile: $(ELC)
 
 # Compile all files at once
 batch-compile:
+	@echo Compiling helm with $(EMACS_COMMAND)
 	$(EMACS) $(LOADPATH) -f batch-byte-compile $(EL)
 
 # Remove all generated files
@@ -70,5 +88,23 @@ clean:
 
 # Make autoloads file
 autoloads:
-	$(EVAL) "(let ((generated-autoload-file (expand-file-name \"helm-autoloads.el\" \"$(PKGDIR)\")) \
-(backup-inhibited t)) (update-directory-autoloads \"$(PKGDIR)\"))"
+	$(EVAL) "(progn (setq generated-autoload-file (expand-file-name \"helm-autoloads.el\" \"$(PKGDIR)\")) \
+(setq backup-inhibited t) (update-directory-autoloads \"$(PKGDIR)\"))"
+
+PREFIX=/usr/local/
+BIN=${PREFIX}bin/
+DESTDIR=${PREFIX}share/emacs/site-lisp/helm/
+install:
+	test -d ${DESTDIR} || mkdir ${DESTDIR}
+	rm -f ${DESTDIR}*.el
+	rm -f ${DESTDIR}*.elc
+	cp -f *.el $(DESTDIR)
+	cp -f *.elc $(DESTDIR)
+	cp -f helm-autoloads.el $(DESTDIR)
+	cp -f emacs-helm.sh $(DESTDIR)
+	ln -fs ${DESTDIR}emacs-helm.sh ${BIN}helm
+uninstall:
+	rm -vf ${DESTDIR}*.elc
+	rm -vf ${DESTDIR}*.el
+	rm -vf ${DESTDIR}emacs-helm.sh
+	rm -vf ${BIN}helm

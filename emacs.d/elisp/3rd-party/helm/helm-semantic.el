@@ -1,6 +1,8 @@
 ;;; helm-semantic.el --- Helm interface for Semantic -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2012 ~ 2017 Daniel Hackney <dan@haxney.org>
+;;               2012 ~ 2023  Thierry Volpiatto
+
 ;; Author: Daniel Hackney <dan@haxney.org>
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -33,11 +35,6 @@
   "Semantic tags related libraries and applications for helm."
   :group 'helm)
 
-(defcustom helm-semantic-lynx-style-map t
-  "Use Arrow keys to jump to occurences."
-  :group 'helm-semantic
-  :type  'boolean)
-
 (defcustom helm-semantic-display-style
   '((python-mode . semantic-format-tag-summarize)
     (c-mode . semantic-format-tag-concise-prototype-c-mode)
@@ -62,10 +59,20 @@ you have completion on these functions with `C-M i' in the customize interface."
 (defvar helm-semantic-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map helm-map)
-    (when helm-semantic-lynx-style-map
-      (define-key map (kbd "<left>")  'helm-maybe-exit-minibuffer)
-      (define-key map (kbd "<right>") 'helm-execute-persistent-action))
-    (delq nil map)))
+    map))
+
+(defcustom helm-semantic-lynx-style-map nil
+  "Use Arrow keys to jump to occurences."
+  :group 'helm-semantic
+  :type  'boolean
+  :set (lambda (var val)
+         (set var val)
+         (if val
+             (progn
+               (define-key helm-semantic-map (kbd "<right>")  'helm-execute-persistent-action)
+               (define-key helm-semantic-map (kbd "<left>")   'helm-maybe-exit-minibuffer))
+           (define-key helm-semantic-map (kbd "<right>") nil)
+           (define-key helm-semantic-map (kbd "<left>")  nil))))
 
 ;; Internals vars
 (defvar helm-semantic--tags-cache nil)
@@ -76,7 +83,7 @@ you have completion on these functions with `C-M i' in the customize interface."
         (stylefn (or (with-helm-current-buffer
                        (assoc-default major-mode helm-semantic-display-style))
                      #'semantic-format-tag-summarize)))
-    (cl-dolist (tag tags)
+    (dolist (tag tags)
       (when (listp tag)
         (cl-case (setq cur-type (semantic-tag-class tag))
           ((function variable type)
@@ -112,11 +119,12 @@ you have completion on these functions with `C-M i' in the customize interface."
 (defun helm-semantic-default-action (_candidate &optional persistent)
   ;; By default, helm doesn't pass on the text properties of the selection.
   ;; Fix this.
-  (helm-log-run-hook 'helm-goto-line-before-hook)
+  (helm-log-run-hook "helm-semantic-default-action"
+                     'helm-goto-line-before-hook)
   (with-current-buffer helm-buffer
     (when (looking-at " ")
       (goto-char (next-single-property-change
-                  (point-at-bol) 'semantic-tag nil (point-at-eol)))) 
+                  (pos-bol) 'semantic-tag nil (pos-eol))))
     (let ((tag (get-text-property (point) 'semantic-tag)))
       (semantic-go-to-tag tag)
       (unless persistent
@@ -158,7 +166,7 @@ you have completion on these functions with `C-M i' in the customize interface."
 ;;;###autoload
 (defun helm-semantic (arg)
   "Preconfigured `helm' for `semantic'.
-If ARG is supplied, pre-select symbol at point instead of current"
+If ARG is supplied, pre-select symbol at point instead of current."
   (interactive "P")
   (let ((tag (helm-aif (car (semantic-current-tag-parent))
                  (let ((curtag (car (semantic-current-tag))))
@@ -166,7 +174,8 @@ If ARG is supplied, pre-select symbol at point instead of current"
                        (format "\\_<%s\\_>" curtag)
                      (cons (format "\\_<%s\\_>" it)
                            (format "\\_<%s\\_>" curtag))))
-               (format "\\_<%s\\_>" (car (semantic-current-tag))))))
+               (format "\\_<%s\\_>" (car (semantic-current-tag)))))
+        (helm-highlight-matches-around-point-max-lines 'never))
     (unless helm-source-semantic
       (setq helm-source-semantic
             (helm-make-source "Semantic Tags" 'helm-semantic-source
@@ -199,6 +208,7 @@ Fill in the symbol at point by default."
   (let* ((source (if (semantic-active-p)
                      'helm-source-semantic
                      'helm-source-imenu))
+         (helm-highlight-matches-around-point-max-lines 'never)
          (imenu-p (eq source 'helm-source-imenu))
          (imenu-auto-rescan imenu-p)
          (str (thing-at-point 'symbol))
@@ -219,11 +229,5 @@ Fill in the symbol at point by default."
           :buffer "*helm semantic/imenu*")))
 
 (provide 'helm-semantic)
-
-;; Local Variables:
-;; byte-compile-warnings: (not obsolete)
-;; coding: utf-8
-;; indent-tabs-mode: nil
-;; End:
 
 ;;; helm-semantic.el ends here

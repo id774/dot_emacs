@@ -1,6 +1,6 @@
 ;;; helm-man.el --- Man and woman UI -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2017 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2012 ~ 2025 Thierry Volpiatto
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -31,9 +31,10 @@
 (declare-function woman-expand-directory-path "woman.el" (path-dirs path-regexps))
 (declare-function woman-topic-all-completions "woman.el" (path))
 (declare-function helm-generic-sort-fn "helm-utils.el" (S1 S2))
+(declare-function helm-comp-read "helm-mode")
 
 (defgroup helm-man nil
-  "Man and Woman applications for helm."
+  "Man and Woman applications for Helm."
   :group 'helm)
 
 (defcustom helm-man-or-woman-function 'Man-getpage-in-background
@@ -54,11 +55,13 @@ Arguments are passed to `manual-entry' with `format.'"
 ;; Internal
 (defvar helm-man--pages nil
   "All man pages on system.
-Will be calculated the first time you invoke helm with this
+Will be calculated the first time you invoke Helm with this
 source.")
 
+(defvar helm-source-man-pages nil)
+
 (defun helm-man-default-action (candidate)
-  "Default action for jumping to a woman or man page from helm."
+  "Default action for jumping to a woman or man page from Helm."
   (let ((wfiles (mapcar #'car (woman-file-name-all-completions candidate))))
     (condition-case nil
         (let ((file (if (cdr wfiles)
@@ -89,31 +92,36 @@ source.")
     (setq helm-man--pages (mapcar 'car woman-topic-all-completions)))
   (helm-init-candidates-in-buffer 'global helm-man--pages))
 
-(defvar helm-source-man-pages
-  (helm-build-in-buffer-source "Manual Pages"
-    :init #'helm-man--init
-    :persistent-action #'ignore
-    :filtered-candidate-transformer
-     (lambda (candidates _source)
-       (sort candidates #'helm-generic-sort-fn))
-    :action  '(("Display Man page" . helm-man-default-action))
-    :group 'helm-man))
+(defun helm-man-popup-info (candidate)
+  (let ((output (shell-command-to-string (format "man -f '%s'" candidate))))
+    (when (string-match (format "\\(%s ?([^(]+)\\) *- ?\\(.*\\)\n" candidate)
+                        output)
+      (match-string 2 output))))
+
+(defclass helm-man-pages-class (helm-source-in-buffer)
+  ((popup-info :initform #'helm-man-popup-info)))
 
 ;;;###autoload
 (defun helm-man-woman (arg)
   "Preconfigured `helm' for Man and Woman pages.
-With a prefix arg reinitialize the cache."
+With a prefix ARG reinitialize the cache.  To have a popup
+showing a basic description of selected candidate, turn on
+`helm-popup-tip-mode'."
   (interactive "P")
   (when arg (setq helm-man--pages nil))
-    (helm :sources 'helm-source-man-pages
-          :buffer "*helm man woman*"))
+  (unless helm-source-man-pages
+    (setq helm-source-man-pages
+          (helm-make-source "Manual Pages" 'helm-man-pages-class
+            :init #'helm-man--init
+            :persistent-action #'ignore
+            :filtered-candidate-transformer
+            (lambda (candidates _source)
+              (sort candidates #'helm-generic-sort-fn))
+            :action  '(("Display Man page" . helm-man-default-action))
+            :group 'helm-man)))
+  (helm :sources 'helm-source-man-pages
+        :buffer "*helm man woman*"))
 
 (provide 'helm-man)
-
-;; Local Variables:
-;; byte-compile-warnings: (not obsolete)
-;; coding: utf-8
-;; indent-tabs-mode: nil
-;; End:
 
 ;;; helm-man.el ends here

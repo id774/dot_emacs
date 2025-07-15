@@ -3,9 +3,9 @@
 ;; Original Author: rubikitch
 
 ;; Copyright (C) 2008 ~ 2011 rubikitch
-;; Copyright (C) 2011 ~ 2017 Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Copyright (C) 2011 ~ 2025 Thierry Volpiatto
 
-;; Author: Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Author: Thierry Volpiatto
 ;; URL: http://github.com/emacs-helm/helm
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -66,18 +66,21 @@ when these options are used."
 (defconst helm-mm-space-regexp "\\s\\\\s-"
   "Regexp to represent space itself in multiple regexp match.")
 
-(defun helm-mm-split-pattern (pattern)
-  "Split PATTERN if it contain spaces and return resulting list.
+(defun helm-mm-split-pattern (pattern &optional grep-space)
+  "Split PATTERN if it contains spaces and return resulting list.
 If spaces in PATTERN are escaped, don't split at this place.
 i.e \"foo bar baz\"=> (\"foo\" \"bar\" \"baz\")
-but \"foo\\ bar baz\"=> (\"foo\\s-bar\" \"baz\")."
+but \"foo\\ bar baz\"=> (\"foo\\s-bar\" \"baz\").
+If GREP-SPACE is used translate escaped space to \"\\s\" instead of \"\\s-\"."
   (split-string
    ;; Match spaces litteraly because candidate buffer syntax-table
    ;; doesn't understand "\s-" properly.
-   (replace-regexp-in-string helm-mm-space-regexp "\\s-" pattern nil t)))
+   (replace-regexp-in-string
+    helm-mm-space-regexp
+    (if grep-space "\\s" "\\s-") pattern nil t)))
 
 (defun helm-mm-1-make-regexp (pattern)
-  "Replace spaces in PATTERN with \"\.*\"."
+  "Replace spaces in PATTERN with \".*\"."
   (mapconcat 'identity (helm-mm-split-pattern pattern) ".*"))
 
 
@@ -85,50 +88,47 @@ but \"foo\\ bar baz\"=> (\"foo\\s-bar\" \"baz\")."
 ;;
 ;;
 ;; Internal.
-(defvar helm-mm-exact-pattern-str nil)
-(defvar helm-mm-exact-pattern-real nil)
+(defvar helm-mm--exact-pattern-str nil)
+(defvar helm-mm--exact-pattern-real nil)
 
 (defun helm-mm-exact-get-pattern (pattern)
-  (unless (equal pattern helm-mm-exact-pattern-str)
-    (setq helm-mm-exact-pattern-str pattern
-          helm-mm-exact-pattern-real (concat "\n" pattern "\n")))
-  helm-mm-exact-pattern-real)
+  (unless (equal pattern helm-mm--exact-pattern-str)
+    (setq helm-mm--exact-pattern-str pattern
+          helm-mm--exact-pattern-real (concat "^" (regexp-quote pattern) "$")))
+  helm-mm--exact-pattern-real)
 
 
-(cl-defun helm-mm-exact-match (str &optional (pattern helm-pattern))
+(defun helm-mm-exact-match (candidate &optional pattern)
+  (unless pattern (setq pattern helm-pattern))
   (if case-fold-search
-      (progn
-        (setq str (downcase str)
-              pattern (downcase pattern))
-        (string= str pattern))
-      (string= str pattern)))
+      (string= (downcase candidate) (downcase pattern))
+    (string= candidate pattern)))
 
 (defun helm-mm-exact-search (pattern &rest _ignore)
-  (and (search-forward (helm-mm-exact-get-pattern pattern) nil t)
-       (forward-line -1)))
+  (helm-re-search-forward (helm-mm-exact-get-pattern pattern) nil t))
 
 
 ;;; Prefix match
 ;;
 ;;
 ;; Internal
-(defvar helm-mm-prefix-pattern-str nil)
-(defvar helm-mm-prefix-pattern-real nil)
+(defvar helm-mm--prefix-pattern-str nil)
+(defvar helm-mm--prefix-pattern-real nil)
 
 (defun helm-mm-prefix-get-pattern (pattern)
-  (unless (equal pattern helm-mm-prefix-pattern-str)
-    (setq helm-mm-prefix-pattern-str pattern
-          helm-mm-prefix-pattern-real (concat "\n" pattern)))
-  helm-mm-prefix-pattern-real)
+  (unless (equal pattern helm-mm--prefix-pattern-str)
+    (setq helm-mm--prefix-pattern-str pattern
+          helm-mm--prefix-pattern-real (concat "\n" pattern)))
+  helm-mm--prefix-pattern-real)
 
-(defun helm-mm-prefix-match (str &optional pattern)
+(defun helm-mm-prefix-match (candidate &optional pattern)
   ;; In filename completion basename and basedir may be
-  ;; quoted, unquote them for string comparison (Issue #1283).
+  ;; quoted, unquote them for string comparison (Bug#1283).
   (setq pattern (replace-regexp-in-string
                  "\\\\" "" (or pattern helm-pattern)))
   (let ((len (length pattern)))
-    (and (<= len (length str))
-         (string= (substring str 0 len) pattern ))))
+    (and (<= len (length candidate))
+         (string= (substring candidate 0 len) pattern ))))
 
 (defun helm-mm-prefix-search (pattern &rest _ignore)
   (search-forward (helm-mm-prefix-get-pattern pattern) nil t))
@@ -138,18 +138,19 @@ but \"foo\\ bar baz\"=> (\"foo\\s-bar\" \"baz\")."
 ;;
 ;;
 ;; Internal
-(defvar helm-mm-1-pattern-str nil)
-(defvar helm-mm-1-pattern-real nil)
+(defvar helm-mm--1-pattern-str nil)
+(defvar helm-mm--1-pattern-real nil)
 
 (defun helm-mm-1-get-pattern (pattern)
-  (unless (equal pattern helm-mm-1-pattern-str)
-    (setq helm-mm-1-pattern-str pattern
-          helm-mm-1-pattern-real
+  (unless (equal pattern helm-mm--1-pattern-str)
+    (setq helm-mm--1-pattern-str pattern
+          helm-mm--1-pattern-real
           (concat "^" (helm-mm-1-make-regexp pattern))))
-  helm-mm-1-pattern-real)
+  helm-mm--1-pattern-real)
 
-(cl-defun helm-mm-1-match (str &optional (pattern helm-pattern))
-  (string-match (helm-mm-1-get-pattern pattern) str))
+(defun helm-mm-1-match (candidate &optional pattern)
+  (unless pattern (setq pattern helm-pattern))
+  (string-match (helm-mm-1-get-pattern pattern) candidate))
 
 (defun helm-mm-1-search (pattern &rest _ignore)
   (re-search-forward (helm-mm-1-get-pattern pattern) nil t))
@@ -159,18 +160,19 @@ but \"foo\\ bar baz\"=> (\"foo\\s-bar\" \"baz\")."
 ;;
 ;;
 ;; Internal
-(defvar helm-mm-2-pattern-str nil)
-(defvar helm-mm-2-pattern-real nil)
+(defvar helm-mm--2-pattern-str nil)
+(defvar helm-mm--2-pattern-real nil)
 
 (defun helm-mm-2-get-pattern (pattern)
-  (unless (equal pattern helm-mm-2-pattern-str)
-    (setq helm-mm-2-pattern-str pattern
-          helm-mm-2-pattern-real
+  (unless (equal pattern helm-mm--2-pattern-str)
+    (setq helm-mm--2-pattern-str pattern
+          helm-mm--2-pattern-real
           (concat "^.*" (helm-mm-1-make-regexp pattern))))
-  helm-mm-2-pattern-real)
+  helm-mm--2-pattern-real)
 
-(cl-defun helm-mm-2-match (str &optional (pattern helm-pattern))
-  (string-match (helm-mm-2-get-pattern pattern) str))
+(defun helm-mm-2-match (candidate &optional pattern)
+  (unless pattern (setq pattern helm-pattern))
+  (string-match (helm-mm-2-get-pattern pattern) candidate))
 
 (defun helm-mm-2-search (pattern &rest _ignore)
   (re-search-forward (helm-mm-2-get-pattern pattern) nil t))
@@ -180,47 +182,58 @@ but \"foo\\ bar baz\"=> (\"foo\\s-bar\" \"baz\")."
 ;;
 ;;
 ;; Internal
-(defvar helm-mm-3-pattern-str nil)
-(defvar helm-mm-3-pattern-list nil)
+(defvar helm-mm--3-pattern-str nil)
+(defvar helm-mm--3-pattern-list nil)
 
 (defun helm-mm-3-get-patterns (pattern)
-  "Return `helm-mm-3-pattern-list', a list of predicate/regexp cons cells.
-e.g ((identity . \"foo\") (identity . \"bar\")).
-This is done only if `helm-mm-3-pattern-str' is same as PATTERN."
-  (unless (equal pattern helm-mm-3-pattern-str)
-    (setq helm-mm-3-pattern-str pattern
-          helm-mm-3-pattern-list
+  "Return a list of predicate/regexp cons cells.
+E.g., ((identity . \"foo\") (not . \"bar\")).
+If PATTERN is unchanged, don't recompute PATTERN and return the
+previous value stored in `helm-mm--3-pattern-list'."
+  (unless (equal pattern helm-mm--3-pattern-str)
+    (setq helm-mm--3-pattern-str pattern
+          helm-mm--3-pattern-list
           (helm-mm-3-get-patterns-internal pattern)))
-  helm-mm-3-pattern-list)
+  helm-mm--3-pattern-list)
 
 (defun helm-mm-3-get-patterns-internal (pattern)
   "Return a list of predicate/regexp cons cells.
-e.g ((identity . \"foo\") (identity . \"bar\"))."
+E.g., ((identity . \"foo\") (not . \"bar\"))."
   (unless (string= pattern "")
     (cl-loop for pat in (helm-mm-split-pattern pattern)
-          collect (if (string= "!" (substring pat 0 1))
+          collect (if (char-equal ?! (aref pat 0))
                       (cons 'not (substring pat 1))
                     (cons 'identity pat)))))
 
-(cl-defun helm-mm-3-match (str &optional (pattern helm-pattern))
-  "Check if PATTERN match STR.
-When PATTERN contain a space, it is splitted and matching is done
-with the several resulting regexps against STR.
-e.g \"bar foo\" will match \"foobar\" and \"barfoo\".
-Argument PATTERN, a string, is transformed in a list of
-cons cell with `helm-mm-3-get-patterns' if it contain a space.
-e.g \"foo bar\"=>((identity . \"foo\") (identity . \"bar\")).
-Then each predicate of cons cell(s) is called with regexp of same
-cons cell against STR (a candidate).
-i.e (identity (string-match \"foo\" \"foo bar\")) => t."
+(defun helm-mm-regexp-p (string)
+  (string-match-p "[][*+^$.?]" string))
+
+(defvar helm-mm--match-on-diacritics nil)
+
+(defun helm-mm-3-match (candidate &optional pattern)
+  "Check if PATTERN match CANDIDATE.
+When PATTERN contains a space, it is splitted and matching is
+done with the several resulting regexps against CANDIDATE.
+E.g., \"bar foo\" will match \"foobar\" and \"barfoo\".
+Argument PATTERN, a string, is transformed in a list of cons cell
+with `helm-mm-3-get-patterns' if it contains a space.
+E.g., \"foo bar\"=>((identity . \"foo\") (identity . \"bar\")).
+Then each predicate of cons cell(s) is called with the regexp of
+the same cons cell against CANDIDATE.
+I.e. (identity (string-match \"foo\" \"foo bar\")) => t."
+  (unless pattern (setq pattern helm-pattern))
   (let ((pat (helm-mm-3-get-patterns pattern)))
     (cl-loop for (predicate . regexp) in pat
+             for re = (if (and helm-mm--match-on-diacritics
+                               (not (helm-mm-regexp-p regexp)))
+                          (char-fold-to-regexp regexp)
+                        regexp)
              always (funcall predicate
                              (condition-case _err
                                  ;; FIXME: Probably do nothing when
                                  ;; using fuzzy leaving the job
                                  ;; to the fuzzy fn.
-                                 (string-match regexp str)
+                                 (string-match re candidate)
                                (invalid-regexp nil))))))
 
 (defun helm-mm-3-search-base (pattern searchfn1 searchfn2)
@@ -228,36 +241,55 @@ i.e (identity (string-match \"foo\" \"foo bar\")) => t."
 This is the search function for `candidates-in-buffer' enabled sources.
 Use the same method as `helm-mm-3-match' except it search in buffer
 instead of matching on a string.
-i.e (identity (re-search-forward \"foo\" (point-at-eol) t)) => t."
+i.e (identity (re-search-forward \"foo\" (pos-eol) t)) => t."
   (cl-loop with pat = (if (stringp pattern)
                           (helm-mm-3-get-patterns pattern)
                           pattern)
+           with regex = (cdar pat)
+           with regex1 = (if (and regex
+                                  helm-mm--match-on-diacritics
+                                  (not (helm-mm-regexp-p regex)))
+                             (char-fold-to-regexp regex)
+                           regex)
            when (eq (caar pat) 'not) return
            ;; Pass the job to `helm-search-match-part'.
-           (prog1 (list (point-at-bol) (point-at-eol))
-             (forward-line 1))
+           ;; We now forward-line from helm-search-from-candidate-buffer, see
+           ;; comments about bug#2650 there.
+           (list (pos-bol) (pos-eol))
            while (condition-case _err
-                     (funcall searchfn1 (or (cdar pat) "") nil t)
+                     (funcall searchfn1 (or regex1 "") nil t)
                    (invalid-regexp nil))
-           for bol = (point-at-bol)
-           for eol = (point-at-eol)
-           if (cl-loop for (pred . str) in (cdr pat) always
+           for bol = (pos-bol)
+           for eol = (pos-eol)
+           if (cl-loop for (pred . str) in (cdr pat)
+                       for regexp = (if (and helm-mm--match-on-diacritics
+                                             (not (helm-mm-regexp-p str)))
+                                        (char-fold-to-regexp str)
+                                      str)
+                       always
                        (progn (goto-char bol)
                               (funcall pred (condition-case _err
-                                                (funcall searchfn2 str eol t)
+                                                (funcall searchfn2 regexp eol t)
                                               (invalid-regexp nil)))))
-           do (goto-char eol) and return t
-           else do (goto-char eol)
+           do (helm-mm-3--search-move-forward bol eol) and return t
+           else do (helm-mm-3--search-move-forward bol eol)
            finally return nil))
 
+(defun helm-mm-3--search-move-forward (bol eol)
+  "Move point forward for next search.
+Forward line on empty lines, otherwise goto eol."
+  (if (eql bol eol) (forward-line 1) (goto-char eol)))
+
 (defun helm-mm-3-search (pattern &rest _ignore)
-  (when (stringp pattern)
-    (setq pattern (helm-mm-3-get-patterns pattern)))
   (helm-mm-3-search-base
-   pattern 're-search-forward 're-search-forward))
+   pattern #'helm-re-search-forward #'helm-re-search-forward))
+
+(defun helm-mm-3-search-on-diacritics (pattern &rest _ignore)
+  (let ((helm-mm--match-on-diacritics t))
+    (helm-mm-3-search pattern)))
 
 ;;; mp-3 with migemo
-;;
+;;  Needs https://github.com/emacs-jp/migemo
 ;;
 (defvar helm-mm--previous-migemo-info nil
   "[Internal] Cache previous migemo query.")
@@ -269,7 +301,7 @@ i.e (identity (re-search-forward \"foo\" (point-at-eol) t)) => t."
 (define-minor-mode helm-migemo-mode
     "Enable migemo in helm.
 It will be available in the sources handling it,
-i.e the sources which have the slot :migemo with non--nil value."
+i.e. the sources which have the slot :migemo with non--nil value."
   :lighter " Hmio"
   :group 'helm
   :global t
@@ -295,10 +327,24 @@ i.e the sources which have the slot :migemo with non--nil value."
                   helm-mm--previous-migemo-info))))
   (string-match (assoc-default pattern helm-mm--previous-migemo-info) str))
 
-(cl-defun helm-mm-3-migemo-match (str &optional (pattern helm-pattern))
+(defun helm-mm-diacritics-string-match (pattern str)
+  "Check if PATTERN match STR ignoring diacritics.
+
+If PATTERN is a regexp (i.e. `helm-mm-regexp-p') use PATTERN
+unmodified, otherwise transform PATTERN with `char-fold-to-regexp'.
+
+This function is used to search match-part of candidate in in-buffer
+sources."
+  (string-match (if (helm-mm-regexp-p pattern)
+                    pattern
+                  (char-fold-to-regexp pattern))
+                str))
+
+(defun helm-mm-3-migemo-match (candidate &optional pattern)
+  (unless pattern (setq pattern helm-pattern))
   (and helm-migemo-mode
        (cl-loop for (pred . re) in (helm-mm-3-get-patterns pattern)
-                always (funcall pred (helm-mm-migemo-string-match re str)))))
+                always (funcall pred (helm-mm-migemo-string-match re candidate)))))
 
 (defun helm-mm-migemo-forward (word &optional bound noerror count)
   (with-helm-buffer
@@ -320,20 +366,19 @@ i.e the sources which have the slot :migemo with non--nil value."
 ;;; mp-3p- (multiple regexp pattern 3 with prefix search)
 ;;
 ;;
-(defun helm-mm-3p-match (str &optional pattern)
-  "Check if PATTERN match STR.
-Same as `helm-mm-3-match' but more strict, matching against prefix also.
-e.g \"bar foo\" will match \"barfoo\" but not \"foobar\" contrarily to
-`helm-mm-3-match'."
+(defun helm-mm-3p-match (candidate &optional pattern)
+  "Check if PATTERN match CANDIDATE.
+Same as `helm-mm-3-match' but only for the cdr of patterns, the car of
+patterns must always match CANDIDATE prefix.
+E.g. \"bar foo baz\" will match \"barfoobaz\" or \"barbazfoo\" but not
+\"foobarbaz\" whereas `helm-mm-3-match' would match all."
   (let* ((pat (helm-mm-3-get-patterns (or pattern helm-pattern)))
          (first (car pat)))
-    (and (funcall (car first) (helm-mm-prefix-match str (cdr first)))
+    (and (funcall (car first) (helm-mm-prefix-match candidate (cdr first)))
          (cl-loop for (predicate . regexp) in (cdr pat)
-               always (funcall predicate (string-match regexp str))))))
+               always (funcall predicate (string-match regexp candidate))))))
 
 (defun helm-mm-3p-search (pattern &rest _ignore)
-  (when (stringp pattern)
-    (setq pattern (helm-mm-3-get-patterns pattern)))
   (helm-mm-3-search-base
    pattern 'helm-mm-prefix-search 're-search-forward))
 
@@ -341,15 +386,24 @@ e.g \"bar foo\" will match \"barfoo\" but not \"foobar\" contrarily to
 ;;; Generic multi-match/search functions
 ;;
 ;;
-(cl-defun helm-mm-match (str &optional (pattern helm-pattern))
+(defun helm-mm-match (candidate &optional pattern)
+  "Call `helm-mm-matching-method' function against CANDIDATE."
+  (unless pattern (setq pattern helm-pattern))
   (let ((fun (cl-ecase helm-mm-matching-method
                (multi1 #'helm-mm-1-match)
                (multi2 #'helm-mm-2-match)
                (multi3 #'helm-mm-3-match)
                (multi3p #'helm-mm-3p-match))))
-    (funcall fun str pattern)))
+    (funcall fun candidate pattern)))
+
+(defun helm-mm-3-match-on-diacritics (candidate &optional pattern)
+  "Same as `helm-mm-3-match' but match on diacritics if possible."
+  (unless pattern (setq pattern helm-pattern))
+  (let ((helm-mm--match-on-diacritics t))
+    (helm-mm-match candidate pattern)))
 
 (defun helm-mm-search (pattern &rest _ignore)
+  "Search for PATTERN with `helm-mm-matching-method' function."
   (let ((fun (cl-ecase helm-mm-matching-method
                (multi1 #'helm-mm-1-search)
                (multi2 #'helm-mm-2-search)
@@ -360,11 +414,5 @@ e.g \"bar foo\" will match \"barfoo\" but not \"foobar\" contrarily to
 
 (provide 'helm-multi-match)
 
-
-;; Local Variables:
-;; byte-compile-warnings: (not obsolete)
-;; coding: utf-8
-;; indent-tabs-mode: nil
-;; End:
 
 ;;; helm-multi-match.el ends here
