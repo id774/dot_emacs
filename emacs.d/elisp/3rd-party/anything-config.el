@@ -8501,7 +8501,6 @@ Return an alist with elements like (data . number_results)."
     (,browse-url-mozilla-program . browse-url-mozilla)
     (,browse-url-galeon-program . browse-url-galeon)
     (,browse-url-netscape-program . browse-url-netscape)
-    (,browse-url-mosaic-program . browse-url-mosaic)
     (,browse-url-xterm-program . browse-url-text-xterm))
   "*Alist of \(executable . function\) to try to find a suitable url browser.")
 
