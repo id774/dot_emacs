@@ -134,5 +134,6 @@
   (setq auto-mode-alist (cons '("\\.txt" . markdown-mode) auto-mode-alist)))
 
 ;; Erlang
-(when (require 'erlang)
+(when (and (< emacs-major-version 27)
+           (require 'erlang nil 'noerror))
   (add-to-list 'auto-mode-alist '("\\.erl\\'" . erlang-mode)))
