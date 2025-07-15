@@ -119,6 +119,7 @@
  (t
   (setq save-abbrevs nil)
   (setq abbrev-file-name "/dev/null")))
+(setq-default abbrev-mode nil)
 
 ;; .gz なファイルとかを透過的に圧縮/伸張
 (auto-compression-mode t)
