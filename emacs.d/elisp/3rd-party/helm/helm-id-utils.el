@@ -1,6 +1,6 @@
 ;;; helm-id-utils.el --- Helm interface for id-utils. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015 ~ 2025 Thierry Volpiatto
+;; Copyright (C) 2015 ~ 2017 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
   "Name of gid command (usually `gid').
 For Mac OS X users, if you install GNU coreutils, the name `gid'
 might be occupied by `id' from GNU coreutils, and you should set
-it to correct name (or absolute path).  For example, if using
+it to correct name (or absolute path), for example, if using
 MacPorts to install id-utils, it should be `gid32'."
   :group 'helm-id-utils
   :type 'file)
@@ -48,28 +48,26 @@ MacPorts to install id-utils, it should be `gid32'."
                                    concat (format " | grep --color=always %s"
                                                   (shell-quote-argument p))))
                 default-com))
-         (start-time (float-time))
          (proc (start-process-shell-command
                 "gid" helm-buffer cmd)))
     (set (make-local-variable 'helm-grep-last-cmd-line) cmd)
     (prog1 proc
       (set-process-sentinel
-       proc (lambda (process event)
-              (when (or (string= event "finished\n")
-                        (process-get process 'reach-limit))
+       proc (lambda (_process event)
+              (when (string= event "finished\n")
                 (helm-maybe-show-help-echo)
                 (with-helm-window
                   (setq mode-line-format
-                        `(" " mode-line-buffer-identification " "
+                        '(" " mode-line-buffer-identification " "
                           (:eval (format "L%s" (helm-candidate-number-at-point))) " "
                           (:eval (propertize
-                                  (format "[%s process finished in %.2fs - (%s results)] "
-                                          ,(upcase (process-name process))
-                                          ,(- (float-time) start-time)
-                                          (helm-get-candidate-number))
+                                  (format "[Helm Gid process finished - (%s results)]" 
+                                          (max (1- (count-lines
+                                                    (point-min) (point-max)))
+                                               0))
                                   'face 'helm-locate-finish))))
                   (force-mode-line-update))
-                (helm-log "helm-gid-candidates-process" "Error: Gid %s"
+                (helm-log "Error: Gid %s"
                           (replace-regexp-in-string "\n" "" event))))))))
 
 (defun helm-gid-filtered-candidate-transformer (candidates _source)
@@ -81,7 +79,7 @@ MacPorts to install id-utils, it should be `gid32'."
   ((header-name
     :initform
     (lambda (name)
-      (concat name " [" (helm-get-attr 'db-dir) "]")))
+      (concat name " [" (helm-attr 'db-dir) "]")))
    (db-dir :initarg :db-dir
            :initform nil
            :custom string
@@ -89,7 +87,7 @@ MacPorts to install id-utils, it should be `gid32'."
    (candidates-process :initform #'helm-gid-candidates-process)
    (filtered-candidate-transformer
     :initform #'helm-gid-filtered-candidate-transformer)
-   (popup-info :initform #'helm-grep-popup-info-fn)
+   (candidate-number-limit :initform 99999)
    (action :initform (helm-make-actions
                       "Find File" 'helm-grep-action
                       "Find file other frame" 'helm-grep-other-frame
@@ -103,10 +101,10 @@ MacPorts to install id-utils, it should be `gid32'."
 
 ;;;###autoload
 (defun helm-gid ()
-  "Preconfigured `helm' for `gid' command line of `ID-Utils'.
-Need A database created with the command `mkid' above
-`default-directory'.
-Need id-utils as dependency which provide `mkid', `gid' etc..
+  "Preconfigured helm for `gid' command line of `ID-Utils'.
+Need A database created with the command `mkid'
+above `default-directory'.
+Need id-utils as dependency which provide `mkid', `gid' etc...
 See <https://www.gnu.org/software/idutils/>."
   (interactive)
   (let* ((db (locate-dominating-file
@@ -114,7 +112,7 @@ See <https://www.gnu.org/software/idutils/>."
               helm-gid-db-file-name))
          (helm-grep-default-directory-fn
           (lambda () default-directory))
-         (helm-maybe-use-default-as-input t))
+         (helm--maybe-use-default-as-input t))
     (cl-assert db nil "No DataBase found, create one with `mkid'")
     (helm :sources (helm-make-source "Gid" 'helm-gid-source
                      :db-dir db)
@@ -123,5 +121,11 @@ See <https://www.gnu.org/software/idutils/>."
           :truncate-lines helm-grep-truncate-lines)))
 
 (provide 'helm-id-utils)
+
+;; Local Variables:
+;; byte-compile-warnings: (not obsolete)
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 
 ;;; helm-id-utils ends here

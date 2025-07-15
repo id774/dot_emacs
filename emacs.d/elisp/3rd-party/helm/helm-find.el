@@ -1,6 +1,6 @@
 ;;; helm-find.el --- helm interface for find command. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2025 Thierry Volpiatto
+;; Copyright (C) 2012 ~ 2017 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,34 +26,10 @@
   :type  'boolean)
 
 (defcustom helm-findutils-search-full-path nil
-  "Search in full path with shell command find when non-nil.
-I.e. use the -path/ipath arguments of find instead of
--name/iname."
+  "Search in full path with shell command find when non--nil.
+I.e use the -path/ipath arguments of find instead of -name/iname."
   :group 'helm-files
   :type 'boolean)
-
-(defcustom helm-find-noerrors nil
-  "Prevent showing error messages in helm buffer when non nil."
-  :group 'helm-files
-  :type 'boolean)
-
-(defcustom helm-find-show-full-path-fn #'identity
-  "Function used in transformer to show the full path of candidate.
-You may want to show the relative path or the abbreviated path instead of the
-full path.  The basename is accessible with
-\\<helm-find-map>\\[helm-ff-run-toggle-basename], so no need to use a function
-that display the basename of candidate here."
-  :group 'helm-files
-  :type '(choice
-          (const :tag "Display absolute path" identity)
-          (const :tag "Display relative path" file-relative-name)
-          (const :tag "Display abbreviated path" abbreviate-file-name)))
-
-(defvar helm-find-map
-  (let ((map (make-sparse-keymap)))
-    (set-keymap-parent map helm-generic-files-map)
-    (define-key map (kbd "DEL") 'helm-delete-backward-no-update)
-    map))
 
 (defvar helm-source-findutils
   (helm-build-async-source "Find"
@@ -64,8 +40,7 @@ that display the basename of candidate here."
     :action-transformer 'helm-transform-file-load-el
     :persistent-action 'helm-ff-kill-or-find-buffer-fname
     :action 'helm-type-file-actions
-    :help-message 'helm-generic-file-help-message
-    :keymap helm-find-map
+    :keymap helm-generic-files-map
     :candidate-number-limit 9999
     :requires-pattern 3))
 
@@ -77,16 +52,17 @@ that display the basename of candidate here."
                         (helm-aif (file-remote-p default-directory)
                             (concat it i) i))
              for type = (car (file-attributes abs))
-             for fname = (if (and helm-ff-transformer-show-only-basename
-                                  (not (string-match "[.]\\{1,2\\}$" i)))
-                             (helm-basename abs)
-                           (funcall helm-find-show-full-path-fn abs))
-             for disp = (helm-acase type
-                          ('t (propertize fname 'face 'helm-ff-directory))
-                          ((guard* (stringp it))
-                           (propertize fname 'face 'helm-ff-symlink))
-                          (otherwise (propertize fname 'face 'helm-ff-file)))
-             collect (cons (helm-ff-prefix-filename disp abs) abs))))
+             for disp = (if (and helm-ff-transformer-show-only-basename
+                                 (not (string-match "[.]\\{1,2\\}$" i)))
+                            (helm-basename abs) abs)
+             collect (cond ((eq t type)
+                            (cons (propertize disp 'face 'helm-ff-directory)
+                                  abs))
+                           ((stringp type)
+                            (cons (propertize disp 'face 'helm-ff-symlink)
+                                  abs))
+                           (t (cons (propertize disp 'face 'helm-ff-file)
+                                    abs))))))
 
 (defun helm-find--build-cmd-line ()
   (require 'find-cmd)
@@ -124,21 +100,29 @@ Additional find options can be specified after a \"*\"
 separator."
   (let* (process-connection-type
          non-essential
-         (cmd (concat (helm-find--build-cmd-line)
-                      (if helm-find-noerrors "2> /dev/null" "")))
+         (cmd (helm-find--build-cmd-line))
          (proc (start-file-process-shell-command "hfind" helm-buffer cmd)))
-    (helm-log "helm-find-shell-command-fn" "Find command:\n%s" cmd)
+    (helm-log "Find command:\n%s" cmd)
     (prog1 proc
       (set-process-sentinel
        proc
        (lambda (process event)
            (helm-process-deferred-sentinel-hook
             process event (helm-default-directory))
-           (if (or (string= event "finished\n")
-                   (process-get process 'reach-limit))
-               (helm-locate-update-mode-line "Find")
-             (helm-log "helm-find-shell-command-fn sentinel" "Error: Find %s"
-                       (replace-regexp-in-string "\n" "" event))))))))
+           (if (string= event "finished\n")
+               (with-helm-window
+                 (setq mode-line-format
+                       '(" " mode-line-buffer-identification " "
+                         (:eval (format "L%s" (helm-candidate-number-at-point))) " "
+                         (:eval (propertize
+                                 (format "[Find process finished - (%s results)]"
+                                         (max (1- (count-lines
+                                                   (point-min) (point-max)))
+                                              0))
+                                 'face 'helm-locate-finish))))
+                 (force-mode-line-update))
+               (helm-log "Error: Find %s"
+                         (replace-regexp-in-string "\n" "" event))))))))
 
 (defun helm-find-1 (dir)
   (let ((default-directory (file-name-as-directory dir)))
@@ -178,5 +162,11 @@ are passed to \"find\" literally."
     (helm-find-1 directory)))
 
 (provide 'helm-find)
+
+;; Local Variables:
+;; byte-compile-warnings: (not obsolete)
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 
 ;;; helm-find.el ends here

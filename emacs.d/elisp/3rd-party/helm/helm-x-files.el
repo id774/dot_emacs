@@ -1,6 +1,6 @@
 ;;; helm-x-files.el --- helm auxiliary functions and sources. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2025 Thierry Volpiatto
+;; Copyright (C) 2012 ~ 2017 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
-
 ;;; Code:
 
 (require 'helm-for-files)
@@ -25,16 +23,13 @@
 ;;; List of files gleaned from every dired buffer
 ;;
 ;;
-(defvar dired-buffers)
-(defvar directory-files-no-dot-files-regexp)
 (defun helm-files-in-all-dired-candidates ()
-  "Return a list of files from live `dired' buffers."
   (save-excursion
     (cl-loop for (f . b) in dired-buffers
           when (buffer-live-p b)
           append (let ((dir (with-current-buffer b dired-directory)))
                    (if (listp dir) (cdr dir)
-                     (directory-files f t directory-files-no-dot-files-regexp))))))
+                     (directory-files f t dired-re-no-dot))))))
 
 ;; (dired '("~/" "~/.emacs.d/.emacs-custom.el" "~/.emacs.d/.emacs.bmk"))
 
@@ -56,8 +51,8 @@
                               (or (string-match helm-tramp-file-name-regexp f)
                                   (file-exists-p f)))
                             (mapcar 'car session-file-alist))))
-   (keymap       :initform 'helm-generic-files-map)
-   (help-message :initform 'helm-generic-file-help-message)
+   (keymap       :initform helm-generic-files-map)
+   (help-message :initform helm-generic-file-help-message)
    (action       :initform 'helm-type-file-actions)))
 
 (defvar helm-source-session nil
@@ -77,29 +72,41 @@
 ;;; External searching file tools.
 ;;
 ;; Tracker desktop search
-
+(defvar helm-source-tracker-cand-incomplete nil "Contains incomplete candidate")
 (defun helm-source-tracker-transformer (candidates _source)
-  "Return file names from tracker CANDIDATES."
-  ;; loop through tracker candidates selecting out file:// lines
-  ;; then select part after file:// and url decode to get straight filenames
+  (helm-log "received: %S" candidates)
   (cl-loop for cand in candidates
+           for path = (when (stringp helm-source-tracker-cand-incomplete)
+                        (caar (helm-highlight-files
+                               (list helm-source-tracker-cand-incomplete)
+                               nil)))
+           for built = (if (not (stringp cand)) cand
+                         (let ((snippet cand))
+                           (unless (or (null path)
+                                      (string= "" path)
+                                      (not (string-match-p
+                                          "\\`[[:space:]]*\\.\\.\\."
+                                          snippet)))
+                             (let ((complete-candidate
+                                    (cons (concat path "\n" snippet) path)))
+                               (setq helm-source-tracker-cand-incomplete nil)
+                               (helm-log "built: %S" complete-candidate)
+                               complete-candidate))))
            when (and (stringp cand)
-                     (string-match "\\`[[:space:]]*file://\\(.*\\)" cand))
-           collect (url-unhex-string (match-string 1 cand))))
+                   (string-match "\\`[[:space:]]*file://" cand))
+           do (setq helm-source-tracker-cand-incomplete ; save path
+                    (replace-match "" t t cand)) end
+           collect built))
 
 (defvar helm-source-tracker-search
   (helm-build-async-source "Tracker Search"
     :candidates-process
      (lambda ()
-       ;; the tracker-search command has been deprecated, now invoke via tracker
-       ;; also, disable the contextual snippets which we don't currently use
        (start-process "tracker-search-process" nil
-                      "tracker" "search"
-                      "--disable-snippets"
+                      "tracker-search"
                       "--disable-color"
                       "--limit=512"
                       helm-pattern))
-    ;; new simplified transformer of tracker search results
     :filtered-candidate-transformer #'helm-source-tracker-transformer
     ;;(multiline) ; https://github.com/emacs-helm/helm/issues/529
     :keymap helm-generic-files-map
@@ -107,7 +114,8 @@
     :action-transformer '(helm-transform-file-load-el
                           helm-transform-file-browse-url)
     :requires-pattern 3)
-  "Source for the Tracker desktop search engine.")
+  "Source for retrieving files matching the current input pattern
+with the tracker desktop search.")
 
 ;; Spotlight (MacOS X desktop search)
 (defclass helm-mac-spotlight-source (helm-source-async helm-type-file)
@@ -119,8 +127,15 @@
 
 (defvar helm-source-mac-spotlight
   (helm-make-source "mdfind" 'helm-mac-spotlight-source)
-  "Source for retrieving files via Spotlight's command line utility mdfind.")
+  "Source for retrieving files via Spotlight's command line
+utility mdfind.")
 
 (provide 'helm-x-files)
+
+;; Local Variables:
+;; byte-compile-warnings: (not obsolete)
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 
 ;;; helm-x-files.el ends here

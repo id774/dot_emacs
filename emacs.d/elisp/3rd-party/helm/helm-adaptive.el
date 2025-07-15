@@ -3,7 +3,7 @@
 ;; Original Author: Tamas Patrovics
 
 ;; Copyright (C) 2007 Tamas Patrovics
-;; Copyright (C) 2012 ~ 2025 Thierry Volpiatto
+;; Copyright (C) 2012 ~ 2017 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,16 +29,15 @@
   :group 'helm)
 
 (defcustom helm-adaptive-history-file
-  (locate-user-emacs-file "helm-adaptive-history")
-  "Path of file where history information is stored.
-When nil history is not saved nor restored after Emacs restart
-unless you save/restore `helm-adaptive-history' with something
-else like psession or desktop."
-  :type 'string)
+  "~/.emacs.d/helm-adaptive-history"
+  "Path of file where history information is stored."
+  :type 'string
+  :group 'helm-adapt)
 
 (defcustom helm-adaptive-history-length 50
   "Maximum number of candidates stored for a source."
-  :type 'number)
+  :type 'number
+  :group 'helm-adapt)
 
 (defcustom helm-adaptive-sort-by-frequent-recent-usage t
   "Try to sort on an average of frequent and recent usage when non-nil.
@@ -46,13 +45,14 @@ else like psession or desktop."
 When nil sort on frequency usage only.
 
 Only frequency:
-When candidate have low frequency, you have to hit on it many
-times to make it going up on top.
+When candidate have low frequency, you have to hit on it many times to
+make it going up on top.
 
 Frequency+recent:
 Even with a low frequency, candidate go up on top. If a candidate
 have a high frequency but it is not used since some time, it goes
 down slowly, but as soon you reuse it it go up on top quickly."
+  :group 'helm-adapt
   :type 'boolean)
 
 ;; Internal
@@ -62,8 +62,7 @@ selection.")
 
 (defvar helm-adaptive-history nil
   "Contains the stored history information.
-Format: ((SOURCE-NAME
-         (SELECTED-CANDIDATE (PATTERN . NUMBER-OF-USE) ...) ...) ...)")
+Format: ((SOURCE-NAME (SELECTED-CANDIDATE (PATTERN . NUMBER-OF-USE) ...) ...) ...)")
 
 (defconst helm-adaptive-freq-coefficient 5)
 (defconst helm-adaptive-recent-coefficient 2)
@@ -74,24 +73,26 @@ Format: ((SOURCE-NAME
 ;;;###autoload
 (define-minor-mode helm-adaptive-mode
   "Toggle adaptive sorting in all sources."
+  :group 'helm-adapt
+  :require 'helm-adaptive
   :global t
   (if helm-adaptive-mode
       (progn
         (unless helm-adaptive-history
           (helm-adaptive-maybe-load-history))
-        (add-hook 'kill-emacs-hook #'helm-adaptive-save-history)
+        (add-hook 'kill-emacs-hook 'helm-adaptive-save-history)
         ;; Should run at beginning of `helm-initial-setup'.
-        (add-hook 'helm-before-initialize-hook #'helm-adaptive-done-reset)
+        (add-hook 'helm-before-initialize-hook 'helm-adaptive-done-reset)
         ;; Should run at beginning of `helm-exit-minibuffer'.
-        (add-hook 'helm-before-action-hook #'helm-adaptive-store-selection)
+        (add-hook 'helm-before-action-hook 'helm-adaptive-store-selection)
         ;; Should run at beginning of `helm-select-action'.
-        (add-hook 'helm-select-action-hook #'helm-adaptive-store-selection))
+        (add-hook 'helm-select-action-hook 'helm-adaptive-store-selection))
     (helm-adaptive-save-history)
     (setq helm-adaptive-history nil)
-    (remove-hook 'kill-emacs-hook #'helm-adaptive-save-history)
-    (remove-hook 'helm-before-initialize-hook #'helm-adaptive-done-reset)
-    (remove-hook 'helm-before-action-hook #'helm-adaptive-store-selection)
-    (remove-hook 'helm-select-action-hook #'helm-adaptive-store-selection)))
+    (remove-hook 'kill-emacs-hook 'helm-adaptive-save-history)
+    (remove-hook 'helm-before-initialize-hook 'helm-adaptive-done-reset)
+    (remove-hook 'helm-before-action-hook 'helm-adaptive-store-selection)
+    (remove-hook 'helm-select-action-hook 'helm-adaptive-store-selection)))
 
 (defun helm-adapt-use-adaptive-p (&optional source-name)
   "Return current source only if it use adaptive history, nil otherwise."
@@ -158,29 +159,26 @@ Format: ((SOURCE-NAME
           ;; Truncate history if needed.
           (if (> (length (cdr selection-info)) helm-adaptive-history-length)
               (setcdr selection-info
-                      (helm-take (cdr selection-info) helm-adaptive-history-length))))))))
+                      (cl-subseq (cdr selection-info) 0 helm-adaptive-history-length))))))))
 
 (defun helm-adaptive-maybe-load-history ()
   "Load `helm-adaptive-history-file' which contain `helm-adaptive-history'.
 Returns nil if `helm-adaptive-history-file' doesn't exist."
-  (when (and helm-adaptive-history-file
-             (file-readable-p helm-adaptive-history-file))
+  (when (file-readable-p helm-adaptive-history-file)
     (load-file helm-adaptive-history-file)))
 
 (defun helm-adaptive-save-history (&optional arg)
-  "Save history information to the file given by `helm-adaptive-history-file'."
+  "Save history information to file given by `helm-adaptive-history-file'."
   (interactive "p")
-  (when helm-adaptive-history-file
-    (with-temp-buffer
-      (insert
-       ";; -*- mode: emacs-lisp -*-\n"
-       ";; History entries used for helm adaptive display.\n")
-      (let (print-length print-level)
-        (prin1 `(setq helm-adaptive-history ',helm-adaptive-history)
-               (current-buffer)))
-      (insert ?\n)
-      (write-region (point-min) (point-max) helm-adaptive-history-file nil
-                    (unless arg 'quiet)))))
+  (with-temp-buffer
+    (insert
+     ";; -*- mode: emacs-lisp -*-\n"
+     ";; History entries used for helm adaptive display.\n")
+    (prin1 `(setq helm-adaptive-history ',helm-adaptive-history)
+           (current-buffer))
+    (insert ?\n)
+    (write-region (point-min) (point-max) helm-adaptive-history-file nil
+                  (unless arg 'quiet))))
 
 (defun helm-adaptive-sort (candidates source)
   "Sort the CANDIDATES for SOURCE by usage frequency.
@@ -230,19 +228,7 @@ This is a filtered candidate transformer you can use with the
                        for info = (or (and (assq 'multiline source)
                                            (replace-regexp-in-string
                                             "\n\\'" "" cand))
-                                      ;; Some transformers like in
-                                      ;; bookmarks may add a leading
-                                      ;; space to provide additional
-                                      ;; infos like an icon as a
-                                      ;; display prop, strip out this
-                                      ;; leading space for
-                                      ;; comparison. Same for a
-                                      ;; trailing space (helm
-                                      ;; boookmark add bmk location as
-                                      ;; a display prop when
-                                      ;; displaying it).
-                                      (helm-aand (replace-regexp-in-string "\\` " "" cand)
-                                                 (replace-regexp-in-string " \\'" "" it)))
+                                      cand)
                        when (cl-member info candidates
                                        :test 'helm-adaptive-compare)
                        collect (car it) into sorted
@@ -261,24 +247,26 @@ you should reinitialize it with `helm-reset-adaptive-history'"
 ;;;###autoload
 (defun helm-reset-adaptive-history ()
   "Delete all `helm-adaptive-history' and his file.
-Useful when you have a old or corrupted
-`helm-adaptive-history-file'."
+Useful when you have a old or corrupted `helm-adaptive-history-file'."
   (interactive)
   (when (y-or-n-p "Really delete all your `helm-adaptive-history'? ")
     (setq helm-adaptive-history nil)
-    (when (and helm-adaptive-history-file
-               (file-exists-p helm-adaptive-history-file))
-      (delete-file helm-adaptive-history-file))))
+    (delete-file helm-adaptive-history-file)))
 
 (defun helm-adaptive-compare (x y)
   "Compare display parts if some of candidates X and Y.
 
-Arguments X and Y are cons cell in (DISPLAY . REAL) format or
-atoms."
+Arguments X and Y are cons cell in (DISPLAY . REAL) format or atoms."
   (equal (if (listp x) (car x) x)
          (if (listp y) (car y) y)))
 
 
 (provide 'helm-adaptive)
+
+;; Local Variables:
+;; byte-compile-warnings: (not obsolete)
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 
 ;;; helm-adaptive.el ends here

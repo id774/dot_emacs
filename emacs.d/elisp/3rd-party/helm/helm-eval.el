@@ -1,6 +1,6 @@
 ;;; helm-eval.el --- eval expressions from helm. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012 ~ 2025 Thierry Volpiatto
+;; Copyright (C) 2012 ~ 2017 Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -22,9 +22,6 @@
 (require 'eldoc)
 (require 'edebug)
 
-(declare-function helm-lisp-completion-at-point "helm-elisp.el")
-(declare-function helm-elisp-show-doc-modeline "helm-elisp.el")
-(defvar helm-elisp-help-function)
 
 (defgroup helm-eval nil
   "Eval related Applications and libraries for Helm."
@@ -51,9 +48,9 @@ Should take one arg: the string to display."
     (cl-loop for (f . a) in '((eldoc-current-symbol .
                                elisp--current-symbol)
                               (eldoc-fnsym-in-current-sexp .
-                               elisp--fnsym-in-current-sexp)
+                               elisp--fnsym-in-current-sexp) 
                               (eldoc-get-fnsym-args-string .
-                               elisp-get-fnsym-args-string)
+                               elisp-get-fnsym-args-string) 
                               (eldoc-get-var-docstring .
                                elisp-get-var-docstring))
              unless (fboundp f)
@@ -73,47 +70,40 @@ Should take one arg: the string to display."
 (defvar helm-eval-expression-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map helm-map)
-    (define-key map (kbd "<C-return>") #'helm-eval-new-line-and-indent)
-    (define-key map (kbd "<M-tab>")    #'lisp-indent-line)
-    (define-key map (kbd "<C-tab>")    #'helm-lisp-completion-at-point)
-    (define-key map (kbd "C-p")        #'previous-line)
-    (define-key map (kbd "C-n")        #'next-line)
-    (define-key map (kbd "<up>")       #'previous-line)
-    (define-key map (kbd "<down>")     #'next-line)
-    (define-key map (kbd "<right>")    #'forward-char)
-    (define-key map (kbd "<left>")     #'backward-char)
+    (define-key map (kbd "<C-return>") 'helm-eval-new-line-and-indent)
+    (define-key map (kbd "<M-tab>")      'lisp-indent-line)
+    (define-key map (kbd "<C-tab>")    'helm-lisp-completion-at-point)
+    (define-key map (kbd "C-p")        'previous-line)
+    (define-key map (kbd "C-n")        'next-line)
+    (define-key map (kbd "<up>")       'previous-line)
+    (define-key map (kbd "<down>")     'next-line)
+    (define-key map (kbd "<right>")    'forward-char)
+    (define-key map (kbd "<left>")     'backward-char)
     map))
 
-(defclass helm-evaluation-result-class (helm-source-dummy)
-  ((echo-input-in-header-line
-    :initarg :echo-input-in-header-line
-    :initform 'never)))
-
 (defun helm-build-evaluation-result-source ()
-  (helm-make-source "Evaluation Result" 'helm-evaluation-result-class
+  (helm-build-dummy-source "Evaluation Result"
     :multiline t
     :mode-line "C-RET: nl-and-indent, M-tab: reindent, C-tab:complete, C-p/n: next/prec-line."
-    :filtered-candidate-transformer
-    (lambda (_candidates _source)
-      (list
-       (condition-case nil
-           (with-helm-current-buffer
-             (pp-to-string
-              (if edebug-active
-                  (edebug-eval-expression
-                   (read helm-pattern))
-                (eval (read helm-pattern) t))))
-         (error "Error"))))
+    :filtered-candidate-transformer (lambda (_candidates _source)
+                                      (list
+                                       (condition-case nil
+                                           (with-helm-current-buffer
+                                             (pp-to-string
+                                              (if edebug-active
+                                                  (edebug-eval-expression
+                                                   (read helm-pattern))
+                                                  (eval (read helm-pattern)))))
+                                         (error "Error"))))
     :nohighlight t
-    :keymap helm-eval-expression-map
-    :action `(("Copy result to kill-ring" . ,(lambda (candidate)
-                                               (kill-new
-                                                (replace-regexp-in-string
-                                                 "\n" "" candidate))
-                                               (message "Result copied to kill-ring")))
-              ("copy sexp to kill-ring" . ,(lambda (_candidate)
-                                             (kill-new helm-input)
-                                             (message "Sexp copied to kill-ring"))))))
+    :action '(("Copy result to kill-ring" . (lambda (candidate)
+                                              (kill-new
+                                               (replace-regexp-in-string
+                                                "\n" "" candidate))
+                                              (message "Result copied to kill-ring")))
+              ("copy sexp to kill-ring" . (lambda (_candidate)
+                                            (kill-new helm-input)
+                                            (message "Sexp copied to kill-ring"))))))
 
 (defun helm-eval-new-line-and-indent ()
   (interactive)
@@ -124,36 +114,27 @@ Should take one arg: the string to display."
   (with-selected-window (minibuffer-window)
     (push (current-buffer) helm-eldoc-active-minibuffers-list)))
 
-;; From emacs-28.1: As the eldoc API is nowaday a pain to use, try to
-;; provide some eldoc in mode-line the best as possible (may break at
-;; some point).
 (defun helm-eldoc-show-in-eval ()
   "Return eldoc in mode-line for current minibuffer input."
   (let ((buf (window-buffer (active-minibuffer-window))))
     (condition-case err
         (when (member buf helm-eldoc-active-minibuffers-list)
           (with-current-buffer buf
-            (let* ((info-fn (eldoc-fnsym-in-current-sexp))
-                   (vsym    (eldoc-current-symbol))
-                   (sym     (car info-fn))
-                   (vardoc  (eldoc-get-var-docstring vsym))
-                   (doc     (or vardoc
+            (let* ((sym     (save-excursion
+                              (unless (looking-back ")\\|\"" (1- (point)))
+                                (forward-char -1))
+                              (eldoc-current-symbol)))
+                   (info-fn (eldoc-fnsym-in-current-sexp))
+                   (doc     (or (eldoc-get-var-docstring sym)
                                 (eldoc-get-fnsym-args-string
-                                 sym (cadr info-fn))))
-                   (all     (format "%s: %s"
-                                    (propertize
-                                     (symbol-name (if vardoc vsym sym))
-                                     'face (if vardoc
-                                               'font-lock-variable-name-face
-                                             'font-lock-function-name-face))
-                                    doc)))
-              (when doc (funcall helm-eldoc-in-minibuffer-show-fn all)))))
+                                 (car info-fn) (cadr info-fn)))))
+              (when doc (funcall helm-eldoc-in-minibuffer-show-fn doc)))))
       (error (message "Eldoc in minibuffer error: %S" err) nil))))
 
 (defun helm-show-info-in-mode-line (str)
   "Display string STR in mode-line."
   (save-selected-window
-    (with-helm-window
+    (with-current-buffer helm-buffer
       (let ((mode-line-format (concat " " str)))
         (force-mode-line-update)
         (sit-for helm-show-info-in-mode-line-delay))
@@ -166,44 +147,40 @@ Should take one arg: the string to display."
   (helm-build-dummy-source "Calculation Result"
     :filtered-candidate-transformer (lambda (_candidates _source)
                                       (list
-                                       (condition-case err
-                                           (let ((result (calc-eval helm-pattern)))
-                                             (if (listp result)
-                                                 (error "At pos %s: %s"
-                                                        (car result) (cadr result))
-                                               result))
-                                         (error (cdr err)))))
+                                       (condition-case nil
+                                           (calc-eval helm-pattern)
+                                         (error "error"))))
     :nohighlight t
-    :action `(("Copy result to kill-ring" . ,(lambda (candidate)
-                                               (kill-new candidate)
-                                               (message "Result \"%s\" copied to kill-ring"
-                                                        candidate)))
-              ("Copy operation to kill-ring" . ,(lambda (_candidate)
-                                                  (kill-new helm-input)
-                                                  (message "Calculation copied to kill-ring"))))))
+    :action '(("Copy result to kill-ring" . (lambda (candidate)
+                                              (kill-new candidate)
+                                              (message "Result \"%s\" copied to kill-ring"
+                                                       candidate)))
+              ("Copy operation to kill-ring" . (lambda (_candidate)
+                                                 (kill-new helm-input)
+                                                 (message "Calculation copied to kill-ring"))))))
 
 ;;;###autoload
 (defun helm-eval-expression (arg)
-  "Preconfigured `helm' for `helm-source-evaluation-result'."
+  "Preconfigured helm for `helm-source-evaluation-result'."
   (interactive "P")
-  (let ((helm-elisp-help-function #'helm-elisp-show-doc-modeline))
-    (helm :sources (helm-build-evaluation-result-source)
-          :input (when arg (thing-at-point 'sexp))
-          :buffer "*helm eval*"
-          :echo-input-in-header-line nil
-          :history 'read-expression-history)))
+  (helm :sources (helm-build-evaluation-result-source)
+        :input (when arg (thing-at-point 'sexp))
+        :buffer "*helm eval*"
+        :echo-input-in-header-line nil
+        :history 'read-expression-history
+        :keymap helm-eval-expression-map))
 
 (defvar eldoc-idle-delay)
 ;;;###autoload
 (defun helm-eval-expression-with-eldoc ()
-  "Preconfigured `helm' for `helm-source-evaluation-result' with `eldoc' support."
+  "Preconfigured helm for `helm-source-evaluation-result' with `eldoc' support. "
   (interactive)
   (let ((timer (run-with-idle-timer
                 eldoc-idle-delay 'repeat
-                #'helm-eldoc-show-in-eval)))
+                'helm-eldoc-show-in-eval)))
     (unwind-protect
          (minibuffer-with-setup-hook
-             #'helm-eldoc-store-minibuffer
+             'helm-eldoc-store-minibuffer
            (call-interactively 'helm-eval-expression))
       (and timer (cancel-timer timer))
       (setq helm-eldoc-active-minibuffers-list
@@ -211,11 +188,17 @@ Should take one arg: the string to display."
 
 ;;;###autoload
 (defun helm-calcul-expression ()
-  "Preconfigured `helm' for `helm-source-calculation-result'."
+  "Preconfigured helm for `helm-source-calculation-result'."
   (interactive)
   (helm :sources 'helm-source-calculation-result
         :buffer "*helm calcul*"))
 
 (provide 'helm-eval)
+
+;; Local Variables:
+;; byte-compile-warnings: (not obsolete)
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 
 ;;; helm-eval.el ends here
