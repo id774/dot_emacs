@@ -16,11 +16,18 @@
 #  Usage:
 #      ./install_dotemacs.sh [emacs_binary] [target_path] [nosudo]
 #
+#  Examples:
+#      ./install_dotemacs.sh                    # Install using default emacs
+#      ./install_dotemacs.sh /usr/bin/emacs     # Specify system emacs
+#      ./install_dotemacs.sh /Applications/Emacs.app/Contents/MacOS/Emacs
+#          # macOS: Use Emacs.app binary directly
+#
 #  Options:
 #      -h, --help    Show this help message and exit.
 #
 #  Notes:
 #  - [emacs_binary]: Path to the Emacs binary (default: emacs).
+#    macOS users can use: /Applications/Emacs.app/Contents/MacOS/Emacs
 #  - [target_path]: Path to the installation directory (default: /usr/local/etc/emacs.d).
 #  - [nosudo]: If specified, the script runs without sudo.
 #  - The script will remove existing Emacs configurations before installation.
