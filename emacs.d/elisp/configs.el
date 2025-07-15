@@ -112,9 +112,13 @@
 (setq message-log-max 200)
 
 ;; 略語展開の保存定義
-(when (>= emacs-major-version 27)
-  (setq save-abbrevs 'silently)   ;; 変更があれば自動保存（確認なし）
-  (setq abbrev-file-name "~/.emacs.d/abbrev_defs")) ;; 保存先を明示的に指定
+(cond
+ ((>= emacs-major-version 28)
+  (setq save-abbrevs 'silently)
+  (setq abbrev-file-name "~/.emacs.d/abbrev_defs"))
+ (t
+  (setq save-abbrevs nil)
+  (setq abbrev-file-name "/dev/null")))
 
 ;; .gz なファイルとかを透過的に圧縮/伸張
 (auto-compression-mode t)
