@@ -15,6 +15,7 @@
 #
 #  Usage:
 #      ./install_dotemacs.sh [emacs_binary] [target_path] [nosudo]
+#      ./install_dotemacs.sh --uninstall [emacs_binary] [target_path] [nosudo]
 #
 #  Examples:
 #      ./install_dotemacs.sh                    # Install using default emacs
@@ -23,7 +24,8 @@
 #          # macOS: Use Emacs.app binary directly
 #
 #  Options:
-#      -h, --help    Show this help message and exit.
+#      -h, --help        Show this help message and exit.
+#      --uninstall       Remove all installed dot_emacs components.
 #
 #  Notes:
 #  - [emacs_binary]: Path to the Emacs binary (default: emacs).
@@ -32,8 +34,11 @@
 #  - [nosudo]: If specified, the script runs without sudo.
 #  - The script will remove existing Emacs configurations before installation.
 #  - Byte-compilation is performed to improve Emacs performance.
+#  - The --uninstall option will remove installed files and user configuration.
 #
 #  Version History:
+#  v2.4 2025-07-31
+#       Add --uninstall option to cleanly remove installed components.
 #  v2.3 2025-06-23
 #       Unified usage output to display full script header and support common help/version options.
 #  v2.2 2025-04-27
@@ -59,7 +64,7 @@ usage() {
     exit 0
 }
 
-# Check required commands
+# Check if required commands are available and executable
 check_commands() {
     for cmd in "$@"; do
         cmd_path=$(command -v "$cmd" 2>/dev/null)
@@ -319,13 +324,48 @@ set_permission() {
     fi
 }
 
+# Uninstall dot_emacs configuration
+uninstall_dotemacs() {
+    echo "[INFO] Uninstalling dot_emacs configuration..."
+
+    [ -f "$HOME/.emacs" ] && rm -f "$HOME/.emacs"
+    [ -f "$HOME/.mew.el" ] && rm -f "$HOME/.mew.el"
+    [ -L "$HOME/.emacs.d/elisp" ] && rm -f "$HOME/.emacs.d/elisp"
+
+    for dir in site-lisp anything backups tmp tramp-auto-save auto-save-list; do
+        [ -d "$HOME/.emacs.d/$dir" ] && rm -rf "$HOME/.emacs.d/$dir"
+    done
+
+    [ -f "$HOME/.emacs.d/anything/anything-c-adaptive-history" ] && \
+        rm -f "$HOME/.emacs.d/anything/anything-c-adaptive-history"
+
+    [ -d "$HOME/.emacs.d" ] && rmdir "$HOME/.emacs.d" 2>/dev/null
+
+    if [ -d "$TARGET" ]; then
+        echo "[INFO] Removing installed target directory: $TARGET"
+        if ! $SUDO rm -rf "$TARGET"; then
+            echo "[ERROR] Failed to remove target directory $TARGET." >&2
+            exit 1
+        fi
+    fi
+
+    echo "[INFO] dot_emacs uninstallation completed successfully."
+}
+
 # Main entry point of the script
 main() {
     case "$1" in
         -h|--help|-v|--version) usage ;;
+        --uninstall)
+            shift
+            check_commands sudo rm rmdir
+            setup_environment "$@"
+            uninstall_dotemacs
+            exit 0
+            ;;
     esac
 
-    cd | exit 1
+    cd || exit 1
 
     check_commands sudo cp mkdir chmod chown ln rm id dirname uname
     setup_environment "$@"
