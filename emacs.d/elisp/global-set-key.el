@@ -182,6 +182,9 @@
 (define-key global-map "\C-c\C-c\C-r" 'redo)
 (define-key global-map "\C-c\C-c\ r" 'redo)
 
+;; kill-ring をクリア
+(global-set-key (kbd "C-c k") 'clear-kill-ring)
+
 ;; バイトコンパイル
 (global-set-key (kbd "C-c C-b") 'byte-compile-file)
 

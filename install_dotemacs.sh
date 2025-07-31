@@ -206,6 +206,7 @@ byte_compile_all() {
     cd "$TARGET/elisp" && emacs_batch_byte_compile \
         init.el \
         mew-settings.el \
+        clear-kill-ring.el \
         delete-empty-file.el \
         dired-settings.el \
         emacs-w3m.el \

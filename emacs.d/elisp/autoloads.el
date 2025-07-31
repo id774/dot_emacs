@@ -184,6 +184,9 @@
 ;; Kill Ring を保存する
 (require 'savekill)
 
+;; Kill Ring をクリア
+(load-p "clear-kill-ring.el")
+
 (load-p "auto-save-buffers-settings")
 
 ;; web-mode
