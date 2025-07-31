@@ -353,19 +353,8 @@ uninstall_dotemacs() {
     echo "[INFO] dot_emacs uninstallation completed successfully."
 }
 
-# Main entry point of the script
-main() {
-    case "$1" in
-        -h|--help|-v|--version) usage ;;
-        --uninstall)
-            shift
-            check_commands sudo rm rmdir
-            setup_environment "$@"
-            uninstall_dotemacs
-            exit 0
-            ;;
-    esac
-
+# Perform installation steps
+install() {
     cd || exit 1
 
     check_commands sudo cp mkdir chmod chown ln rm id dirname uname
@@ -377,6 +366,28 @@ main() {
     [ -n "$3" ] || set_permission
 
     echo "[INFO] Installation completed successfully."
+}
+
+# Parse arguments
+parse_args() {
+    case "$1" in
+        -h|--help|-v|--version)
+            usage
+            ;;
+        --uninstall)
+            shift
+            check_commands sudo rm rmdir
+            setup_environment "$@"
+            uninstall_dotemacs
+            exit 0
+            ;;
+    esac
+}
+
+# Main entry point of the script
+main() {
+    parse_args "$@"
+    install "$@"
     return 0
 }
 
