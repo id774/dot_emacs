@@ -1,4 +1,4 @@
-# DOT\_EMACS
+# DOT_EMACS
 
 A pluggable and comprehensive configuration for Emacs that includes third-party libraries to create an all-in-one Emacs environment.
 
@@ -18,7 +18,7 @@ A pluggable and comprehensive configuration for Emacs that includes third-party 
 
 ## 1. Overview
 
-DOT\_EMACS is designed to:
+DOT_EMACS is designed to:
 
 - Simplify the setup of a powerful Emacs environment with preconfigured settings.
 - Include third-party libraries for enhanced functionality.
@@ -87,7 +87,7 @@ This allows you to uninstall from a custom location without using `sudo`.
 
 ## 4. Default Behavior
 
-DOT\_EMACS:
+DOT_EMACS:
 
 - Configures Emacs with preinstalled third-party libraries for enhanced functionality.
 - Loads user-specific configurations from the ~/.emacs.d/elisp/ directory, including init.el and additional settings if available.
@@ -96,7 +96,7 @@ DOT\_EMACS:
 
 ## 5. Versioning
 
-DOT\_EMACS uses the `<year>.<month>` versioning format starting from version `11.09`.
+DOT_EMACS uses the `<year>.<month>` versioning format starting from version `11.09`.
 Example: `24.12`
 
 ---
