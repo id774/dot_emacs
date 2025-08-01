@@ -381,7 +381,7 @@ main() {
         -u|--uninstall)
             uninstall "$@"
             ;;
-        *)
+        ""|*)
             install "$@"
             ;;
     esac
