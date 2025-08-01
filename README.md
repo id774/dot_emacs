@@ -42,7 +42,7 @@ Supported Emacs versions:
 
 ## 3. Installation
 
-Run the `install_dotemacs.sh` script to install DOT\_EMACS:
+Run the `install_dotemacs.sh` script to install DOT_EMACS:
 
 ### Usage:
 
@@ -59,7 +59,7 @@ Run the `install_dotemacs.sh` script to install DOT\_EMACS:
 ~/dot_emacs/install_dotemacs.sh
 ```
 
-This installs DOT\_EMACS to the default location. Root privileges (via `sudo`) are required.
+This installs DOT_EMACS to the default location. Root privileges (via `sudo`) are required.
 
 ### Custom Installation:
 
@@ -67,7 +67,21 @@ This installs DOT\_EMACS to the default location. Root privileges (via `sudo`) a
 ~/dot_emacs/install_dotemacs.sh /usr/bin/emacs ~/.emacs.d nosudo
 ```
 
-This installs DOT\_EMACS to `~/.emacs.d`, bypassing the need for `sudo`.
+This installs DOT_EMACS to `~/.emacs.d`, bypassing the need for `sudo`.
+
+### Uninstallation:
+
+```bash
+~/dot_emacs/install_dotemacs.sh --uninstall
+```
+
+This removes the installed configuration from your system. You can also specify the Emacs binary and target path:
+
+```bash
+~/dot_emacs/install_dotemacs.sh --uninstall /usr/bin/emacs ~/.emacs.d nosudo
+```
+
+This allows you to uninstall from a custom location without using `sudo`.
 
 ---
 
