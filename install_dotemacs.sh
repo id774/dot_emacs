@@ -25,7 +25,7 @@
 #
 #  Options:
 #      -h, --help        Show this help message and exit.
-#      --uninstall       Remove all installed dot_emacs components.
+#      -u, --uninstall   Remove all installed dot_emacs components.
 #
 #  Notes:
 #  - [emacs_binary]: Path to the Emacs binary (default: emacs).
@@ -374,7 +374,7 @@ parse_args() {
         -h|--help|-v|--version)
             usage
             ;;
-        --uninstall)
+        -u|--uninstall)
             shift
             check_commands sudo rm rmdir
             setup_environment "$@"
