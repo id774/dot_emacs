@@ -326,7 +326,11 @@ set_permission() {
 }
 
 # Uninstall dot_emacs configuration
-uninstall_dotemacs() {
+uninstall() {
+    shift
+    check_commands sudo rm rmdir
+    setup_environment "$@"
+
     echo "[INFO] Uninstalling dot_emacs configuration..."
 
     [ -f "$HOME/.emacs" ] && rm -f "$HOME/.emacs"
@@ -368,26 +372,19 @@ install() {
     echo "[INFO] Installation completed successfully."
 }
 
-# Parse arguments
-parse_args() {
+# Main entry point of the script
+main() {
     case "$1" in
         -h|--help|-v|--version)
             usage
             ;;
         -u|--uninstall)
-            shift
-            check_commands sudo rm rmdir
-            setup_environment "$@"
-            uninstall_dotemacs
-            exit 0
+            uninstall "$@"
+            ;;
+        *)
+            install "$@"
             ;;
     esac
-}
-
-# Main entry point of the script
-main() {
-    parse_args "$@"
-    install "$@"
     return 0
 }
 
