@@ -348,6 +348,13 @@ uninstall() {
 
     echo "[INFO] Uninstalling dot_emacs configuration..."
 
+    DEFAULT_TARGET="/usr/local/etc/emacs.d"
+    if [ "$TARGET" != "$DEFAULT_TARGET" ]; then
+        echo "[WARN] Skipping deletion of non-default TARGET: $TARGET" >&2
+        echo "[WARN] Only $DEFAULT_TARGET will be deleted during --uninstall." >&2
+        exit 1
+    fi
+
     [ -f "$HOME/.emacs" ] && rm -f "$HOME/.emacs"
     [ -f "$HOME/.mew.el" ] && rm -f "$HOME/.mew.el"
     [ -L "$HOME/.emacs.d/elisp" ] && rm -f "$HOME/.emacs.d/elisp"
@@ -360,13 +367,6 @@ uninstall() {
         rm -f "$HOME/.emacs.d/anything/anything-c-adaptive-history"
 
     [ -d "$HOME/.emacs.d" ] && rmdir "$HOME/.emacs.d" 2>/dev/null
-
-    DEFAULT_TARGET="/usr/local/etc/emacs.d"
-    if [ "$TARGET" != "$DEFAULT_TARGET" ]; then
-        echo "[WARN] Skipping deletion of non-default TARGET: $TARGET" >&2
-        echo "[WARN] Only $DEFAULT_TARGET will be deleted during --uninstall." >&2
-        exit 1
-    fi
 
     if [ -d "$TARGET" ]; then
         echo "[INFO] Removing installed target directory: $TARGET"
