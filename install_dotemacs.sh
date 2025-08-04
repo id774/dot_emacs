@@ -348,12 +348,7 @@ uninstall() {
 
     echo "[INFO] Uninstalling dot_emacs configuration..."
 
-    DEFAULT_TARGET="/usr/local/etc/emacs.d"
-    if [ "$TARGET" != "$DEFAULT_TARGET" ]; then
-        echo "[WARN] Skipping deletion of non-default TARGET: $TARGET" >&2
-        echo "[WARN] Only $DEFAULT_TARGET will be deleted during --uninstall." >&2
-        exit 1
-    fi
+    TARGET="/usr/local/etc/emacs.d"
 
     [ -f "$HOME/.emacs" ] && rm -f "$HOME/.emacs"
     [ -f "$HOME/.mew.el" ] && rm -f "$HOME/.mew.el"
