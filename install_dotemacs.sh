@@ -363,7 +363,9 @@ uninstall() {
 
     DEFAULT_TARGET="/usr/local/etc/emacs.d"
     if [ "$TARGET" != "$DEFAULT_TARGET" ]; then
-        echo "[WARN] Skipping deletion of non-default TARGET: $TARGET" >&2; return
+        echo "[WARN] Skipping deletion of non-default TARGET: $TARGET" >&2
+        echo "[WARN] Only $DEFAULT_TARGET will be deleted during --uninstall." >&2
+        exit 1
     fi
 
     if [ -d "$TARGET" ]; then
