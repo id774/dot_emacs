@@ -325,6 +325,21 @@ set_permission() {
     fi
 }
 
+# Perform installation steps
+install() {
+    cd || exit 1
+
+    check_commands sudo cp mkdir chmod chown ln rm id dirname uname
+    setup_environment "$@"
+    setup_dotemacs
+    emacs_private_settings
+    byte_compile_all
+    slink_elisp
+    [ -n "$3" ] || set_permission
+
+    echo "[INFO] Installation completed successfully."
+}
+
 # Uninstall dot_emacs configuration
 uninstall() {
     shift
@@ -346,6 +361,11 @@ uninstall() {
 
     [ -d "$HOME/.emacs.d" ] && rmdir "$HOME/.emacs.d" 2>/dev/null
 
+    DEFAULT_TARGET="/usr/local/etc/emacs.d"
+    if [ "$TARGET" != "$DEFAULT_TARGET" ]; then
+        echo "[WARN] Skipping deletion of non-default TARGET: $TARGET" >&2; return
+    fi
+
     if [ -d "$TARGET" ]; then
         echo "[INFO] Removing installed target directory: $TARGET"
         if ! $SUDO rm -rf "$TARGET"; then
@@ -355,21 +375,6 @@ uninstall() {
     fi
 
     echo "[INFO] dot_emacs uninstallation completed successfully."
-}
-
-# Perform installation steps
-install() {
-    cd || exit 1
-
-    check_commands sudo cp mkdir chmod chown ln rm id dirname uname
-    setup_environment "$@"
-    setup_dotemacs
-    emacs_private_settings
-    byte_compile_all
-    slink_elisp
-    [ -n "$3" ] || set_permission
-
-    echo "[INFO] Installation completed successfully."
 }
 
 # Main entry point of the script
