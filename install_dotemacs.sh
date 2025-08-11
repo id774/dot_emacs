@@ -206,6 +206,7 @@ byte_compile_all() {
     cd "$TARGET/elisp" && emacs_batch_byte_compile \
         init.el \
         mew-settings.el \
+        cl-compat-bridge.el \
         clear-kill-ring.el \
         delete-empty-file.el \
         dired-settings.el \
@@ -266,7 +267,7 @@ slink_elisp() {
     done
 
     echo "[INFO] Creating adaptive history file: $HOME/.emacs.d/anything/anything-c-adaptive-history"
-    if ! touch "$HOME/.emacs.d/anything/anything-c-adaptive-history"; then
+    if ! $SUDO touch "$HOME/.emacs.d/anything/anything-c-adaptive-history"; then
         echo "[ERROR] Failed to create anything-c-adaptive-history file." >&2
         exit 1
     fi
