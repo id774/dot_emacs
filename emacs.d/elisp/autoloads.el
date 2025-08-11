@@ -1,6 +1,8 @@
 ;; autoloads.el
 ;; 外部ファイルをロードして configs.el を最後に呼ぶ
 
+(defalias 'which-func-mode 'which-function-mode)
+
 (load "utils")
 
 ;; Mew
