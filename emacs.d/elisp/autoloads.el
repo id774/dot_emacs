@@ -3,6 +3,9 @@
 
 (load "utils")
 
+;; Bridge cl/cl-lib across Emacs 23.4..30.1
+(load-p "cl-compat-bridge")
+
 ;; Mew
 (load-p "mew-settings")
 
