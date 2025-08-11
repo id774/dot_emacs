@@ -8476,8 +8476,6 @@ Return an alist with elements like (data . number_results)."
     (requires-pattern . 3)
     (delayed)))
 
-
-
 ;;; Web browser functions.
 ;;
 ;;
@@ -8489,20 +8487,27 @@ Return an alist with elements like (data . number_results)."
 (defvar anything-c-home-url "http://www.google.fr"
   "*Default url to use as home url.")
 
-(defvar ac-browse-url-chromium-program "chromium-browser")
-(defvar ac-browse-url-uzbl-program "uzbl-browser")
+;; Define available browser programs
+(defvar my-browse-url-chromium-program "chromium-browser")
+
+;; Define browser function alist for Emacs 29+
 (defvar anything-browse-url-default-browser-alist
-  `((,w3m-command . w3m-browse-url)
+  `(
+    ;; w3m support (if available)
+    (,w3m-command . w3m-browse-url)
+
+    ;; Firefox support
     (,browse-url-firefox-program . browse-url-firefox)
-    (,ac-browse-url-chromium-program . ac-browse-url-chromium)
-    (,ac-browse-url-uzbl-program . ac-browse-url-uzbl)
-    (,browse-url-kde-program . browse-url-kde)
-    (,browse-url-gnome-moz-program . browse-url-gnome-moz)
-    (,browse-url-mozilla-program . browse-url-mozilla)
-    (,browse-url-galeon-program . browse-url-galeon)
-    (,browse-url-netscape-program . browse-url-netscape)
-    (,browse-url-xterm-program . browse-url-text-xterm))
-  "*Alist of \(executable . function\) to try to find a suitable url browser.")
+
+    ;; Chromium support
+    (,my-browse-url-chromium-program
+     . ,(lambda (url &optional _new-window)
+          (let ((browse-url-generic-program my-browse-url-chromium-program))
+            (browse-url-generic url))))
+
+    ;; Fallback to xdg-open (always safe)
+    ("xdg-open" . browse-url-xdg-open))
+  "*Alist of (executable . function) to try to find a suitable URL browser.")
 
 (defun* anything-c-generic-browser (url name &rest args)
   "Browse URL with NAME browser."
