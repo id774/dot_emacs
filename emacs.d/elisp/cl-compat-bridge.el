@@ -4,8 +4,6 @@
 ;; Also provide common legacy aliases so old code using unprefixed CL APIs
 ;; works on modern Emacs without requiring 'cl' (and without deprecation warnings).
 
-(eval-when-compile (require 'cl-lib nil t))
-
 ;; Legacy struct macro
 (unless (fboundp 'defstruct)
   (defmacro defstruct (&rest args)
@@ -15,6 +13,16 @@
 (unless (fboundp 'defun*)
   (defmacro defun* (&rest args)
     `(cl-defun ,@args)))
+
+;; Legacy toggle-read-only alias
+(unless (fboundp 'toggle-read-only)
+  (defalias 'toggle-read-only 'read-only-mode))
+
+;; Legacy which-func-mode alias
+(unless (fboundp 'which-func-mode)
+  (defalias 'which-func-mode 'which-function-mode))
+
+(eval-when-compile (require 'cl-lib nil t))
 
 (cond
  ((require 'cl-lib nil t)
