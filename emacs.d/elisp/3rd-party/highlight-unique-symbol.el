@@ -37,7 +37,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-compat-bridge)
 (require 'deferred)
 (require 'vc)
 (require 'vc-git)

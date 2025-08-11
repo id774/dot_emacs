@@ -54,7 +54,7 @@
 ;;  - < inside ERB tags correctly ignored.
 
 (eval-when-compile
-  (require 'cl))
+(require 'cl-compat-bridge))
 
 (require 'rhtml-erb)
 (require 'sgml-mode) ; Force load here, make sure our functions will munge in.

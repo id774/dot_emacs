@@ -30,7 +30,7 @@
 
 ;;; ElDoc
 
-(require 'cl)
+(require 'cl-compat-bridge)
 (require 'ess-utils)
 
 (defun ess-r-eldoc-function ()

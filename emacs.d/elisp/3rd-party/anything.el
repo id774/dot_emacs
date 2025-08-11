@@ -629,7 +629,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-compat-bridge)
 
 (defvar anything-version "1.3.9")
 

@@ -77,7 +77,7 @@
 (require 'inf-ruby)
 (require 'ruby-compilation)
 (require 'jump)
-(require 'cl)
+(require 'cl-compat-bridge)
 (require 'json)
 (require 'easymenu)
 

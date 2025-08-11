@@ -253,7 +253,7 @@
 
 ;;; Require:
 (require 'term)
-(require 'cl)
+(require 'cl-compat-bridge)
 (require 'advice)
 
 ;;; Code:

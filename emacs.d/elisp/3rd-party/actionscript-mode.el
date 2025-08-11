@@ -46,7 +46,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-compat-bridge)
 (require 'font-lock)
 (eval-when-compile
   (require 'regexp-opt))

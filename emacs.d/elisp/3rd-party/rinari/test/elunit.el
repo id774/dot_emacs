@@ -70,7 +70,7 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'cl)
+(require 'cl-compat-bridge)
   (require 'compile))
 
 (defstruct test-suite name children tests setup-hook teardown-hook)

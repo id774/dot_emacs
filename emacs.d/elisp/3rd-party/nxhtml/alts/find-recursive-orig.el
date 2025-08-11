@@ -26,7 +26,7 @@
 ;; (require 'find-recursive)
 ;;
 
-(require 'cl)
+(require 'cl-compat-bridge)
 
 (defcustom find-recursive-exclude-files '(".*.class$" ".*~$" ".*.elc$")
   "List of regular expressions of files to be excluded when recursively searching for files."

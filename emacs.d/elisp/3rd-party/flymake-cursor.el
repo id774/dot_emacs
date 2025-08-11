@@ -64,7 +64,7 @@
 ;;
 
 
-(require 'cl)
+(require 'cl-compat-bridge)
 
 (defvar flyc--e-at-point nil
   "Error at point, after last command")

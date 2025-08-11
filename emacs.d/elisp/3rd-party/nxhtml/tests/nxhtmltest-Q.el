@@ -44,7 +44,7 @@
 ;;
 ;;; Code:
 
-(require 'cl)
+(require 'cl-compat-bridge)
 (require 'ourcomments-util)
 
 (eval-and-compile

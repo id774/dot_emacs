@@ -48,7 +48,7 @@
 
 (provide 'scala-mode-fontlock)
 
-(require 'cl)
+(require 'cl-compat-bridge)
 (require 'font-lock)
 (require 'scala-mode-constants)
 (require 'scala-mode-lib)

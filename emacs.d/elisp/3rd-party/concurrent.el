@@ -33,7 +33,7 @@
 ;; - Signal/Channel
 
 (eval-when-compile
-  (require 'cl))
+(require 'cl-compat-bridge))
 
 (require 'deferred)
 

@@ -33,7 +33,7 @@
 
 
 (eval-when-compile
-  (require 'cl))
+(require 'cl-compat-bridge))
 
 (defun async-test-1 ()
   (interactive)

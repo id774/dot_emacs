@@ -110,7 +110,7 @@
 ;; 0.9.10: match findr-skip-directory-regexp agaisnt the whole path by attila.lendvai@gmail.com
 ;; 0.9.11: Fix header line to use ELPA-compliant triple dash by Steve Purcell
 
-(require 'cl)
+(require 'cl-compat-bridge)
 
 (provide 'findr)
 

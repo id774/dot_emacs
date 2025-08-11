@@ -66,7 +66,7 @@
 ;; deferred.el.
 
 (eval-when-compile
-  (require 'cl))
+(require 'cl-compat-bridge))
 
 (defvar deferred:version nil "deferred.el version")
 (setq deferred:version "0.3.2")

@@ -296,7 +296,7 @@ remove then with `nxhtmlmaint-byte-uncompile-all'."
     (add-to-list 'load-path tests-dir)
     (when (file-directory-p emacsw32-dir)
       (add-to-list 'load-path emacsw32-dir))
-    (require 'cl) ;; This is run in a new Emacs
+(require 'cl-compat-bridge) ;; This is run in a new Emacs
     (let ((dummy-debug-on-error t))
       (nxhtmlmaint-byte-compile-dir nxhtmlmaint-dir nil nil))
     (message "Byte compiling is ready, restart Emacs to use the compiled files")))

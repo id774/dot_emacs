@@ -158,7 +158,7 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl))
+(require 'cl-compat-bridge))
 
 ;;; variables
 (defgroup minibuf-isearch nil

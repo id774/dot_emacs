@@ -37,7 +37,7 @@
 ;; Error with head version of auto-complete.el
 ;; reported by k1LoW
 
-(require 'cl)
+(require 'cl-compat-bridge)
 
 (defgroup smartchr nil
   "smartchr group"

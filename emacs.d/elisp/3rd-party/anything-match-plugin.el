@@ -165,7 +165,7 @@
 ;;; Code:
 
 (require 'anything)
-(require 'cl)
+(require 'cl-compat-bridge)
 
 
 ;;;; Match-plugin

@@ -48,7 +48,7 @@
 
 (provide 'scala-mode-constants)
 
-(require 'cl)
+(require 'cl-compat-bridge)
 (require 'regexp-opt)
 
 ;; Helper functions

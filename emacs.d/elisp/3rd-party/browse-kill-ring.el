@@ -239,7 +239,7 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'cl)
+(require 'cl-compat-bridge)
   (require 'derived))
 
 (when (featurep 'xemacs)
@@ -1085,7 +1085,7 @@ directly; use `browse-kill-ring' instead.
               ;; I'm not going to rewrite `delete-duplicates'.  If
               ;; someone really wants to rewrite it here, send me a
               ;; patch.
-              (require 'cl)
+(require 'cl-compat-bridge)
               (setq items (delete-duplicates items :test #'equal)))
             (when (stringp regexp)
               (setq items (delq nil

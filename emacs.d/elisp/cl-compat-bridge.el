@@ -6,6 +6,16 @@
 
 (eval-when-compile (require 'cl-lib nil t))
 
+;; Legacy struct macro
+(unless (fboundp 'defstruct)
+  (defmacro defstruct (&rest args)
+    `(cl-defstruct ,@args)))
+
+;; Legacy defun* macro
+(unless (fboundp 'defun*)
+  (defmacro defun* (&rest args)
+    `(cl-defun ,@args)))
+
 (cond
  ((require 'cl-lib nil t)
   ;; Define legacy function aliases (only if missing)
@@ -39,7 +49,7 @@
 
  (t
   ;; Old Emacs: no cl-lib → fall back to cl (no deprecation warning on 23.x)
-  (require 'cl)))
+(require 'cl-compat-bridge)))
 
 (provide 'cl-compat-bridge)
 ;;; cl-compat-bridge.el ends here

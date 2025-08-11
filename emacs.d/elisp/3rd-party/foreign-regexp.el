@@ -498,7 +498,7 @@
 
 
 (eval-and-compile
-  (require 'cl)
+(require 'cl-compat-bridge)
   (require 'menu-bar)
   (require 'easymenu))
 (require 're-builder)

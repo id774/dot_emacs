@@ -120,7 +120,7 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'cl))
+(require 'cl-compat-bridge))
 
 (eval-and-compile
   (require 'cc-mode)     ; (only) for `c-populate-syntax-table'
@@ -1254,7 +1254,7 @@ First match-group is the leading whitespace.")
 ;;; Code
 
 (eval-when-compile
-  (require 'cl))
+(require 'cl-compat-bridge))
 
 
 ;; Emacs21 compatibility, plus some stuff to avoid runtime dependency on CL
@@ -1524,7 +1524,7 @@ Handles unicode and latin chars properly."
 
 
 (eval-when-compile
-  (require 'cl))
+(require 'cl-compat-bridge))
 
 (defvar js2-tokens nil
   "List of all defined token names.")  ; intialized below
@@ -3279,7 +3279,7 @@ the correct number of ARGS must be provided."
 ;;; Code:
 
 (eval-and-compile
-  (require 'cl))
+(require 'cl-compat-bridge))
 
 
 ;; flags for ast node property 'member-type (used for e4x operators)
@@ -7199,7 +7199,7 @@ i.e. one or more nodes, and an integer position as the list tail."
 ;;; Code
 
 (eval-and-compile
-  (require 'cl))  ; for delete-if
+(require 'cl-compat-bridge))  ; for delete-if
 
 
 (defconst js2-version "1.7.0"
@@ -10439,7 +10439,7 @@ If so, we don't ever want to use bounce-indent."
 ;;; js2-indent.el ends here
 
 (eval-when-compile
-  (require 'cl))
+(require 'cl-compat-bridge))
 
 (require 'imenu)
 (require 'cc-cmds)  ; for `c-fill-paragraph'

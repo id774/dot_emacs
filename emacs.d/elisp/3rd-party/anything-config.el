@@ -686,7 +686,7 @@
 (require 'anything)
 (require 'thingatpt)
 (require 'ffap)
-(require 'cl)
+(require 'cl-compat-bridge)
 (eval-when-compile (require 'dired))
 (require 'dired-aux)
 (require 'dired-x)

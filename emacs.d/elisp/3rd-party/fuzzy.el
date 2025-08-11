@@ -25,7 +25,7 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'cl))
+(require 'cl-compat-bridge))
 (require 'regexp-opt)
 
 (defgroup fuzzy nil

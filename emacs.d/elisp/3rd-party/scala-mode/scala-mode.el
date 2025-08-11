@@ -48,7 +48,7 @@
 
 (provide 'scala-mode)
 
-(require 'cl)
+(require 'cl-compat-bridge)
 
 (require 'scala-mode-constants)
 (require 'scala-mode-variables)

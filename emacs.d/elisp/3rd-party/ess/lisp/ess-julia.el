@@ -53,7 +53,7 @@
         (when (featurep 'julia-mode)
 
 (eval-when-compile
-  (require 'cl))
+(require 'cl-compat-bridge))
 
 (autoload 'inferior-ess "ess-inf" "Run an ESS process.")
 (autoload 'ess-mode     "ess-mode" "Edit an ESS process.")

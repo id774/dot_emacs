@@ -152,7 +152,7 @@ as other normal files.")
 ;;;; -------------------------------------------------------------------------
 
 (eval-when-compile
- (require 'cl))
+(require 'cl-compat-bridge))
 
 (defvar auto-save-buffers-enhanced-activity-flag t
   "*If non-nil, `auto-save-buffers-enhanced' saves buffers.")

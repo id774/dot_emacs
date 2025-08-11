@@ -70,7 +70,7 @@
         ;; throw away any pre-existing definition.
         ))))
 
-(require 'cl)
+(require 'cl-compat-bridge)
 
 ;; Some of Emacs-24.3's cl.el definition are not just aliases, because either
 ;; the feature was dropped from cl-lib.el or because the cl-lib version is
