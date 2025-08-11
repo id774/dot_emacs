@@ -1,32 +1,30 @@
 ;;; cl-compat-bridge.el --- Bridge cl/cl-lib across Emacs 23.4..30.1 -*- lexical-binding: t; -*-
 
-;; Load cl-lib when available; otherwise fall back to cl (for Emacs 23.x).
-;; Also provide common legacy aliases so old code using unprefixed CL APIs
-;; works on modern Emacs without requiring 'cl' (and without deprecation warnings).
+;; Do not try cl-lib on Emacs < 24.3 to avoid recursive load with 3rd-party cl-lib.
+(defconst cl-compat--has-cl-lib
+  (or (> emacs-major-version 24)
+      (and (= emacs-major-version 24) (>= emacs-minor-version 3))))
 
-;; Legacy struct macro
+;; Core load: cl on old Emacs, cl-lib on new Emacs.
+(if cl-compat--has-cl-lib
+    (require 'cl-lib)
+  (require 'cl))
+
+;; Legacy macro/function shims (define only when missing)
 (unless (fboundp 'defstruct)
-  (defmacro defstruct (&rest args)
-    `(cl-defstruct ,@args)))
-
-;; Legacy defun* macro
+  (defmacro defstruct (&rest args) `(cl-defstruct ,@args)))
 (unless (fboundp 'defun*)
-  (defmacro defun* (&rest args)
-    `(cl-defun ,@args)))
+  (defmacro defun* (&rest args) `(cl-defun ,@args)))
+(unless (fboundp 'defmacro*)
+  (defmacro defmacro* (&rest args) `(cl-defmacro ,@args)))
 
-;; Legacy toggle-read-only alias
 (unless (fboundp 'toggle-read-only)
   (defalias 'toggle-read-only 'read-only-mode))
-
-;; Legacy which-func-mode alias
 (unless (fboundp 'which-func-mode)
   (defalias 'which-func-mode 'which-function-mode))
 
-(eval-when-compile (require 'cl-lib nil t))
-
-(cond
- ((require 'cl-lib nil t)
-  ;; Define legacy function aliases (only if missing)
+;; Map common CL functions when cl-lib is present
+(when (featurep 'cl-lib)
   (defalias 'remove-if       #'cl-remove-if)
   (defalias 'remove-if-not   #'cl-remove-if-not)
   (defalias 'find-if         #'cl-find-if)
@@ -43,21 +41,12 @@
   (defalias 'pairlis         #'cl-pairlis)
   (defalias 'assoc*          #'cl-assoc)
   (defalias 'rassoc*         #'cl-rassoc)
-
-  ;; Legacy macros
   (defmacro loop (&rest body) `(cl-loop ,@body))
-  (defmacro pushnew (x place &rest keys)
-    `(cl-pushnew ,x ,place ,@keys))
-  (defmacro incf (place &optional delta)
-    `(cl-incf ,place ,(or delta 1)))
-  (defmacro decf (place &optional delta)
-    `(cl-decf ,place ,(or delta 1)))
-  (defmacro assert (test-form &optional show-args string &rest args)
-    `(cl-assert ,test-form ,show-args ,string ,@args)))
-
- (t
-  ;; Old Emacs: no cl-lib → fall back to cl (no deprecation warning on 23.x)
-(require 'cl-compat-bridge)))
+  (defmacro pushnew (x place &rest keys) `(cl-pushnew ,x ,place ,@keys))
+  (defmacro incf (place &optional delta) `(cl-incf ,place ,(or delta 1)))
+  (defmacro decf (place &optional delta) `(cl-decf ,place ,(or delta 1)))
+  (defmacro assert (test &optional show-args string &rest args)
+    `(cl-assert ,test ,show-args ,string ,@args)))
 
 (provide 'cl-compat-bridge)
 ;;; cl-compat-bridge.el ends here
