@@ -207,6 +207,7 @@ byte_compile_all() {
         init.el \
         mew-settings.el \
         cl-compat-bridge.el \
+        ess-compat-bridge.el \
         clear-kill-ring.el \
         delete-empty-file.el \
         dired-settings.el \
