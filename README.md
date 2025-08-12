@@ -30,7 +30,7 @@ DOT_EMACS is designed to:
 
 DOT_EMACS is confirmed to work on:
 
-- GNU Emacs on Debian/Ubuntu stable (from Debian 7 “Wheezy” with Emacs 23.4 to Debian 13 “Trixie” with Emacs 30.1).
+- GNU Emacs on Debian/Ubuntu stable (from Debian 7 Wheezy with Emacs 23.4 to Debian 13 Trixie with Emacs 30.1).
 - GNU Emacs on other Linux distributions within the same version range.
 - Emacs for macOS (from [emacsformacosx.com](http://emacsformacosx.com/)).
 - Meadow based on Emacs 22.3.1 or later on Windows 7 (partial support, with limited functionality).
