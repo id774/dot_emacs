@@ -3,8 +3,12 @@
 
 (load "utils")
 
+;; Core compatibility layer
+(load-p "core-compat-bridge")
+
 ;; Bridge cl/cl-lib across Emacs 23.4..30.1
 (load-p "cl-compat-bridge")
+
 ;; Bridge old/new ESS variable names
 (load-p "ess-compat-bridge")
 

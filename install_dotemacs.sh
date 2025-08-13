@@ -206,6 +206,7 @@ byte_compile_all() {
     cd "$TARGET/elisp" && emacs_batch_byte_compile \
         init.el \
         mew-settings.el \
+        core-compat-bridge.el \
         cl-compat-bridge.el \
         ess-compat-bridge.el \
         clear-kill-ring.el \

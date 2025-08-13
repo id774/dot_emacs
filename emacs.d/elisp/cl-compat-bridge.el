@@ -1,9 +1,13 @@
 ;;; cl-compat-bridge.el --- Bridge cl/cl-lib across Emacs 23.4..30.1 -*- lexical-binding: t; -*-
 
-;; Do not try cl-lib on Emacs < 24.3 to avoid recursive load with 3rd-party cl-lib.
+;;; Code:
+
+;; If core-compat-bridge is loaded, use its predicate; otherwise fallback locally.
 (defconst cl-compat--has-cl-lib
-  (or (> emacs-major-version 24)
-      (and (= emacs-major-version 24) (>= emacs-minor-version 3))))
+  (if (boundp 'core-compat--emacs-24.3+)
+      core-compat--emacs-24.3+
+    (or (> emacs-major-version 24)
+        (and (= emacs-major-version 24) (>= emacs-minor-version 3)))))
 
 ;; Core load: cl on old Emacs, cl-lib on new Emacs.
 (if cl-compat--has-cl-lib
@@ -17,11 +21,6 @@
   (defmacro defun* (&rest args) `(cl-defun ,@args)))
 (unless (fboundp 'defmacro*)
   (defmacro defmacro* (&rest args) `(cl-defmacro ,@args)))
-
-(unless (fboundp 'toggle-read-only)
-  (defalias 'toggle-read-only 'read-only-mode))
-(unless (fboundp 'which-func-mode)
-  (defalias 'which-func-mode 'which-function-mode))
 
 ;; Map common CL functions when cl-lib is present
 (when (featurep 'cl-lib)
