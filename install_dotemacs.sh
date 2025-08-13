@@ -7,6 +7,8 @@
 #  This script installs the dot_emacs configuration files to the specified
 #  target directory. It compiles Emacs Lisp scripts, sets the appropriate
 #  permissions, and optionally removes existing configurations.
+#  If the emacs command is not found, the script falls back to
+#  /Applications/Emacs.app/Contents/MacOS/Emacs when executable on macOS.
 #
 #  Author: id774 (More info: http://id774.net)
 #  Source Code: https://github.com/id774/dot_emacs
@@ -21,7 +23,9 @@
 #      ./install_dotemacs.sh                    # Install using default emacs
 #      ./install_dotemacs.sh /usr/bin/emacs     # Specify system emacs
 #      ./install_dotemacs.sh /Applications/Emacs.app/Contents/MacOS/Emacs
-#          # macOS: Use Emacs.app binary directly
+#
+#      # macOS: Use Emacs.app binary directly.
+#      # If 'emacs' is missing, macOS Emacs.app binary is used automatically when available.
 #
 #  Options:
 #      -h, --help        Show this help message and exit.
@@ -32,11 +36,16 @@
 #    macOS users can use: /Applications/Emacs.app/Contents/MacOS/Emacs
 #  - [target_path]: Path to the installation directory (default: /usr/local/etc/emacs.d).
 #  - [nosudo]: If specified, the script runs without sudo.
+#  - Fallback: When 'emacs' is not found and [emacs_binary] is not an executable path,
+#    the script tries /Applications/Emacs.app/Contents/MacOS/Emacs on macOS.
 #  - The script will remove existing Emacs configurations before installation.
 #  - Byte-compilation is performed to improve Emacs performance.
 #  - The --uninstall option will remove installed files and user configuration.
 #
 #  Version History:
+#  v3.1 2025-08-13
+#       Add fallback to /Applications/Emacs.app/Contents/MacOS/Emacs when 'emacs'
+#       is not found or given binary path is not executable on macOS.
 #  v3.0 2025-08-01
 #       Add --uninstall option to cleanly remove installed components.
 #  v2.3 2025-06-23
@@ -287,7 +296,14 @@ setup_environment() {
     esac
 
     EMACS=${1:-emacs}
+    if ! command -v "$EMACS" >/dev/null 2>&1 \
+       && [ ! -x "$EMACS" ] \
+       && [ -x /Applications/Emacs.app/Contents/MacOS/Emacs ]; then
+        EMACS=/Applications/Emacs.app/Contents/MacOS/Emacs
+        echo "[INFO] Fallback to macOS Emacs.app binary: $EMACS"
+    fi
     check_commands "$EMACS"
+    echo "[INFO] Using Emacs binary: $EMACS"
 
     TARGET=${2:-/usr/local/etc/emacs.d}
     if [ -n "$3" ]; then
