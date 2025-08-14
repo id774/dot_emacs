@@ -282,6 +282,7 @@ slink_elisp() {
         echo "[ERROR] Failed to create anything-c-adaptive-history file." >&2
         exit 1
     fi
+    $SUDO chown "$(id -un):$(id -gn)" "$HOME/.emacs.d/anything/anything-c-adaptive-history"
 
     echo "[INFO] Symlink setup for Emacs configuration completed successfully."
 }
