@@ -99,6 +99,8 @@ DOT_EMACS:
 DOT_EMACS uses the `<year>.<month>` versioning format starting from version `11.09`.
 Example: `24.12`
 
+For detailed version history, please refer to the [VERSIONS](doc/VERSIONS) file.
+
 ---
 
 ## 6. Contribution
