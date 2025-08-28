@@ -15,9 +15,17 @@
     `(eval-after-load ,file
        '(progn ,@body))))
 
-;; Non-CL aliases that help old Emacs
+;; Provide toggle-read-only for old Emacs versions
 (unless (fboundp 'toggle-read-only)
-  (defalias 'toggle-read-only 'read-only-mode))
+  (defun toggle-read-only (&optional arg)
+    "Toggle read-only status of the current buffer.
+With prefix ARG, enable if ARG > 0, otherwise disable."
+    (interactive "P")
+    (let* ((n (and arg (prefix-numeric-value arg)))
+           (mode-arg (if (null arg)
+                         'toggle
+                       (if (> n 0) 1 -1))))
+      (read-only-mode mode-arg))))
 
 (unless (fboundp 'which-func-mode)
   (defalias 'which-func-mode 'which-function-mode))
