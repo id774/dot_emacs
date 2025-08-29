@@ -1,8 +1,8 @@
 dot_emacs Repository Version History
 ====================================
 
-v25.08.1 (Release Date: TBD)
-----------------------------
+v25.08.1 (2025-08-29)
+---------------------
 - Fix toggle-read-only compatibility in core-compat-bridge.el.
 
 v25.08 (2025-08-20)
