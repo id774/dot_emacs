@@ -43,6 +43,8 @@
 #  - The --uninstall option will remove installed files and user configuration.
 #
 #  Version History:
+#  v3.2 2025-10-01
+#       Normalize chmod permissions to 4-digit octal format.
 #  v3.1 2025-08-13
 #       Add fallback to /Applications/Emacs.app/Contents/MacOS/Emacs when 'emacs'
 #       is not found or given binary path is not executable on macOS.
@@ -130,7 +132,7 @@ emacs_private_settings() {
 
     [ -f "$HOME/etc/config.local/dot_mew.el" ] && cp $OPTIONS "$HOME/etc/config.local/dot_mew.el" "$HOME/.mew.el"
 
-    chmod 600 "$HOME/.mew.el"
+    chmod 0600 "$HOME/.mew.el"
 
     for file in emacs-w3m.el proxy.el faces.el; do
         if [ -f "$HOME/etc/config.local/$file" ]; then
@@ -271,7 +273,7 @@ slink_elisp() {
                 exit 1
             fi
         fi
-        if ! $SUDO chmod 750 "$HOME/.emacs.d/$dir"; then
+        if ! $SUDO chmod 0750 "$HOME/.emacs.d/$dir"; then
             echo "[ERROR] Failed to set permission for $HOME/.emacs.d/$dir." >&2
             exit 1
         fi
