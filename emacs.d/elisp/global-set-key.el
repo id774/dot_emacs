@@ -184,6 +184,7 @@
 
 ;; kill-ring をクリア
 (global-set-key (kbd "C-c k") 'clear-kill-ring)
+(global-set-key (kbd "C-c C-k") 'clear-kill-ring)
 
 ;; バイトコンパイル
 (global-set-key (kbd "C-c C-b") 'byte-compile-file)
