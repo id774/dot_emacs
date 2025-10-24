@@ -1,8 +1,8 @@
 dot_emacs Repository Version History
 ====================================
 
-v25.10 (Release Date: TBD)
---------------------------
+v25.10 (2025-10-24)
+-------------------
 - Normalize chmod numeric modes to four digit octal across shell scripts.
 - Standardize all shell scripts by removing trailing exit status lines (exit $?) for POSIX-safe reuse.
 - Add C-c C-k key binding for clear-kill-ring in global-set-key.el.
