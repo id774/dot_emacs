@@ -1,0 +1,73 @@
+# Emacs Lisp Design Guidelines for Long-Term Compatibility
+
+## 1. Core Principles
+- **Use features conditionally:** Always verify feature existence with `fboundp`, `boundp`, or `featurep` before calling.
+- **Support older versions first:** Write a core that runs on Emacs 23–24, and add newer features via conditional loading.
+- **Avoid internal APIs:** Never rely on `--private` functions or undocumented variables.
+
+## 2. File Structure Example
+```
+mycore.el      # Core compatible with Emacs 23+
+myfeat-30.el   # Enhancements for Emacs 30+
+init.el        # Version-based loader
+```
+```elisp
+(load "mycore.el")
+(when (>= emacs-major-version 30)
+  (load "myfeat-30.el" t t))
+```
+
+## 3. Feature Detection Patterns
+```elisp
+(when (fboundp 'json-parse-string)
+  ;; Fast JSON available
+  )
+
+(when (boundp 'treesit-language-source-alist)
+  ;; Tree-sitter enabled
+  )
+
+(when (require 'project nil t)
+  ;; Use new project.el
+  )
+```
+
+## 4. Coding Rules
+1. Always start with:
+   ```elisp
+   ;; -*- lexical-binding: t; -*-
+   ```
+2. Prefer `cl-lib` over `cl`. For Emacs 23, provide a small wrapper if needed.
+3. Define macros to encapsulate version differences.
+   ```elisp
+   (defmacro my-when-fn (fn &rest body)
+     `(when (fboundp ,fn)
+        ,@body))
+   ```
+
+## 5. UI and Logic Separation
+- Core logic should run on Emacs 23+.
+- UI improvements (minibuffer, Tree-sitter, icons) should activate only when available.
+
+## 6. Asynchronous and External Processes
+- Assume synchronous execution for old versions.
+- Use `make-process` and async JSON only in modern versions.
+
+## 7. Deprecation Monitoring
+- Enable compiler warnings.
+- Review `*Warnings*` buffer and adjust with conditional branches when deprecations appear.
+
+## 8. Dependency Policy
+- Avoid hard dependency on MELPA latest.
+- Design so missing packages cause feature reduction, not failure.
+
+## 9. Version Policy Header
+```elisp
+;; Support: Emacs 23.4+
+;; Extended: Emacs 30.1+
+;; Policy : Never break 23.x behavior
+```
+
+---
+
+Following this policy ensures that your Emacs Lisp remains functional from Emacs 23 through future releases (31, 32, 40), while modern versions transparently benefit from new capabilities.
