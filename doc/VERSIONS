@@ -1,6 +1,13 @@
 dot_emacs Repository Version History
 ====================================
 
+v25.11 (Release Date: TBD)
+--------------------------
+- Document long-term Emacs Lisp compatibility policy in doc/GUIDELINES.
+- Adjust core-compat-bridge.el to use a correct with-eval-after-load fallback on old Emacs.
+- Align cl-compat-bridge.el with 23.4..30.1 cl/cl-lib usage policy.
+- Simplify ess-compat-bridge.el to alias old/new ESS variable names without overriding values.
+
 v25.10 (2025-10-24)
 -------------------
 - Normalize chmod numeric modes to four digit octal across shell scripts.
