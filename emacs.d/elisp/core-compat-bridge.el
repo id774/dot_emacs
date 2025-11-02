@@ -13,7 +13,7 @@
   (defmacro with-eval-after-load (file &rest body)
     "Fallback to eval-after-load for old Emacs."
     `(eval-after-load ,file
-       '(progn ,@body))))
+       (lambda () ,@body))))
 
 ;; Provide toggle-read-only for old Emacs versions
 (unless (fboundp 'toggle-read-only)
