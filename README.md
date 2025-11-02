@@ -112,6 +112,9 @@ We welcome contributions! Here's how you can help:
 
 Please ensure your code is well-structured and documented.
 
+For coding style and long-term Emacs Lisp compatibility policy,
+see the [GUIDELINES](doc/GUIDELINES) document.
+
 ---
 
 ## 7. License
