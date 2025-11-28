@@ -1,8 +1,8 @@
 dot_emacs Repository Version History
 ====================================
 
-v25.11 (Release Date: TBD)
---------------------------
+v25.11 (2025-11-28)
+-------------------
 - Document long-term Emacs Lisp compatibility policy in doc/GUIDELINES.
 - Adjust core-compat-bridge.el to use a correct with-eval-after-load fallback on old Emacs.
 - Align cl-compat-bridge.el with 23.4..30.1 cl/cl-lib usage policy.
