@@ -1,6 +1,10 @@
 dot_emacs Repository Version History
 ====================================
 
+v26.02 (2026-02-27)
+-------------------
+- Adjust Emacs transparency to 90/75 for better readability with minimal background interference.
+
 v25.11 (2025-11-28)
 -------------------
 - Document long-term Emacs Lisp compatibility policy in doc/GUIDELINES.

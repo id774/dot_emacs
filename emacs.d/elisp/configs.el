@@ -234,7 +234,7 @@
 (global-set-key [(meta return)] 'toggle-fullscreen)
 
 ;; 透明化
-(add-to-list 'default-frame-alist '(alpha . (95 80)))
+(add-to-list 'default-frame-alist '(alpha . (90 75)))
 
 ;; キーバインド設定
 (load-p "global-set-key")
