@@ -29,10 +29,19 @@
         (setq default-frame-alist
               (append (list '(top . 45)
                             '(left . 20)
-                            '(width . 100)
-                            '(height . 30)
+                            '(width . 150)
+                            '(height . 50)
                             '(font . "Bitstream Vera Sans Mono-8"))
-                      default-frame-alist)))
+                      default-frame-alist))
+        ;; 日本語を IPAexGothic に固定
+        (set-fontset-font t 'japanese-jisx0208
+                          (font-spec :family "IPAexGothic"))
+        (set-fontset-font t 'japanese-jisx0212
+                          (font-spec :family "IPAexGothic"))
+        (set-fontset-font t 'katakana-jisx0201
+                          (font-spec :family "IPAexGothic"))
+        (set-fontset-font t 'han
+                          (font-spec :family "IPAexGothic")))
        ;; macOS 用設定（Menlo フォントを使用）
        ((eq system-type 'darwin)
         (setq default-frame-alist

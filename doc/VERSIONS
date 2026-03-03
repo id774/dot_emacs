@@ -1,6 +1,10 @@
 dot_emacs Repository Version History
 ====================================
 
+v26.03 (Release Date: TBD)
+--------------------------
+- Add IPAexGothic as explicit Japanese font for GNU/Linux and adjust default frame size.
+
 v26.02 (2026-02-27)
 -------------------
 - Adjust Emacs transparency to 90/75 for better readability with minimal background interference.
