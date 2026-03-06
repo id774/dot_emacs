@@ -31,7 +31,7 @@
                             '(left . 20)
                             '(width . 150)
                             '(height . 50)
-                            '(font . "Bitstream Vera Sans Mono-8"))
+                            '(font . "DejaVu Sans Mono-8"))
                       default-frame-alist))
         ;; 日本語を IPAexGothic に固定
         (set-fontset-font t 'japanese-jisx0208
