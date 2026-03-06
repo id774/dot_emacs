@@ -23,8 +23,8 @@
         (setq default-frame-alist
               (append (list '(font . "VL ゴシック-12")) default-frame-alist)))
        ;; GNU/Linux 用設定
-       ;; Bitstream Vera Sans Mono/VL ゴシックを指定
-       ;; (要 :ttf-bitstream-vera パッケージ)
+       ;; (要 fonts-dejavu, fonts-ipaexfont パッケージ)
+       ;; DejaVu Sans Mono を指定
        ((eq system-type 'gnu/linux)
         (setq default-frame-alist
               (append (list '(top . 45)
