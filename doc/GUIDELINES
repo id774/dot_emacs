@@ -1,24 +1,63 @@
 # Emacs Lisp Design Guidelines for Long-Term Compatibility
 
 ## 1. Core Principles
-- **Use features conditionally:** Always verify feature existence with `fboundp`, `boundp`, or `featurep` before calling.
-- **Support older versions first:** Write a core that runs on Emacs 23–24, and add newer features via conditional loading.
-- **Avoid internal APIs:** Never rely on `--private` functions or undocumented variables.
+
+-   **Preserve historical behavior:**\
+    Existing configurations and workflows must continue to work
+    unchanged.\
+    Backward compatibility takes priority over modernization.
+
+-   **Use features conditionally:**\
+    Always verify feature existence with `fboundp`, `boundp`, or
+    `featurep` before calling functions or variables.
+
+-   **Support older versions first:**\
+    Implement a minimal, stable core that runs on Emacs 23--24.\
+    Add newer capabilities only as optional enhancements.
+
+-   **Prefer compatibility layers over rewrites:**\
+    When upstream APIs change, introduce compatibility bridges rather
+    than rewriting historical configuration code.
+
+-   **Avoid internal APIs:**\
+    Never rely on `--private` functions or undocumented variables.
+
+-   **Prioritize longevity over trend adoption:**\
+    Avoid short-lived frameworks or experimental APIs unless they can
+    degrade gracefully.
+
+------------------------------------------------------------------------
 
 ## 2. File Structure Example
-```
-mycore.el      # Core compatible with Emacs 23+
-myfeat-30.el   # Enhancements for Emacs 30+
-init.el        # Version-based loader
-```
-```elisp
+
+Separate stable core logic from version-specific enhancements.
+
+    mycore.el      # Core compatible with Emacs 23+
+    myfeat-30.el   # Enhancements for Emacs 30+
+    init.el        # Version-based loader
+
+Example loader:
+
+``` elisp
 (load "mycore.el")
+
 (when (>= emacs-major-version 30)
   (load "myfeat-30.el" t t))
 ```
 
+Design rules:
+
+-   **Core files must remain stable across decades.**
+-   **Feature files may evolve as new Emacs versions appear.**
+-   **Version loaders should be minimal and deterministic.**
+
+------------------------------------------------------------------------
+
 ## 3. Feature Detection Patterns
-```elisp
+
+Always detect capabilities rather than assuming version numbers.
+
+``` elisp
 (when (fboundp 'json-parse-string)
   ;; Fast JSON available
   )
@@ -28,46 +67,161 @@ init.el        # Version-based loader
   )
 
 (when (require 'project nil t)
-  ;; Use new project.el
+  ;; project.el available
   )
 ```
 
+Prefer **capability detection** to strict version checks whenever
+possible.
+
+------------------------------------------------------------------------
+
 ## 4. Coding Rules
-1. Always start with:
-   ```elisp
-   ;; -*- lexical-binding: t; -*-
-   ```
-2. Prefer `cl-lib` over `cl`. For Emacs 23, provide a small wrapper if needed.
-3. Define macros to encapsulate version differences.
-   ```elisp
-   (defmacro my-when-fn (fn &rest body)
-     `(when (fboundp ,fn)
-        ,@body))
-   ```
 
-## 5. UI and Logic Separation
-- Core logic should run on Emacs 23+.
-- UI improvements (minibuffer, Tree-sitter, icons) should activate only when available.
+1.  Always begin files with lexical binding:
 
-## 6. Asynchronous and External Processes
-- Assume synchronous execution for old versions.
-- Use `make-process` and async JSON only in modern versions.
-
-## 7. Deprecation Monitoring
-- Enable compiler warnings.
-- Review `*Warnings*` buffer and adjust with conditional branches when deprecations appear.
-
-## 8. Dependency Policy
-- Avoid hard dependency on MELPA latest.
-- Design so missing packages cause feature reduction, not failure.
-
-## 9. Version Policy Header
-```elisp
-;; Support: Emacs 23.4+
-;; Extended: Emacs 30.1+
-;; Policy : Never break 23.x behavior
+``` elisp
+;; -*- lexical-binding: t; -*-
 ```
 
----
+2.  Prefer `cl-lib` over `cl`.\
+    If compatibility with Emacs 23 is required, provide a thin wrapper
+    layer.
 
-Following this policy ensures that your Emacs Lisp remains functional from Emacs 23 through future releases (31, 32, 40), while modern versions transparently benefit from new capabilities.
+3.  Encapsulate version differences with helper macros.
+
+``` elisp
+(defmacro my-when-fn (fn &rest body)
+  `(when (fboundp ,fn)
+     ,@body))
+```
+
+4.  Avoid rewriting stable legacy code purely for stylistic
+    modernization.
+
+5.  Maintain readable and conservative coding style suitable for
+    long-term maintenance.
+
+------------------------------------------------------------------------
+
+## 5. UI and Logic Separation
+
+-   **Core logic must run on Emacs 23+.**
+-   **Modern UI features must be optional.**
+
+Examples of optional UI layers:
+
+-   Tree-sitter
+-   icon packages
+-   advanced minibuffer frameworks
+
+These must never be required for core functionality.
+
+------------------------------------------------------------------------
+
+## 6. Asynchronous and External Processes
+
+Design with historical compatibility in mind.
+
+-   Assume **synchronous execution** for older versions.
+-   Enable asynchronous improvements only when supported.
+
+Example technologies:
+
+-   `make-process`
+-   asynchronous JSON parsing
+-   modern process APIs
+
+Fallback behavior must always exist.
+
+------------------------------------------------------------------------
+
+## 7. Deprecation Monitoring
+
+Long-lived configurations must track upstream evolution.
+
+-   Enable byte-compiler warnings.
+-   Periodically review the `*Warnings*` buffer.
+-   Introduce conditional branches when APIs become deprecated.
+
+Do **not remove working legacy code unless it breaks compatibility.**
+
+------------------------------------------------------------------------
+
+## 8. Dependency Policy
+
+External dependencies must never compromise stability.
+
+Rules:
+
+-   Avoid hard dependency on rapidly changing MELPA packages.
+-   Prefer built-in packages whenever possible.
+-   Optional packages must degrade gracefully if absent.
+
+Failure to load a package should **reduce functionality, not break
+startup.**
+
+------------------------------------------------------------------------
+
+## 9. Compatibility Layer Strategy
+
+When upstream changes occur, implement a compatibility bridge.
+
+Examples:
+
+    core-compat-bridge.el
+    cl-compat-bridge.el
+    ess-compat-bridge.el
+
+Compatibility layers allow:
+
+-   preservation of historical configuration
+-   isolation of API transitions
+-   incremental modernization
+
+This strategy avoids large-scale rewrites and preserves long-term
+maintainability.
+
+------------------------------------------------------------------------
+
+## 10. Version Policy Header
+
+Each file should clearly document its compatibility expectations.
+
+``` elisp
+;; Support : Emacs 23.4+
+;; Extended: Emacs 30.1+
+;; Policy  : Preserve historical behavior and maintain backward compatibility
+```
+
+------------------------------------------------------------------------
+
+## 11. Long-Term Maintenance Philosophy
+
+This configuration is intended for **multi-decade usability**.
+
+Guiding principles:
+
+-   Historical configurations are preserved whenever possible.
+-   New features must not disrupt existing workflows.
+-   Compatibility layers absorb upstream API changes.
+-   The system should remain operational across major Emacs generations.
+
+The objective is not merely to support current releases, but to ensure
+that the configuration remains functional across future versions such as
+Emacs 31, 32, and beyond.
+
+------------------------------------------------------------------------
+
+## Summary
+
+This policy favors:
+
+-   historical preservation
+-   strict backward compatibility
+-   incremental evolution
+-   operational stability over stylistic modernization
+
+Following these principles ensures that Emacs Lisp configurations remain
+functional and maintainable across multiple decades of Emacs
+development.
