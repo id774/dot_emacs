@@ -5,6 +5,7 @@ v26.03 (Release Date: TBD)
 --------------------------
 - Add IPAexGothic as explicit Japanese font for GNU/Linux and adjust default frame size.
 - Switch default font from Bitstream Vera Sans Mono to DejaVu Sans Mono.
+- Normalize comments and indentation across Emacs Lisp configuration files.
 
 v26.02 (2026-02-27)
 -------------------
