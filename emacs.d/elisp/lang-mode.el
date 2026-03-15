@@ -16,21 +16,21 @@
 ;; haskell-mode
 (when (autoload-p 'haskell-mode "haskell-site-file" "Haskell" 'interactive)
   (setq auto-mode-alist
-  (append '(("\\.hs$" . haskell-mode)
-      ("\\.hi$" . haskell-mode)
-      ("\\.gs$" . haskell-mode)
-      ("\\.lhs$" . haskell-mode)
-      ("\\.lgs$" . haskell-mode))
-    auto-mode-alist))
+        (append '(("\\.hs$" . haskell-mode)
+                  ("\\.hi$" . haskell-mode)
+                  ("\\.gs$" . haskell-mode)
+                  ("\\.lhs$" . haskell-mode)
+                  ("\\.lgs$" . haskell-mode))
+                auto-mode-alist))
   (setq interpreter-mode-alist
-    (append '(("ruby" . ruby-mode)
-    ("hugs" . haskell-mode)
-    ("php"  . php-mode))
-    interpreter-mode-alist))
+        (append '(("ruby" . ruby-mode)
+                  ("hugs" . haskell-mode)
+                  ("php"  . php-mode))
+                interpreter-mode-alist))
   (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indent))
 
-;; Rinari
+;; rinari
 (load-p "rinari")
 
 ;; rhtml-mode
@@ -38,22 +38,23 @@
   (setq auto-mode-alist (cons '("\\.erb$" . rhtml-mode) auto-mode-alist))
   (setq auto-mode-alist (cons '("\\.rhtml$" . rhtml-mode) auto-mode-alist))
   (add-hook 'rhtml-mode-hook
-    (lambda () (rinari-launch))))
+            (lambda () (rinari-launch))))
 
 ;; jsp
 (cond
-  ((< emacs-major-version '25)
-    (load-p "autostart")))
+ ((< emacs-major-version '25)
+  (load-p "autostart")))
 
-;; gtags-mode : global
+;; gtags-mode
 (when (autoload-p 'gtags-mode "gtags" "GNU GLOBAL" 'interactive)
   (setq gtags-mode-hook
-  (function (lambda ()
-    (local-set-key "\M-f" 'gtags-find-tag)    ; override etags
-    (local-set-key "\M-r" 'gtags-find-rtag)   ; reverse tag
-    (local-set-key "\M-s" 'gtags-find-symbol) ; find
-    (local-set-key "\C-t" 'gtags-pop-stack)))); pop
-  ;; C-mode のときは常に gtags にする
+        (function
+         (lambda ()
+           (local-set-key "\M-f" 'gtags-find-tag)    ; override etags
+           (local-set-key "\M-r" 'gtags-find-rtag)   ; reverse tag
+           (local-set-key "\M-s" 'gtags-find-symbol) ; find symbol
+           (local-set-key "\C-t" 'gtags-pop-stack)))) ; pop stack
+  ;; Always enable gtags in C-derived modes
   (defun-add-hook 'c-mode-common-hook (gtags-mode 1)))
 
 ;; js2-mode
@@ -66,19 +67,19 @@
 ;; actionscript-mode
 (when (require 'actionscript-mode nil t)
   (setq auto-mode-alist
-    (cons '("\.as\'" . actionscript-mode) auto-mode-alist)))
+        (cons '("\.as\'" . actionscript-mode) auto-mode-alist)))
 
-;; Zen Coding Mode
+;; zencoding-mode
 (when (load-p "zencoding-mode")
   (add-hook 'sgml-mode-hook 'zencoding-mode)
   (add-hook 'html-mode-hook 'zencoding-mode)
   (add-hook 'text-mode-hook 'zencoding-mode)
   (define-key zencoding-mode-keymap "\C-i" 'zencoding-expand-line))
 
-;; Large scale on text-mode
+;; Use larger text in text-mode
 (add-hook 'text-mode-hook
-  (lambda ()
-  (text-scale-set 1)))
+          (lambda ()
+            (text-scale-set 1)))
 
 (load-p "python-mode-settings")
 
@@ -91,9 +92,8 @@
 (when (autoload-p 'haml-mode "haml-mode" "haml-mode" 'interactive)
   (add-to-list 'auto-mode-alist '("\\.haml\\'" . haml-mode))
   (add-hook 'haml-mode-hook
-    '(lambda ()
-      (setq indent-tabs-mode nil)
-    )))
+            '(lambda ()
+               (setq indent-tabs-mode nil))))
 
 ;; sass-mode
 (when (autoload-p 'sass-mode "sass-mode" "sass-mode" 'interactive)
@@ -117,23 +117,23 @@
 
 ;; bat-mode
 (setq auto-mode-alist
-       (append
-         (list (cons "\\.[bB][aA][tT]$" 'bat-mode))
-         (list (cons "\\.[cC][mM][dD]$" 'bat-mode))
-         ;; For DOS init files
-         (list (cons "CONFIG\\."   'bat-mode))
-         (list (cons "AUTOEXEC\\." 'bat-mode))
-         auto-mode-alist))
+      (append
+       (list (cons "\\.[bB][aA][tT]$" 'bat-mode))
+       (list (cons "\\.[cC][mM][dD]$" 'bat-mode))
+       ;; DOS init files
+       (list (cons "CONFIG\\."   'bat-mode))
+       (list (cons "AUTOEXEC\\." 'bat-mode))
+       auto-mode-alist))
 
 (autoload-p 'bat-mode "bat-mode"
-      "DOS and Windows BAT files" t)
+            "DOS and Windows BAT files" t)
 
 ;; markdown-mode
 (when (autoload-p 'markdown-mode "markdown-mode.el" "Major mode for editing Markdown files" 'interactive)
   (setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
   (setq auto-mode-alist (cons '("\\.txt" . markdown-mode) auto-mode-alist)))
 
-;; Erlang
+;; erlang-mode
 (when (and (< emacs-major-version 27)
            (require 'erlang nil 'noerror))
   (add-to-list 'auto-mode-alist '("\\.erl\\'" . erlang-mode)))

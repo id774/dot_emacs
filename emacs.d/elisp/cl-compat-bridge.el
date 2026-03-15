@@ -2,19 +2,20 @@
 
 ;;; Code:
 
-;; Use predicate from core if available; otherwise compute locally.
+;; Reuse the core predicate when available, otherwise compute it locally.
 (defconst cl-compat--has-cl-lib
   (if (boundp 'core-compat--emacs-24.3+)
       core-compat--emacs-24.3+
     (or (> emacs-major-version 24)
-        (and (= emacs-major-version 24) (>= emacs-minor-version 3)))))
+        (and (= emacs-major-version 24)
+             (>= emacs-minor-version 3)))))
 
-;; Core load: cl on old Emacs, cl-lib on new Emacs.
+;; Load cl on older Emacs and cl-lib on newer Emacs.
 (if cl-compat--has-cl-lib
     (require 'cl-lib)
-  (require 'cl))  ;; old Common Lisp extensions
+  (require 'cl)) ;; Old Common Lisp extensions.
 
-;; Legacy macro/function shims (define only when missing)
+;; Define legacy macro and function shims only when missing.
 (unless (fboundp 'defstruct)
   (defmacro defstruct (&rest args) `(cl-defstruct ,@args)))
 (unless (fboundp 'defun*)
@@ -22,26 +23,26 @@
 (unless (fboundp 'defmacro*)
   (defmacro defmacro* (&rest args) `(cl-defmacro ,@args)))
 
-;; Map common CL functions when cl-lib is present (unprefixed -> cl- prefixed)
+;; Map common CL names to cl-lib equivalents when cl-lib is available.
 (when (featurep 'cl-lib)
   ;; Functions
-  (defalias 'remove-if       #'cl-remove-if)
-  (defalias 'remove-if-not   #'cl-remove-if-not)
-  (defalias 'find-if         #'cl-find-if)
-  (defalias 'find-if-not     #'cl-find-if-not)
-  (defalias 'position        #'cl-position)
-  (defalias 'count           #'cl-count)
-  (defalias 'count-if        #'cl-count-if)
-  (defalias 'every           #'cl-every)
-  (defalias 'some            #'cl-some)
-  (defalias 'subsetp         #'cl-subsetp)
-  (defalias 'reduce          #'cl-reduce)
-  (defalias 'mapcar*         #'cl-mapcar)
-  (defalias 'adjoin          #'cl-adjoin)
-  (defalias 'pairlis         #'cl-pairlis)
-  (defalias 'assoc*          #'cl-assoc)
-  (defalias 'rassoc*         #'cl-rassoc)
-  (defalias 'gensym          #'cl-gensym)
+  (defalias 'remove-if     #'cl-remove-if)
+  (defalias 'remove-if-not #'cl-remove-if-not)
+  (defalias 'find-if       #'cl-find-if)
+  (defalias 'find-if-not   #'cl-find-if-not)
+  (defalias 'position      #'cl-position)
+  (defalias 'count         #'cl-count)
+  (defalias 'count-if      #'cl-count-if)
+  (defalias 'every         #'cl-every)
+  (defalias 'some          #'cl-some)
+  (defalias 'subsetp       #'cl-subsetp)
+  (defalias 'reduce        #'cl-reduce)
+  (defalias 'mapcar*       #'cl-mapcar)
+  (defalias 'adjoin        #'cl-adjoin)
+  (defalias 'pairlis       #'cl-pairlis)
+  (defalias 'assoc*        #'cl-assoc)
+  (defalias 'rassoc*       #'cl-rassoc)
+  (defalias 'gensym        #'cl-gensym)
 
   ;; Macros
   (defmacro loop (&rest body) `(cl-loop ,@body))
@@ -50,7 +51,8 @@
   (defmacro decf (place &optional delta) `(cl-decf ,place ,(or delta 1)))
   (defmacro assert (test &optional show-args string &rest args)
     `(cl-assert ,test ,show-args ,string ,@args))
-  ;; Frequently used by legacy anything.el and friends
+
+  ;; Common in legacy anything.el and related code.
   (unless (fboundp 'flet)
     (defmacro flet (bindings &rest body) `(cl-flet ,bindings ,@body)))
   (unless (fboundp 'labels)
@@ -67,7 +69,7 @@
     (defmacro destructuring-bind (pattern expr &rest body)
       `(cl-destructuring-bind ,pattern ,expr ,@body)))
 
-  ;; Very old code sometimes references lexical-let; keep it minimal.
+  ;; Keep a minimal lexical-let shim for very old code.
   (unless (fboundp 'lexical-let)
     (defmacro lexical-let (bindings &rest body)
       "Very small shim; not fully equivalent to lexical binding."

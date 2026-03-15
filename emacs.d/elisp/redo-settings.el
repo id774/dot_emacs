@@ -1,5 +1,5 @@
+;; undo-tree
 (when (load-p "undo-tree")
   (global-undo-tree-mode 1)
   (defalias 'redo 'undo-tree-redo)
-  (global-set-key (kbd "M-/") 'redo)
-)
+  (global-set-key (kbd "M-/") 'redo))

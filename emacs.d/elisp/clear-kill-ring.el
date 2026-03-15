@@ -1,4 +1,4 @@
-;; Clear kill-ring
+;; clear-kill-ring
 (defun clear-kill-ring ()
   "Clear the kill-ring and system clipboard (macOS safe)."
   (interactive)

@@ -1,21 +1,24 @@
 ;;; ess-compat-bridge.el --- Bridge old/new ESS variable names -*- lexical-binding: t; -*-
 
-;; Use ESS bridge only on Emacs 24.4 or newer
+;; Use the ESS bridge only on Emacs 24.4 or newer
 (if (or (> emacs-major-version 24)
-        (and (= emacs-major-version 24) (>= emacs-minor-version 4)))
+        (and (= emacs-major-version 24)
+             (>= emacs-minor-version 4)))
     (with-eval-after-load 'ess-site
       (cond
-       ;; New name exists, expose old name too
+       ;; New name exists; provide the old alias
        ((and (boundp 'inferior-ess-r-program-name)
              (not (boundp 'inferior-R-program-name)))
-        (defvaralias 'inferior-R-program-name 'inferior-ess-r-program-name))
-       ;; Old name exists, expose new name too
+        (defvaralias 'inferior-R-program-name
+                     'inferior-ess-r-program-name))
+       ;; Old name exists; provide the new alias
        ((and (boundp 'inferior-R-program-name)
              (not (boundp 'inferior-ess-r-program-name)))
-        (defvaralias 'inferior-ess-r-program-name 'inferior-R-program-name))))
-  ;; Emacs 23.x / 24.1-24.3: do nothing
+        (defvaralias 'inferior-ess-r-program-name
+                     'inferior-R-program-name))))
+  ;; Emacs 23.x / 24.1-24.3: no bridge needed
   )
 
 (provide 'ess-compat-bridge)
-;;; ess-compat-bridge.el ends here
 
+;;; ess-compat-bridge.el ends here

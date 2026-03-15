@@ -1,6 +1,6 @@
-;; Faces
+;; faces
 
-;; 日本語設定
+;; Japanese environment
 (set-language-environment 'Japanese)
 ;; (set-default-coding-systems 'euc-jp-unix)
 ;; (set-buffer-file-coding-system 'euc-jp-unix)
@@ -10,21 +10,22 @@
 ;; (set-clipboard-coding-system 'iso-2022-jp-unix)
 ;; (setq default-process-coding-system '(undecided . euc-jp-unix))
 
-;; UTF-8 の優先順位を高くする
+;; Prefer UTF-8
 (prefer-coding-system 'utf-8-unix)
 
 (if window-system
     (progn
       (cond
-       ;; Windows(Meadow3) 用設定
-       ;; VL ゴシックフォント必要
+       ;; Windows (Meadow3)
+       ;; Requires VL Gothic
        ;; http://dicey.org/vlgothic/
        ((eq system-type 'windows-nt)
         (setq default-frame-alist
               (append (list '(font . "VL ゴシック-12")) default-frame-alist)))
-       ;; GNU/Linux 用設定
-       ;; (要 fonts-dejavu, fonts-ipaexfont パッケージ)
-       ;; DejaVu Sans Mono を指定
+
+       ;; GNU/Linux
+       ;; Requires fonts-dejavu and fonts-ipaexfont
+       ;; Use DejaVu Sans Mono
        ((eq system-type 'gnu/linux)
         (setq default-frame-alist
               (append (list '(top . 45)
@@ -33,7 +34,8 @@
                             '(height . 50)
                             '(font . "DejaVu Sans Mono-8"))
                       default-frame-alist))
-        ;; 日本語を IPAexGothic に固定
+
+        ;; Use IPAexGothic for Japanese
         (set-fontset-font t 'japanese-jisx0208
                           (font-spec :family "IPAexGothic"))
         (set-fontset-font t 'japanese-jisx0212
@@ -42,7 +44,8 @@
                           (font-spec :family "IPAexGothic"))
         (set-fontset-font t 'han
                           (font-spec :family "IPAexGothic")))
-       ;; macOS 用設定（Menlo フォントを使用）
+
+       ;; macOS (use Menlo)
        ((eq system-type 'darwin)
         (setq default-frame-alist
               (append (list '(top . 45)
@@ -52,14 +55,14 @@
                             '(font . "Menlo-12"))
                       default-frame-alist))
 
-        ;; Menlo を設定
+        ;; Configure Menlo
         (set-face-attribute 'default nil
                             :family "Menlo"
                             :height 120
                             :weight 'normal
                             :slant 'normal)
 
-        ;; 日本語フォントを Hiragino Kaku Gothic ProN W3 に設定
+        ;; Use Hiragino Kaku Gothic ProN W3 for Japanese
         (set-fontset-font (frame-parameter nil 'font)
                           'japanese-jisx0208
                           '("Hiragino Kaku Gothic ProN W3" . "iso10646-1"))
@@ -70,19 +73,19 @@
                           'katakana-jisx0201
                           '("Hiragino Kaku Gothic ProN W3" . "iso10646-1"))
 
-        ;; 斜体の無効化
+        ;; Disable italics
         (set-face-attribute 'italic nil :slant 'normal)
         (set-face-attribute 'font-lock-comment-face nil :slant 'normal)
         (set-face-attribute 'font-lock-string-face nil :slant 'normal)
 
-        ;; Mac用の追加設定
+        ;; Additional macOS settings
         (setq fixed-width-use-QuickDraw-for-ascii t)
         (setq mac-allow-anti-aliasing t)
         (setq ns-command-modifier 'meta)
         (setq ns-alternate-modifier 'super)
-       ))
+        ))
 
-      ;; フレームの基本設定
+      ;; Basic frame settings
       (setq default-frame-alist
             (append (list '(foreground-color . "#00FF00")
                           '(background-color . "#000000")
@@ -92,24 +95,25 @@
                           '(vertical-scroll-bars . nil))
                     default-frame-alist))
 
-      ;; リージョンに色を付ける
+      ;; Highlight the region
       (setq transient-mark-mode t)
 
-      ;; フォントロックの設定
-      ;; 色づけは最大限に
+      ;; font-lock settings
+      ;; Use maximum decoration
       (global-font-lock-mode 1)
       (setq font-lock-support-mode 'jit-lock-mode)
       (setq font-lock-maximum-decoration t)
-      ;; デフォルトの色づけを変える
-      (add-hook 'font-lock-mode-hook '(lambda ()
-                                        (set-face-foreground 'font-lock-builtin-face "spring green")
-                                        (set-face-foreground 'font-lock-comment-face "slate gray")
-                                        (set-face-foreground 'font-lock-string-face  "spring green")
-                                        (set-face-foreground 'font-lock-keyword-face "khaki")
-                                        (set-face-foreground 'font-lock-constant-face "violet")
-                                        (set-face-foreground 'font-lock-function-name-face "hot pink")
-                                        (set-face-foreground 'font-lock-variable-name-face "hot pink")
-                                        (set-face-foreground 'font-lock-type-face "cyan")
-                                        (set-face-foreground 'font-lock-warning-face "magenta")
-                                        (set-face-bold-p 'font-lock-function-name-face t)
-                                        (set-face-bold-p 'font-lock-warning-face nil)))))
+      ;; Customize default colors
+      (add-hook 'font-lock-mode-hook
+                '(lambda ()
+                   (set-face-foreground 'font-lock-builtin-face "spring green")
+                   (set-face-foreground 'font-lock-comment-face "slate gray")
+                   (set-face-foreground 'font-lock-string-face  "spring green")
+                   (set-face-foreground 'font-lock-keyword-face "khaki")
+                   (set-face-foreground 'font-lock-constant-face "violet")
+                   (set-face-foreground 'font-lock-function-name-face "hot pink")
+                   (set-face-foreground 'font-lock-variable-name-face "hot pink")
+                   (set-face-foreground 'font-lock-type-face "cyan")
+                   (set-face-foreground 'font-lock-warning-face "magenta")
+                   (set-face-bold-p 'font-lock-function-name-face t)
+                   (set-face-bold-p 'font-lock-warning-face nil)))))

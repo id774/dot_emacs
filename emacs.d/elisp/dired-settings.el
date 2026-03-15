@@ -1,27 +1,27 @@
+;; dired settings
 
-;; dired を 2 つのウィンドウで開いている時に
-;; デフォルトの移動 or コピー先をもう一方の dired で開いているディレクトリにする
+;; Use the other dired window as the default copy/move target
 (setq dired-dwim-target t)
-;; ディレクトリを再帰的にコピーする
+
+;; Allow recursive directory copies
 (setq dired-recursive-copies 'always)
-;; dired バッファで C-s した時にファイル名だけにマッチするように
+
+;; Limit isearch to filenames in dired buffers
 (setq dired-isearch-filenames t)
 
-;; dired-find-alternate-file の有効化
+;; Enable dired-find-alternate-file
 (put 'dired-find-alternate-file 'disabled nil)
 
-;; RET 標準の dired-find-file では dired バッファが複数作られるので
-;; dired-find-alternate-file を代わりに使う
+;; Avoid creating multiple dired buffers when pressing RET
 (define-key dired-mode-map (kbd "RET") 'dired-find-alternate-file)
-(define-key dired-mode-map (kbd "a") 'dired-find-file)
+(define-key dired-mode-map (kbd "a")   'dired-find-file)
 
-;; BS/DEL でディレクトリを上に
+;; Go up a directory with BS/DEL
 (define-key dired-mode-map (kbd "<backspace>") 'dired-up-directory)
-(define-key dired-mode-map (kbd "<DEL>") 'dired-up-directory)
+(define-key dired-mode-map (kbd "<DEL>")       'dired-up-directory)
 
-;; カーソルキーでウィンドウの移動
+;; Move between windows with arrow keys
 (define-key dired-mode-map (kbd "<left>")  'windmove-left)
 (define-key dired-mode-map (kbd "<right>") 'windmove-right)
 (define-key dired-mode-map (kbd "<down>")  'windmove-down)
 (define-key dired-mode-map (kbd "<up>")    'windmove-up)
-

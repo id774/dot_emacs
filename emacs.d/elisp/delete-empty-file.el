@@ -1,4 +1,5 @@
-;; ファイルの内容が無ければ、ファイルとバッファを消す
+;; delete-empty-file
+;; Delete the file and kill the buffer if it is empty
 (if (not (memq 'delete-file-if-no-contents after-save-hook))
     (setq after-save-hook
           (cons 'delete-file-if-no-contents after-save-hook)))
@@ -11,4 +12,3 @@
       (delete-file
        (buffer-file-name (current-buffer)))
       (kill-buffer (current-buffer)))))
-

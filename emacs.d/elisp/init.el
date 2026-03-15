@@ -1,46 +1,49 @@
 ;; init.el
-;; ロードパスなどの初期設定をして autoloads.el を呼ぶ
+;; Set up basic paths and load autoloads.el
 
 ;; proxy
 (load "~/.emacs.d/elisp/proxy")
 
-;; chdir
+;; change working directory
 (cd "~/")
 
-;; path 系
+;; executable paths
 (setq exec-path (append '("/usr/local/bin" "/opt/local/bin") exec-path))
-(setenv "PATH" (concat "/usr/local/bin:/opt/local/bin:/usr/bin:" (getenv "PATH")))
+(setenv "PATH"
+        (concat "/usr/local/bin:/opt/local/bin:/usr/bin:"
+                (getenv "PATH")))
 
 ;;; my-load-path
 (defvar default-load-path load-path
   "*Base of `load-path'.
 It is used as a default value of target path to search file or
 subdirectory under load-path.")
+
 (setq my-load-path
-  (list "/usr/local/share/emacs/site-lisp"
-  (expand-file-name "~/.emacs.d/site-lisp")
-  (expand-file-name "~/.emacs.d/elisp")
-  (expand-file-name "~/.emacs.d/elisp/3rd-party")
-  (expand-file-name "~/.emacs.d/elisp/3rd-party/ess/lisp")
-  (expand-file-name "~/.emacs.d/elisp/3rd-party/helm")
-  (expand-file-name "~/.emacs.d/elisp/3rd-party/ruby-mode")
-  (expand-file-name "~/.emacs.d/elisp/3rd-party/scala-mode")
-  (expand-file-name "~/.emacs.d/elisp/3rd-party/yatex-mode")
-  (expand-file-name "~/.emacs.d/elisp/3rd-party/jade-mode")
-  (expand-file-name "~/.emacs.d/elisp/3rd-party/nxhtml")
-  (expand-file-name "~/.emacs.d/elisp/3rd-party/rhtml")
-  (expand-file-name "~/.emacs.d/elisp/3rd-party/haml")
-  (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari")
-  (expand-file-name "~/.emacs.d/elisp/3rd-party/emacs-async")))
+      (list "/usr/local/share/emacs/site-lisp"
+            (expand-file-name "~/.emacs.d/site-lisp")
+            (expand-file-name "~/.emacs.d/elisp")
+            (expand-file-name "~/.emacs.d/elisp/3rd-party")
+            (expand-file-name "~/.emacs.d/elisp/3rd-party/ess/lisp")
+            (expand-file-name "~/.emacs.d/elisp/3rd-party/helm")
+            (expand-file-name "~/.emacs.d/elisp/3rd-party/ruby-mode")
+            (expand-file-name "~/.emacs.d/elisp/3rd-party/scala-mode")
+            (expand-file-name "~/.emacs.d/elisp/3rd-party/yatex-mode")
+            (expand-file-name "~/.emacs.d/elisp/3rd-party/jade-mode")
+            (expand-file-name "~/.emacs.d/elisp/3rd-party/nxhtml")
+            (expand-file-name "~/.emacs.d/elisp/3rd-party/rhtml")
+            (expand-file-name "~/.emacs.d/elisp/3rd-party/haml")
+            (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari")
+            (expand-file-name "~/.emacs.d/elisp/3rd-party/emacs-async")))
+
 (setq load-path (append my-load-path default-load-path))
 
-;; custom
+;; custom settings
 (setq custom-file (expand-file-name "~/.emacs.d/elisp/custom.el"))
 
-;; whoami
+;; user identity
 (setq user-full-name "id774")
 (setq user-mail-address "idnanashi@gmail.com")
 
-;; main
+;; main entry point
 (load "autoloads")
-

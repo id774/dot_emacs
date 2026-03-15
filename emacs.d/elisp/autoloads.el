@@ -1,27 +1,27 @@
 ;; autoloads.el
-;; 外部ファイルをロードして configs.el を最後に呼ぶ
+;; Load configuration modules and call configs.el at the end
 
 (load "utils")
 
-;; Core compatibility layer
+;; core compatibility
 (load-p "core-compat-bridge")
 
-;; Bridge cl/cl-lib across Emacs 23.4..30.1
+;; cl / cl-lib compatibility
 (load-p "cl-compat-bridge")
 
-;; Bridge old/new ESS variable names
+;; ESS compatibility
 (load-p "ess-compat-bridge")
 
-;; Mew
+;; mew
 (load-p "mew-settings")
 
-;; Text モードをデフォルトにする
+;; default major mode
 (setq default-major-mode 'text-mode)
 
-;; オートコンプリート
+;; auto-complete
 (load-p "auto-complete-settings")
 
-;; 同じキーバインド連打でラクをする
+;; smartchr
 (load-p "smartchr-settings")
 
 ;; recentf-ext
@@ -30,7 +30,7 @@
 ;; multi-term
 (load-p "multi-term-settings")
 
-;; git.el
+;; git
 (load-p "git")
 (load-p "git-blame")
 
@@ -40,51 +40,52 @@
 ;; paredit
 (load-p "paredit-settings")
 
-;; auto-async-byte-compile
+;; auto async byte compile
 (load-p "auto-async-settings")
 
-;; timidity-mode : TiMidity++ emacs front-end
+;; timidity
 (when (autoload-p 'timidity "timidity" "TiMidity++" 'interactive))
 
-;; Lang modes
+;; language modes
 (load-p "lang-mode")
 
-;; YaTeX modes
+;; yatex
 (load-p "yatex-mode")
 
 ;; anything-git-files
 (when (require 'anything-git-files)
   (define-key global-map "\C-c\C-c\ b" 'anything-git-files))
 
-;; sense-region.el : \C-spc で region<->rectabgle をトグル
+;; sense-region
 (when (autoload-p 'sense-region-on "sense-region" "sense-region" 'interactive)
   (sense-region-on))
 
 ;; emacs-w3m
 (load-p "emacs-w3m")
 
-;; riece & navi2ch
+;; riece / navi2ch
 (load-p "riece-navi2ch")
 
-;; 括弧強調
+;; mic-paren
 (when (load-p "mic-paren")
   (paren-activate))
 
-;; 色つき
+;; develock
 (when (load-p "develock")
   (global-font-lock-mode t))
 
-;; 物理行移動
+;; physical-line
 (load-p "physical-line")
 
+;; windmove
 (when (load-p "windmove")
   (windmove-default-keybindings)
   (setq windmove-wrap-around t))
 
-;; screen の hard status を更新する
+;; screen
 (load-p "screen")
 
-;; popwin-el
+;; popwin
 (load-p "popwin-el")
 
 ;; dired
@@ -101,43 +102,44 @@
 (when (require 'browse-kill-ring)
   (global-set-key (kbd "C-c k") 'browse-kill-ring))
 
-;; zsh like completion
+;; zlc
 (load-p "zlc-settings")
 
-;; 自動保存
+;; auto-save-buffers
 (when (load-p "auto-save-buffers")
   (setq auto-save-buffers-regexp "^/[^:]+/")
   (run-with-idle-timer 0.1 t 'auto-save-buffers))
 
+;; uniquify
 (when (load-p "uniquify")
   (setq uniquify-buffer-name-style 'post-forward-angle-brackets))
 
-;; google
+;; google-this
 (load-p "google-this-settings")
 
 ;; diminish
 (load-p "diminish-settings")
 
-;; shadow.el
+;; shadow
 (load-p "shadow-settings")
 
-;; TRAMP
+;; tramp
 (load-p "tramp-settings")
 
-;; Redo
+;; redo
 (load-p "redo-settings")
 
-;; 矩形選択
+;; cua rectangle
 (cua-mode t)
-(setq cua-enable-cua-keys nil) ;; 変なキーバインド禁止
+(setq cua-enable-cua-keys nil) ;; disable CUA keybindings
 
-;; 開いているすべてのバッファを kill する
+;; kill-all-buffers
 (load-p "kill-all-buffers")
 
-;; ファイルの内容が無ければ、ファイルとバッファを消す
+;; delete-empty-file
 (load-p "delete-empty-file")
 
-;; タブを 4 に
+;; tab width
 (load-p "tab4")
 
 ;; fuzzy-format
@@ -145,22 +147,21 @@
 (setq fuzzy-format-default-indent-tabs-mode nil)
 (global-fuzzy-format-mode t)
 
-;; タブ, 全角スペース、改行直前の半角スペースを表示する
+;; jaspace-mode
 (when (load-p "jaspace-mode")
   ;;(setq jaspace-alternate-jaspace-string "□")
   (setq jaspace-alternate-eol-string "$\n")
-  (setq jaspace-highlight-tabs t)
-)
+  (setq jaspace-highlight-tabs t))
 
-;; hlinum-mode
+;; hlinum
 (cond
-  ((>= emacs-major-version '23)
-    (load-p "hlinum")))
+ ((>= emacs-major-version '23)
+  (load-p "hlinum")))
 
-;; 新しいファイルを作る前に確認
+;; new-file-p
 ;(load-p "new-file-p")
 
-;; scratch バッファを消しても再生成する
+;; persistent-scratch
 (load-p "persistent-scratch")
 
 ;; ESS
@@ -168,32 +169,32 @@
            (<= emacs-major-version 26))
   (load-p "ess-site"))
 
-;; Anything.el & Helm
+;; anything / helm
 (load-p "anything-helm")
 
-;; key-chord.el 複数キー同時押しをサポート
+;; key-chord
 ;; http://www.emacswiki.org/cgi-bin/wiki/download/key-chord.el
 (when (load-p "key-chord")
   (setq key-chord-two-keys-delay 0.02)
   (key-chord-mode 1))
 
-;; Customize minor-mode key priority
+;; minor-mode priority
 (load-p "minor-mode-hack")
 ;;(lower-minor-mode-map-alist 'ruby-electric-mode)
 ;;(raise-minor-mode-map-alist 'anthy-minor-mode)
 
-;; ユニークなシンボルをハイライトする
+;; highlight-unique-symbol
 ;; http://hitode909.hatenablog.com/entry/2013/02/11/233449
 (when (require 'highlight-unique-symbol)
   (highlight-unique-symbol t))
 
-;; Perl 風の正規表現
+;; foreign-regexp
 (load-p "foreign-regexp-settings")
 
-;; Kill Ring を保存する
+;; savekill
 (require 'savekill)
 
-;; Kill Ring をクリア
+;; clear-kill-ring
 (load-p "clear-kill-ring.el")
 
 (load-p "auto-save-buffers-settings")
@@ -202,16 +203,15 @@
 ;; http://web-mode.org/
 (load-p "web-mode-settings")
 
-;; 非同期にファイルをコピー
+;; dired-async
 (when (load-p "dired-async-mode")
   (dired-async-mode 1))
 
-;; 表示設定をロードする
+;; faces
 (load-p "faces")
 
-;; 環境設定をロードする (最後に)
+;; configs (loaded last)
 (load-p "configs")
 
-;; ~/.emacs.d/site-lisp をすべてロードする (configs のさらに後)
+;; site-lisp loader
 (load-p "loader")
-

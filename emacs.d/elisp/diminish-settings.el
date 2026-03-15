@@ -1,9 +1,13 @@
+;; diminish
+;; Hide or shorten minor mode indicators in the mode line
 (when (load-p "diminish")
   (diminish 'isearch-mode)
   ;; (diminish 'gtags-mode "G")
   (diminish 'abbrev-mode "Abbr")
   ;; (diminish 'ac-mode "[tab]")
-  ;; (diminish 'font-lock-mode "");
+  ;; (diminish 'font-lock-mode "")
+
+  ;; Shorten mode names
   (defun-add-hook 'lisp-interaction-mode-hook (setq mode-name "Lisp"))
   (defun-add-hook 'emacs-lisp-mode-hook (setq mode-name "elisp"))
   (defun-add-hook 'texinfo-mode-hook (setq mode-name "texi"))

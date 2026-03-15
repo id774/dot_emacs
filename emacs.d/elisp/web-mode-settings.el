@@ -1,5 +1,7 @@
+;; web-mode
 (require 'web-mode)
 
+;; Fallback for older Emacs without prog-mode
 (when (< emacs-major-version '24)
   (defalias 'prog-mode 'fundamental-mode))
 
@@ -11,11 +13,12 @@
 (add-to-list 'auto-mode-alist '("\\.html?$"     . web-mode))
 
 (defun web-mode-hook ()
-  "Hooks for Web mode."
+  "Hook for `web-mode'."
   (setq web-mode-html-offset   2)
   (setq web-mode-css-offset    2)
   (setq web-mode-script-offset 2)
   (setq web-mode-php-offset    2)
   (setq web-mode-java-offset   2)
   (setq web-mode-asp-offset    2))
+
 (add-hook 'web-mode-hook 'web-mode-hook)

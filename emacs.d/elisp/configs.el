@@ -1,66 +1,66 @@
 ;; configs.el
-;; 基本的な環境設定
+;; Basic environment settings
 
-;; モードラインに今いる関数を表示
+;; Show the current function in the mode line
 (which-func-mode)
 
 ;; blink
 (blink-cursor-mode nil)
 
-;; hide tool-bar and scroll-bar
+;; Hide tool bar and scroll bar
 (if window-system
-  (progn
-    (tool-bar-mode -1)
-    (scroll-bar-mode -1)))
+    (progn
+      (tool-bar-mode -1)
+      (scroll-bar-mode -1)))
 
-;; メニューバー使う
+;; menu-bar
 (menu-bar-mode -1)
 
-;; ホイールマウス使う
-;; emacs 23.2 で使えないのでコメントアウト
+;; mouse-wheel
+;; Disabled because it does not work on Emacs 23.2
 ;;(mouse-wheel-mode 1)
 
-;; xtermとかgnome-terminalとか
+;; xterm / gnome-terminal
 (xterm-mouse-mode -1)
 
-;; ;; fringe(左右に余白のように見えてるアレ)
+;; ;; fringe
 ;; (fringe-mode 8)
 
-;; ;; 時間表示
+;; ;; display-time
 (display-time)
 
-;; 行番号と列番号を表示
+;; line-number / column-number
 (line-number-mode t)
 (column-number-mode t)
 
-;; デフォルトでインデントをスペースに
+;; Use spaces for indentation by default
 (setq-default tab-width 4 indent-tabs-mode nil)
 
-;; 画像展開
+;; image display
 (auto-image-file-mode)
 
-;; 自動セーブファイルを作成するかどうか
+;; auto-save files
 (setq auto-save-default nil)
 
-;; バックアップファイルを作成するかどうか
+;; backup files
 (setq make-backup-files t)
 
-;; バックアップファイルの保存位置指定
-;; VCS で管理していても設定しておくと安全
-;; !path!to!file-name~ で保存される
+;; backup directory
+;; Safer even when files are under version control
+;; Backups are saved as !path!to!file-name~
 (setq backup-directory-alist
       '(("." . "~/.emacs.d/backups")))
 
 ;; transient-mark
 (setq transient-mark-mode t)
 
-;; isearch を色つきに
+;; isearch highlighting
 (setq search-highlight t)
 (setq query-replace-highlight t)
-;;(setq isearch-lazy-highlight-initial-delay 0) ; obsolate
+;;(setq isearch-lazy-highlight-initial-delay 0) ; obsolete
 (setq lazy-highlight-initial-delay 0)
 
-;; M-x woman
+;; woman
 (setq woman-manpath '("/usr/local/man"
                       "/usr/share/man"
                       "/usr/local/share/man"
@@ -68,50 +68,50 @@
                       "/usr/share/man/ja_JP.ujis"))
 (setq woman-cache-filename (expand-file-name "~/.emacs.d/woman-cache"))
 
-;; バックアップで inode を変化させないようにする
+;; Do not change inode numbers when creating backups
 (setq backup-by-copying t)
 
-;; GC間隔
+;; GC threshold
 (setq gc-cons-threshold 1000000)
 
-;; スプラッシュ非表示 : 起動が速くなる
+;; Disable the splash screen for faster startup
 (setq inhibit-startup-message t)
 
-;; 画面反転をやめる
+;; visible-bell
 (setq visible-bell t)
 (setq ring-bell-function 'ignore)
 
-;; あまりに大きいファイルは色付けると時間かかるので、上限を指定する
+;; Do not limit font-lock by file size
 (setq font-lock-maximum-size nil)
 
 ;; ;; fast-lock
 ;; (setq font-lock-support-mode 'fast-lock-mode)
 ;; (setq fast-lock-cache-directories '("~/.emacs.d/emacs-flc"))
 
-;; auto-save の場所
+;; auto-save-list
 (setq auto-save-list-file-prefix "~/.emacs.d/auto-save-list/.saves-")
 
-;; 最後に改行を付ける
+;; Always add a trailing newline
 (setq require-final-newline t)
 
-;; 一時ファイルの場所
+;; temporary-file-directory
 ;; (setq temporary-file-directory "~/.emacs.d/tmp")
 (setq temporary-file-directory "/dev/shm")
 
-;; 1行ずつスクロール
+;; Scroll one line at a time
 (setq scroll-conservatively 1)
 
-;; 新規行を作成しない
-;; emacs21ではデフォルト
+;; Do not create new lines at end of buffer
+;; Default on Emacs 21
 (setq next-line-add-newlines nil)
 
-;; 80 だとちょっと……
+;; fill-column
 (setq fill-column 79)
 
-;; *Messages* の長さ
+;; *Messages* size
 (setq message-log-max 200)
 
-;; 略語展開の保存定義
+;; abbrev file handling
 (cond
  ((>= emacs-major-version 28)
   (setq save-abbrevs 'silently)
@@ -121,10 +121,10 @@
   (setq abbrev-file-name "/dev/null")))
 (setq-default abbrev-mode nil)
 
-;; .gz なファイルとかを透過的に圧縮/伸張
+;; auto-compression
 (auto-compression-mode t)
 
-;; apropos をあらゆるとことに
+;; apropos
 (setq apropos-do-all t)
 
 ;; abbrev
@@ -136,20 +136,20 @@
 (setq vc-suppress-confirm t)
 (setq vc-command-messages t)
 
-;; narrowing の警告を抑止
+;; narrowing
 (put 'narrow-to-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
 
-;; カーソル一個
+;; Use a single cursor
 (setq cursor-in-non-selected-windows nil)
 
-;; 空行強調
+;; Highlight empty lines
 (setq-default indicate-empty-lines t)
 
-;; 行頭の C-k で行全体を削除
+;; Let C-k at beginning of line kill the whole line
 (setq kill-whole-line t)
 
-;; 行間
+;; line-spacing
 ;; (setq-default line-spacing 0)
 
 ;; eldoc
@@ -167,15 +167,15 @@
 ;; (set-input-method "japanese-anthy")
 ;; (set-input-method "japanese-prime")
 
-;; C 言語系の設定群
+;; C language settings
 
 ;; Ruby default style
 (c-add-style "ruby"
-   '("bsd"
-    (c-offsets-alist
-    (case-label . 2)
-    (label . 2)
-    (statement-case-intro . 2))))
+             '("bsd"
+               (c-offsets-alist
+                (case-label . 2)
+                (label . 2)
+                (statement-case-intro . 2))))
 
 ;; Stroustrup style
 (defun-add-hook 'c-mode-common-hook
@@ -184,7 +184,7 @@
   (setq indent-tabs-mode nil)
   (setq c-basic-offset 4))
 
-;; カーソル行のハイライト
+;; Highlight the current line
 (defface hlline-face
   '((((class color)
       (background dark))
@@ -196,56 +196,55 @@
      ()))
   "*Face used by hl-line.")
 (setq hl-line-face 'hlline-face)
-;; (setq hl-line-face 'underline) ; 下線
+;; (setq hl-line-face 'underline) ; underline
 (hl-line-mode 1)
 
-;; ファイルオープン直後は読み取り専用 (C-x j で切替)
+;; Start in view-mode after opening a file (toggle with C-x j)
 (add-hook 'find-file-hooks
-  (lambda ()
-    (cond (view-mode)
-      (t
-        (view-mode)))
-;; 行数表示(C-x t で切替)
-    (cond
-      ((>= emacs-major-version '23)
-        (linum-mode)
-        (custom-set-variables
-          '(global-linum-mode t))
-      )
-      ((< emacs-major-version '23)
-        (require 'wb-line-number)
-        (custom-set-faces
-         '(wb-line-number-face ((t (:foreground "LightGrey"))))
-         '(wb-line-number-scroll-bar-face
-           ((t (:foreground "white" :background "LightBlue2")))))
-      ))))
+          (lambda ()
+            (cond (view-mode)
+                  (t
+                   (view-mode)))
+            ;; line numbers (toggle with C-x t)
+            (cond
+             ((>= emacs-major-version '23)
+              (linum-mode)
+              (custom-set-variables
+               '(global-linum-mode t)))
+             ((< emacs-major-version '23)
+              (require 'wb-line-number)
+              (custom-set-faces
+               '(wb-line-number-face ((t (:foreground "LightGrey"))))
+               '(wb-line-number-scroll-bar-face
+                 ((t (:foreground "white" :background "LightBlue2")))))))))
 
-;; 画面端で折り返す
+;; Wrap at window edge
 (setq truncate-partial-width-windows nil)
 
 ;; fullscreen
-;; 起動時にウィンドウを最大化する場合はコメントアウトを解除
+;; Uncomment to start maximized
 ;(set-frame-parameter nil 'fullscreen 'fullboth)
 (defun toggle-fullscreen ()
   (interactive)
-    (set-frame-parameter nil 'fullscreen (if (frame-parameter nil 'fullscreen)
-      nil
-      'fullboth)))
+  (set-frame-parameter nil 'fullscreen
+                       (if (frame-parameter nil 'fullscreen)
+                           nil
+                         'fullboth)))
 (global-set-key [(meta return)] 'toggle-fullscreen)
 
-;; 透明化
+;; frame transparency
 (add-to-list 'default-frame-alist '(alpha . (90 75)))
 
-;; キーバインド設定
+;; global key bindings
 (load-p "global-set-key")
 
-;; view-mode キーバインド設定
+;; view-mode key bindings
 (load-p "view-mode-key")
 
-;; key-chord.el 専用キーバインド設定
+;; key-chord key bindings
 (load-p "key-chord-define-global")
 
-;; root 所有のファイルを開くときは tramp で sudo する
+;; Open root-owned files via TRAMP sudo
 (defun file-root-p (filename)
   "Return t if file FILENAME created by root."
   (eq 0 (nth 2 (file-attributes filename))))
@@ -275,36 +274,28 @@
   (interactive "F")
   (set-buffer (find-file (concat "/sudo::" file))))
 
-;; yes/no の質問をすべて y/n に変更
+;; Use y/n instead of yes/no
 (defalias 'yes-or-no-p 'y-or-n-p)
 
-;; その他の環境固有の設定をここに
+;; Platform-specific settings
 (if window-system
-  (progn
-    (cond
-      ((eq system-type 'windows-nt)
-      )
-      ((eq system-type 'gnu/linux)
+    (progn
+      (cond
+       ((eq system-type 'windows-nt))
+       ((eq system-type 'gnu/linux)
         (setenv "JAVA_HOME" "/usr/lib/jvm/java-6-sun")
         ;; Mozc
         (require 'mozc)
         (setq default-input-method "japanese-mozc")
-        (global-set-key (kbd "<zenkaku-hankaku>") 'toggle-input-method)
-      )
-      ((eq system-type 'darwin)
+        (global-set-key (kbd "<zenkaku-hankaku>") 'toggle-input-method))
+       ((eq system-type 'darwin)
         (setenv "JAVA_HOME" "/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Home")
         (cond
-          ((< emacs-major-version '23)
-            (progn
-              (set-frame-parameter nil 'fullscreen 'fullboth) ; 最大化
-              ))
-          ((>= emacs-major-version '23)
-            (progn
-              (tool-bar-mode 0) ; toolbar非表示
-              ))
-        )
-      )
-    )
-  )
-)
-
+         ((< emacs-major-version '23)
+          (progn
+            (set-frame-parameter nil 'fullscreen 'fullboth) ; maximize
+            ))
+         ((>= emacs-major-version '23)
+          (progn
+            (tool-bar-mode 0) ; hide toolbar
+            )))))))
