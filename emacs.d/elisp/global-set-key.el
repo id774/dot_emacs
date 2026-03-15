@@ -1,4 +1,4 @@
-;;; global-set-key.el --- Short description -*- lexical-binding: t; -*-
+;;; global-set-key.el --- Global key bindings for DOT_EMACS -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

@@ -1,4 +1,4 @@
-;;; new-file-p.el --- Short description -*- lexical-binding: t; -*-
+;;; new-file-p.el --- Prompt before creating non-existent files -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

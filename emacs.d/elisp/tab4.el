@@ -1,4 +1,4 @@
-;;; tab4.el --- Short description -*- lexical-binding: t; -*-
+;;; tab4.el --- Toggle tab width between 4 and 8 columns -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

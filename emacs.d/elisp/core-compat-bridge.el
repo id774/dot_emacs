@@ -1,4 +1,4 @@
-;;; core-compat-bridge.el --- Short description -*- lexical-binding: t; -*-
+;;; core-compat-bridge.el --- Small compatibility shims for older Emacs versions -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

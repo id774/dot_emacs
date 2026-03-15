@@ -1,4 +1,4 @@
-;;; google-this-settings.el --- Short description -*- lexical-binding: t; -*-
+;;; google-this-settings.el --- Configure google-this search integration -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

@@ -1,4 +1,4 @@
-;;; view-mode-key.el --- Short description -*- lexical-binding: t; -*-
+;;; view-mode-key.el --- Enhanced navigation keys for view-mode -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

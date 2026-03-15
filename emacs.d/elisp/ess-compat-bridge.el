@@ -1,4 +1,4 @@
-;;; ess-compat-bridge.el --- Short description -*- lexical-binding: t; -*-
+;;; ess-compat-bridge.el --- Compatibility bridge for ESS variable changes -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

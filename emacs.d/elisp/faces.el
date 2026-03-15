@@ -1,4 +1,4 @@
-;;; faces.el --- Short description -*- lexical-binding: t; -*-
+;;; faces.el --- Configure fonts, colors, and UI faces -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

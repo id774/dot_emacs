@@ -1,4 +1,4 @@
-;;; web-mode-settings.el --- Short description -*- lexical-binding: t; -*-
+;;; web-mode-settings.el --- Configure web-mode for HTML and templates -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

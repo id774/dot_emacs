@@ -1,4 +1,4 @@
-;;; yatex-mode.el --- Short description -*- lexical-binding: t; -*-
+;;; yatex-mode.el --- Configure YaTeX LaTeX editing environment -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

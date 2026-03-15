@@ -1,4 +1,4 @@
-;;; autoloads.el --- Short description -*- lexical-binding: t; -*-
+;;; autoloads.el --- Load and initialize DOT_EMACS configuration modules -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

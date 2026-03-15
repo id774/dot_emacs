@@ -1,4 +1,4 @@
-;;; riece-navi2ch.el --- Short description -*- lexical-binding: t; -*-
+;;; riece-navi2ch.el --- Configure Riece IRC and navi2ch proxy integration -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

@@ -1,4 +1,4 @@
-;;; clear-kill-ring.el --- Short description -*- lexical-binding: t; -*-
+;;; clear-kill-ring.el --- Utility to clear kill-ring and system clipboard -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

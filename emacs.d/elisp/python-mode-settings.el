@@ -1,4 +1,4 @@
-;;; python-mode-settings.el --- Short description -*- lexical-binding: t; -*-
+;;; python-mode-settings.el --- Configure Python development environment -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

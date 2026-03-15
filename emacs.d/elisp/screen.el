@@ -1,4 +1,4 @@
-;;; screen.el --- Short description -*- lexical-binding: t; -*-
+;;; screen.el --- Update terminal title for screen/xterm sessions -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

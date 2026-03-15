@@ -1,4 +1,4 @@
-;;; init.el --- Short description -*- lexical-binding: t; -*-
+;;; init.el --- Main entry point for DOT_EMACS initialization -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

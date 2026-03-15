@@ -1,4 +1,4 @@
-;;; shadow-settings.el --- Short description -*- lexical-binding: t; -*-
+;;; shadow-settings.el --- Configure shadow file editing support -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

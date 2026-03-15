@@ -1,4 +1,4 @@
-;;; configs.el --- Short description -*- lexical-binding: t; -*-
+;;; configs.el --- Core environment configuration for DOT_EMACS -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

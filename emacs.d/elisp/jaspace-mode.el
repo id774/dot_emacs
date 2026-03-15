@@ -1,4 +1,4 @@
-;;; jaspace-mode.el --- Short description -*- lexical-binding: t; -*-
+;;; jaspace-mode.el --- Highlight full-width spaces, tabs, and trailing spaces -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

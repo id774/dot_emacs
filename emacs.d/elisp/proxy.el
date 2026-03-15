@@ -1,4 +1,4 @@
-;;; proxy.el --- Short description -*- lexical-binding: t; -*-
+;;; proxy.el --- Global proxy configuration for network access -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

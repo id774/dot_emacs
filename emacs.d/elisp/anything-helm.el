@@ -1,4 +1,4 @@
-;;; anything-helm.el --- Short description -*- lexical-binding: t; -*-
+;;; anything-helm.el --- Compatibility bridge between anything and helm key bindings -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

@@ -1,4 +1,4 @@
-;;; auto-complete-settings.el --- Short description -*- lexical-binding: t; -*-
+;;; auto-complete-settings.el --- Configure auto-complete framework and language behavior -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

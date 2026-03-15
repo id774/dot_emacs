@@ -1,4 +1,4 @@
-;;; key-chord-define-global.el --- Short description -*- lexical-binding: t; -*-
+;;; key-chord-define-global.el --- Global key-chord shortcuts for common actions -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

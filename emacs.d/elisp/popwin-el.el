@@ -1,4 +1,4 @@
-;;; popwin-el.el --- Short description -*- lexical-binding: t; -*-
+;;; popwin-el.el --- Configure popwin popup window behavior -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

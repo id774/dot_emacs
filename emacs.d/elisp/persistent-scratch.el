@@ -1,4 +1,4 @@
-;;; persistent-scratch.el --- Short description -*- lexical-binding: t; -*-
+;;; persistent-scratch.el --- Preserve the *scratch* buffer across sessions -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

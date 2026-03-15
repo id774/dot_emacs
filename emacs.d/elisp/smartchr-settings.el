@@ -1,4 +1,4 @@
-;;; smartchr-settings.el --- Short description -*- lexical-binding: t; -*-
+;;; smartchr-settings.el --- Configure smartchr insertion shortcuts -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

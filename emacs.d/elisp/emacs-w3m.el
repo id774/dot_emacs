@@ -1,4 +1,4 @@
-;;; emacs-w3m.el --- Short description -*- lexical-binding: t; -*-
+;;; emacs-w3m.el --- Configure emacs-w3m browser integration -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs

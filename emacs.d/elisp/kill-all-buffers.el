@@ -1,4 +1,4 @@
-;;; kill-all-buffers.el --- Short description -*- lexical-binding: t; -*-
+;;; kill-all-buffers.el --- Command to close all open buffers -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: http://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs
