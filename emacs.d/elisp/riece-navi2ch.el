@@ -1,3 +1,21 @@
+;;; riece-navi2ch.el --- Short description -*- lexical-binding: t; -*-
+
+;; Author: id774 (More info: http://id774.net)
+;; Source Code: https://github.com/id774/dot_emacs
+;; License: The GPL version 3, or LGPL version 3 (Dual License).
+;; Contact: idnanashi@gmail.com
+
+;; Support : Emacs 23.4+
+;; Extended: Emacs 30+
+;; Policy  : Preserve historical behavior and maintain backward compatibility
+;; Package : DOT_EMACS
+
+;;; Commentary:
+;; Part of the DOT_EMACS configuration.
+;; See doc/GUIDELINES for compatibility and maintenance policy.
+
+;;; Code:
+
 ;; riece
 (when (autoload-p 'riece "riece" "Riece IRC Client for Emacs" 'interactive)
   (setq riece-channel-list-buffer-mode t)
@@ -76,3 +94,5 @@
         (concat global-proxy-server ":" (number-to-string global-proxy-port)))
     (defvar navi2ch-net-http-proxy-userid global-proxy-user)
     (defvar navi2ch-net-http-proxy-password global-proxy-password)))
+
+;;; riece-navi2ch.el ends here
