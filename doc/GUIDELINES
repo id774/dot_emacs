@@ -104,7 +104,29 @@ possible.
 
 ------------------------------------------------------------------------
 
-## 5. UI and Logic Separation
+## 5. Lexical Binding Policy
+
+DOT_EMACS standardizes on lexical binding for all Emacs Lisp files.
+
+Although Emacs historically used dynamic binding, lexical binding has
+been available since Emacs 24 and is widely adopted in modern Emacs
+development.  Beginning with Emacs 27, interactive evaluation contexts
+such as `M-:` and `*scratch*` also default to lexical scope.
+
+For consistency and long-term maintainability, DOT_EMACS explicitly
+enables lexical binding in all `.el` files using the standard file
+header cookie:
+
+``` elisp
+;; -*- lexical-binding: t; -*-
+```
+
+This ensures predictable evaluation semantics across all supported
+Emacs versions.
+
+------------------------------------------------------------------------
+
+## 6. UI and Logic Separation
 
 -   **Core logic must run on Emacs 23+.**
 -   **Modern UI features must be optional.**
@@ -119,7 +141,7 @@ These must never be required for core functionality.
 
 ------------------------------------------------------------------------
 
-## 6. Asynchronous and External Processes
+## 7. Asynchronous and External Processes
 
 Design with historical compatibility in mind.
 
@@ -136,7 +158,7 @@ Fallback behavior must always exist.
 
 ------------------------------------------------------------------------
 
-## 7. Deprecation Monitoring
+## 8. Deprecation Monitoring
 
 Long-lived configurations must track upstream evolution.
 
@@ -148,7 +170,7 @@ Do **not remove working legacy code unless it breaks compatibility.**
 
 ------------------------------------------------------------------------
 
-## 8. Dependency Policy
+## 9. Dependency Policy
 
 External dependencies must never compromise stability.
 
@@ -163,7 +185,7 @@ startup.**
 
 ------------------------------------------------------------------------
 
-## 9. Compatibility Layer Strategy
+## 10. Compatibility Layer Strategy
 
 When upstream changes occur, implement a compatibility bridge.
 
@@ -184,7 +206,7 @@ maintainability.
 
 ------------------------------------------------------------------------
 
-## 10. Version Policy Header
+## 11. Version Policy Header
 
 Each file should clearly document its compatibility expectations.
 
@@ -196,7 +218,7 @@ Each file should clearly document its compatibility expectations.
 
 ------------------------------------------------------------------------
 
-## 11. Long-Term Maintenance Philosophy
+## 12. Long-Term Maintenance Philosophy
 
 This configuration is intended for **multi-decade usability**.
 
