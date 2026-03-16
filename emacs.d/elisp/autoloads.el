@@ -71,7 +71,7 @@
 (load-p "yatex-mode")
 
 ;; anything-git-files
-(when (require 'anything-git-files)
+(when (require 'anything-git-files nil t)
   (define-key global-map "\C-c\C-c\ b" 'anything-git-files))
 
 ;; sense-region
@@ -110,14 +110,14 @@
 (load-p "dired-settings")
 
 ;; wdired
-(when (require 'wdired)
+(when (require 'wdired nil t)
   (define-key dired-mode-map "r" 'wdired-change-to-wdired-mode))
 
 ;; minibuf-isearch
 (require 'minibuf-isearch)
 
 ;; browse-kill-ring
-(when (require 'browse-kill-ring)
+(when (require 'browse-kill-ring nil t)
   (global-set-key (kbd "C-c k") 'browse-kill-ring))
 
 ;; zlc
@@ -203,7 +203,7 @@
 
 ;; highlight-unique-symbol
 ;; http://hitode909.hatenablog.com/entry/2013/02/11/233449
-(when (require 'highlight-unique-symbol)
+(when (require 'highlight-unique-symbol nil t)
   (highlight-unique-symbol t))
 
 ;; foreign-regexp
