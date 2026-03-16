@@ -295,26 +295,20 @@
 (defalias 'yes-or-no-p 'y-or-n-p)
 
 ;; Platform-specific settings
-(if window-system
-    (progn
-      (cond
-       ((eq system-type 'windows-nt))
-       ((eq system-type 'gnu/linux)
-        (setenv "JAVA_HOME" "/usr/lib/jvm/java-6-sun")
-        ;; Mozc
-        (require 'mozc)
-        (setq default-input-method "japanese-mozc")
-        (global-set-key (kbd "<zenkaku-hankaku>") 'toggle-input-method))
-       ((eq system-type 'darwin)
-        (setenv "JAVA_HOME" "/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Home")
-        (cond
-         ((< emacs-major-version '23)
-          (progn
-            (set-frame-parameter nil 'fullscreen 'fullboth) ; maximize
-            ))
-         ((>= emacs-major-version '23)
-          (progn
-            (tool-bar-mode 0) ; hide toolbar
-            )))))))
+(when (display-graphic-p)
+  (pcase system-type
+    ('windows-nt
+     nil)
+
+    ('gnu/linux
+     ;; Mozc
+     (when (require 'mozc nil t)
+       (setq default-input-method "japanese-mozc")
+       (global-set-key (kbd "<zenkaku-hankaku>") #'toggle-input-method)))
+
+    ('darwin
+     (if (< emacs-major-version 23)
+         (set-frame-parameter nil 'fullscreen 'fullboth)
+       (tool-bar-mode 0)))))
 
 ;;; configs.el ends here
