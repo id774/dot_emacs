@@ -19,10 +19,11 @@
 ;; Enable enhanced automatic buffer saving
 (require 'auto-save-buffers-enhanced)
 
-(auto-save-buffers-enhanced t)
+;; Set auto-save interval (seconds)
+(setq auto-save-buffers-enhanced-interval 15.0)
 
-;; Do not restrict auto-save to version-controlled files
-(auto-save-buffers-enhanced-include-only-checkout-path nil)
+;; Enable enhanced automatic buffer saving
+(auto-save-buffers-enhanced t)
 
 ;; Toggle auto-save activity with C-x x w
 (global-set-key "\C-xxw" 'auto-save-buffers-enhanced-toggle-activity)
