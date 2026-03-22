@@ -296,19 +296,19 @@
 
 ;; Platform-specific settings
 (when (display-graphic-p)
-  (pcase system-type
-    ('windows-nt
-     nil)
+  (cond
+   ((eq system-type 'windows-nt)
+    nil)
 
-    ('gnu/linux
-     ;; Mozc
-     (when (require 'mozc nil t)
-       (setq default-input-method "japanese-mozc")
-       (global-set-key (kbd "<zenkaku-hankaku>") #'toggle-input-method)))
+   ((eq system-type 'gnu/linux)
+    ;; Mozc
+    (when (require 'mozc nil t)
+      (setq default-input-method "japanese-mozc")
+      (global-set-key (kbd "<zenkaku-hankaku>") 'toggle-input-method)))
 
-    ('darwin
-     (if (< emacs-major-version 23)
-         (set-frame-parameter nil 'fullscreen 'fullboth)
-       (tool-bar-mode 0)))))
+   ((eq system-type 'darwin)
+    (if (< emacs-major-version 23)
+        (set-frame-parameter nil 'fullscreen 'fullboth)
+      (tool-bar-mode 0)))))
 
 ;;; configs.el ends here
