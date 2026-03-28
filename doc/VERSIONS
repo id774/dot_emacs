@@ -1,8 +1,8 @@
 dot_emacs Repository Version History
 ====================================
 
-v26.03 (Release Date: TBD)
---------------------------
+v26.03 (2026-03-28)
+-------------------
 - Add IPAexGothic as explicit Japanese font for GNU/Linux and adjust default frame size.
 - Switch default font from Bitstream Vera Sans Mono to DejaVu Sans Mono.
 - Configure auto-save interval for auto-save-buffers-enhanced to stabilize background saving behavior.
