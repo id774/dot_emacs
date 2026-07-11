@@ -43,6 +43,9 @@
 #  - The --uninstall option will remove installed files and user configuration.
 #
 #  Version History:
+#  v3.3 2026-07-11
+#       Replace the awk {n,} interval expression in usage() with a portable
+#       equivalent, since mawk on some systems matches it incorrectly.
 #  v3.2 2025-10-01
 #       Normalize chmod permissions to 4-digit octal format.
 #  v3.1 2025-08-13
@@ -69,7 +72,7 @@
 usage() {
     awk '
         BEGIN { in_header = 0 }
-        /^#{10,}$/ { if (!in_header) { in_header = 1; next } else exit }
+        /^#+$/ && length($0) >= 10 { if (!in_header) { in_header = 1; next } else exit }
         in_header && /^# ?/ { print substr($0, 3) }
     ' "$0"
     exit 0
