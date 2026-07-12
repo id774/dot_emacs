@@ -206,9 +206,6 @@
 (when (require 'highlight-unique-symbol nil t)
   (highlight-unique-symbol t))
 
-;; foreign-regexp
-(load-p "foreign-regexp-settings")
-
 ;; savekill
 (require 'savekill)
 
