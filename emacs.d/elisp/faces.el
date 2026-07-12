@@ -131,7 +131,9 @@
                    (set-face-foreground 'font-lock-variable-name-face "hot pink")
                    (set-face-foreground 'font-lock-type-face "cyan")
                    (set-face-foreground 'font-lock-warning-face "magenta")
-                   (set-face-bold-p 'font-lock-function-name-face t)
-                   (set-face-bold-p 'font-lock-warning-face nil)))))
+                   ;; Guard against removal of this obsolete function in future Emacs
+                   (when (fboundp 'set-face-bold-p)
+                     (set-face-bold-p 'font-lock-function-name-face t)
+                     (set-face-bold-p 'font-lock-warning-face nil))))))
 
 ;;; faces.el ends here
