@@ -43,7 +43,7 @@
 (load-p "smartchr-settings")
 
 ;; recentf-ext
-(load-p "recent-ext-settings")
+(load-p "recentf-ext-settings")
 
 ;; multi-term
 (load-p "multi-term-settings")
