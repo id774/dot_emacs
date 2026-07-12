@@ -3,6 +3,8 @@ dot_emacs Repository Version History
 
 v26.07 (Release Date: TBD)
 --------------------------
+- Fix the dired-async loader so dired-async-mode is enabled at startup.
+- Simplify the redundant timidity autoload wrapper in autoloads.el.
 - Replace awk {n,} interval expression in usage() with a portable equivalent for mawk compatibility.
 - Fix a typo in autoloads.el that prevented recentf-ext-settings.el from loading.
 - Guard set-face-bold-p calls in faces.el with fboundp to avoid breaking font-lock-mode-hook if the obsolete function is removed.
