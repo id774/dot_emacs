@@ -18,6 +18,7 @@
 
 ;; Update terminal hard status on xterm/screen
 (when (and (not window-system)
+           (getenv "TERM")
            (string-match "^xterm\\|^screen" (getenv "TERM"))
            (load-p "term/xterm"))
   (defun-add-hook 'post-command-hook
