@@ -62,7 +62,7 @@
 (load-p "auto-async-settings")
 
 ;; timidity
-(when (autoload-p 'timidity "timidity" "TiMidity++" 'interactive))
+(autoload-p 'timidity "timidity" "TiMidity++" 'interactive)
 
 ;; language modes
 (load-p "lang-mode")
@@ -222,7 +222,7 @@
 (load-p "web-mode-settings")
 
 ;; dired-async
-(when (load-p "dired-async-mode")
+(when (load-p "dired-async")
   (dired-async-mode 1))
 
 ;; faces
