@@ -213,7 +213,7 @@
 (require 'savekill)
 
 ;; clear-kill-ring
-(load-p "clear-kill-ring.el")
+(load-p "clear-kill-ring")
 
 (load-p "auto-save-buffers-settings")
 

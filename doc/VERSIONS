@@ -7,6 +7,7 @@ v26.07 (Release Date: TBD)
 - Fix a typo in autoloads.el that prevented recentf-ext-settings.el from loading.
 - Guard set-face-bold-p calls in faces.el with fboundp to avoid breaking font-lock-mode-hook if the obsolete function is removed.
 - Guard screen.el against an unset TERM environment variable to avoid a string-match error on startup.
+- Drop the redundant .el suffix from the clear-kill-ring load-p call in autoloads.el for consistency.
 
 v26.03 (2026-03-28)
 -------------------
