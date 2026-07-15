@@ -147,7 +147,7 @@
             "DOS and Windows BAT files" t)
 
 ;; markdown-mode
-(when (autoload-p 'markdown-mode "markdown-mode.el" "Major mode for editing Markdown files" 'interactive)
+(when (autoload-p 'markdown-mode "markdown-mode" "Major mode for editing Markdown files" 'interactive)
   (setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
   (setq auto-mode-alist (cons '("\\.txt" . markdown-mode) auto-mode-alist)))
 
