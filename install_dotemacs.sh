@@ -41,6 +41,8 @@
 #  - The script will remove existing Emacs configurations before installation.
 #  - Byte-compilation is performed to improve Emacs performance.
 #  - The --uninstall option will remove installed files and user configuration.
+#  - Keep the uninstall target fixed at /usr/local/etc/emacs.d to prevent accidental deletion.
+#  - Do not remove custom installation targets automatically.
 #
 #  Version History:
 #  v3.3 2026-07-11
