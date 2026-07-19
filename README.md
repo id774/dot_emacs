@@ -75,13 +75,10 @@ This installs DOT_EMACS to `~/.emacs.d`, bypassing the need for `sudo`.
 ~/dot_emacs/install_dotemacs.sh --uninstall
 ```
 
-This removes the installed configuration from your system. You can also specify the Emacs binary and target path:
+This removes the installed configuration from your system.
 
-```bash
-~/dot_emacs/install_dotemacs.sh --uninstall /usr/bin/emacs ~/.emacs.d nosudo
-```
-
-This allows you to uninstall from a custom location without using `sudo`.
+For safety, `--uninstall` removes only `/usr/local/etc/emacs.d`.
+Custom installation targets are not removed automatically.
 
 ---
 
