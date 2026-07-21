@@ -12,6 +12,7 @@ v26.07 (Release Date: TBD)
 - Drop the redundant .el suffix from the clear-kill-ring load-p call in autoloads.el for consistency.
 - Remove foreign-regexp-settings load from autoloads.
 - Drop the redundant .el suffix from the markdown-mode autoload-p call in lang-mode.el for consistency.
+- Allow nosudo installs and uninstalls to run when the sudo command is unavailable.
 
 v26.03 (2026-03-28)
 -------------------
