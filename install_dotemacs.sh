@@ -45,6 +45,8 @@
 #  - Do not remove custom installation targets automatically.
 #
 #  Version History:
+#  v3.4 2026-07-21
+#       Allow nosudo installs and uninstalls when sudo is unavailable.
 #  v3.3 2026-07-11
 #       Replace the awk {n,} interval expression in usage() with a portable
 #       equivalent, since mawk on some systems matches it incorrectly.
@@ -356,7 +358,7 @@ set_permission() {
 install() {
     cd || exit 1
 
-    check_commands sudo cp mkdir chmod chown ln rm id dirname uname
+    check_commands cp mkdir chmod chown ln rm id dirname uname
     setup_environment "$@"
     setup_dotemacs
     emacs_private_settings
@@ -370,7 +372,7 @@ install() {
 # Uninstall dot_emacs configuration
 uninstall() {
     shift
-    check_commands sudo rm rmdir
+    check_commands rm rmdir id dirname uname
     setup_environment "$@"
 
     echo "[INFO] Uninstalling dot_emacs configuration..."
