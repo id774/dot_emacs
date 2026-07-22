@@ -6,11 +6,9 @@ v26.07 (Release Date: TBD)
 - Fix the dired-async loader so dired-async-mode is enabled at startup.
 - Simplify the redundant timidity autoload wrapper in autoloads.el.
 - Replace awk {n,} interval expression in usage() with a portable equivalent for mawk compatibility.
-- Fix a typo in autoloads.el that prevented recentf-ext-settings.el from loading.
+- Fix a typo blocking recentf-ext-settings.el from loading and clean up redundant/unused autoloads.el entries.
 - Guard set-face-bold-p calls in faces.el with fboundp to avoid breaking font-lock-mode-hook if the obsolete function is removed.
 - Guard screen.el against an unset TERM environment variable to avoid a string-match error on startup.
-- Drop the redundant .el suffix from the clear-kill-ring load-p call in autoloads.el for consistency.
-- Remove foreign-regexp-settings load from autoloads.
 - Drop the redundant .el suffix from the markdown-mode autoload-p call in lang-mode.el for consistency.
 - Allow nosudo installs and uninstalls to run when the sudo command is unavailable.
 
