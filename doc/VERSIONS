@@ -14,6 +14,7 @@ v26.07 (Release Date: TBD)
 - Remove the bundled shadow.el and its settings, which collided with the built-in shadow.el and broke find-file.
 - Disable the blinking cursor explicitly, since a nil argument now enables the mode instead of toggling it.
 - Replace the removed default-major-mode setting with setq-default on major-mode.
+- Fix with-suppressed-message so message-log-max is bound at run time instead of macro expansion time.
 
 v26.03 (2026-03-28)
 -------------------
