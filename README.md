@@ -47,8 +47,7 @@ Run the `install_dotemacs.sh` script to install DOT_EMACS:
 ### Usage:
 
 ```bash
-./install_dotemacs.sh [emacs_binary] [target_path] [nosudo]
-./install_dotemacs.sh --uninstall [emacs_binary] [target_path] [nosudo]
+./install_dotemacs.sh [options] [emacs_binary] [target_path] [nosudo]
 ```
 
 Arguments:
@@ -63,6 +62,7 @@ Options:
 - `-h`, `--help`: Show the help message and exit.
 - `-v`, `--version`: Show the script header and exit.
 - `-u`, `--uninstall`: Remove the installed dot_emacs components.
+- `-n`, `--no-sudo`: Run without `sudo`.
 
 ### Default Installation:
 
@@ -76,9 +76,10 @@ This installs DOT_EMACS to the default location. Root privileges (via `sudo`) ar
 
 ```bash
 ~/dot_emacs/install_dotemacs.sh /usr/bin/emacs ~/.emacs.d nosudo
+~/dot_emacs/install_dotemacs.sh --no-sudo /usr/bin/emacs ~/.emacs.d
 ```
 
-This installs DOT_EMACS to `~/.emacs.d`, bypassing the need for `sudo`.
+Both commands install DOT_EMACS to `~/.emacs.d` without using `sudo`.
 
 ### Installation on macOS:
 
@@ -94,9 +95,10 @@ if it is executable, so passing the path explicitly is optional.
 
 ```bash
 ~/dot_emacs/install_dotemacs.sh --uninstall
+~/dot_emacs/install_dotemacs.sh --uninstall -n
 ```
 
-This removes the installed configuration from your system.
+The second command removes the installed configuration without using `sudo`.
 
 For safety, `--uninstall` removes only `/usr/local/etc/emacs.d`.
 Custom installation targets are not removed automatically.
