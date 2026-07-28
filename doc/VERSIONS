@@ -10,7 +10,7 @@ v26.07 (Release Date: TBD)
 - Declare my-load-path with defvar in init.el before assigning it.
 - Fix the dired-async loader so dired-async-mode is enabled at startup.
 - Simplify the redundant timidity autoload wrapper in autoloads.el.
-- Fix a typo blocking recentf-ext-settings.el from loading and clean up redundant/unused autoloads.el entries.
+- Fix the recentf-ext-settings.el load typo and clean up two obsolete autoload entries.
 - Remove the unused auto-save-buffers block from autoloads.el, which could double up with auto-save-buffers-enhanced.
 - Remove the obsolete default-major-mode setting, which no longer affects the major mode of new buffers.
 - Add a quiet argument to load-p and use it for the optional site-lisp loader, which reported a failure on every startup.
