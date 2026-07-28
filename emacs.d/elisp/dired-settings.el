@@ -16,6 +16,9 @@
 
 ;;; Code:
 
+;; Load dired first, since the key bindings below need dired-mode-map
+(require 'dired)
+
 ;; Use the other dired window as the default copy/move target
 (setq dired-dwim-target t)
 
