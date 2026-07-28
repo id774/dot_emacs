@@ -99,6 +99,93 @@
       "Very small shim; not fully equivalent to lexical binding."
       `(let ,bindings ,@body))))
 
+;; Remaining legacy names, which cl-lib provides only with a cl- prefix.
+;; The obsolete cl package used to define them as aliases, and bundled
+;; third-party code such as anything.el still uses the historical
+;; spelling, so keep the names available without loading cl.  A name is
+;; bridged only when it is still undefined, so built-in definitions and
+;; anything loaded earlier always win.
+(when (featurep 'cl-lib)
+  (dolist (entry '((get* . cl-get)
+                   (random* . cl-random)
+                   (rem* . cl-rem)
+                   (mod* . cl-mod)
+                   (round* . cl-round)
+                   (truncate* . cl-truncate)
+                   (ceiling* . cl-ceiling)
+                   (floor* . cl-floor)
+                   (member* . cl-member)
+                   (delete* . cl-delete)
+                   (remove* . cl-remove)
+                   (sort* . cl-sort)
+                   (defsubst* . cl-defsubst)
+                   (function* . cl-function)
+                   (define-setf-method . define-setf-expander)
+                   ;; Blocks and non-local exits.
+                   block return return-from
+                   ;; Control structures.
+                   do do* do-symbols do-all-symbols
+                   psetq psetf progv the locally load-time-value eval-when
+                   macrolet symbol-macrolet
+                   multiple-value-bind multiple-value-setq multiple-value-call
+                   multiple-value-apply multiple-value-list
+                   values values-list nth-value
+                   ;; Places.
+                   letf letf* rotatef shiftf remf callf callf2
+                   ;; Types and declarations.
+                   typep deftype check-type
+                   declaim proclaim
+                   define-compiler-macro compiler-macroexpand
+                   ;; Lists and conses.
+                   list* copy-list ldiff endp tailp list-length
+                   acons subst subst-if subst-if-not
+                   sublis nsublis nsubst nsubst-if nsubst-if-not
+                   caaar caadr cadar caddr cdaar cdadr cddar cdddr
+                   caaaar caaadr caadar caaddr cadaar cadadr caddar cadddr
+                   cdaaar cdaadr cdadar cdaddr cddaar cddadr cdddar cddddr
+                   fifth sixth seventh eighth ninth tenth
+                   ;; Sequences.
+                   subseq concatenate copy-seq svref replace fill
+                   map mapcan mapcon mapl maplist
+                   merge stable-sort search mismatch
+                   find position-if position-if-not count-if-not
+                   member-if member-if-not
+                   assoc-if assoc-if-not rassoc-if rassoc-if-not
+                   substitute substitute-if substitute-if-not
+                   nsubstitute nsubstitute-if nsubstitute-if-not
+                   delete-if delete-if-not
+                   remove-duplicates delete-duplicates
+                   union nunion intersection nintersection
+                   set-difference nset-difference
+                   set-exclusive-or nset-exclusive-or
+                   notany notevery tree-equal equalp coerce
+                   ;; Symbols, numbers and misc.
+                   gentemp getf remprop
+                   evenp oddp plusp minusp signum isqrt lcm gcd
+                   random-state-p make-random-state
+                   nreconc revappend))
+    (let* ((old (if (consp entry) (car entry) entry))
+           (new (if (consp entry)
+                    (cdr entry)
+                  (intern (concat "cl-" (symbol-name entry))))))
+      (when (and (fboundp new) (not (fboundp old)))
+        (defalias old new)))))
+
+;; `return' throws to the innermost nil block, so it needs one to exist.
+;; The obsolete cl package gave dolist and dotimes an implicit nil block,
+;; and bundled third-party code such as anything.el relies on it, so
+;; reproduce that behavior when cl itself is not loaded.
+(when (and (featurep 'cl-lib)
+           (not (featurep 'cl))
+           (fboundp 'advice-add)
+           (fboundp 'advice-member-p))
+  (defun cl-compat-wrap-in-nil-block (fun &rest args)
+    "Expand the macro FUN with ARGS inside an implicit nil block."
+    `(cl-block nil ,(apply fun args)))
+  (dolist (macro '(dolist dotimes))
+    (unless (advice-member-p 'cl-compat-wrap-in-nil-block macro)
+      (advice-add macro :around 'cl-compat-wrap-in-nil-block))))
+
 (provide 'cl-compat-bridge)
 
 ;;; cl-compat-bridge.el ends here

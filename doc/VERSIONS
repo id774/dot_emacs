@@ -31,6 +31,8 @@ v26.07 (Release Date: TBD)
 - Drop the redundant .el suffix from the markdown-mode autoload-p call in lang-mode.el for consistency.
 - Remove the bundled shadow.el and its settings, which collided with the built-in shadow.el and broke find-file.
 - Remove the unused new-file-p.el and the bundled foreign-regexp.el, which are no longer loaded.
+- Bridge the legacy CL names cl-lib provides only with a cl- prefix, such as block, return, getf and subseq, which broke C-x b with a void-variable error.
+- Give dolist and dotimes an implicit nil block, so legacy return calls keep working without the obsolete cl package.
 
 v26.03 (2026-03-28)
 -------------------
