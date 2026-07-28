@@ -114,7 +114,11 @@
 
 ;; temporary-file-directory
 ;; (setq temporary-file-directory "~/.emacs.d/tmp")
-(setq temporary-file-directory "/dev/shm")
+;; Prefer the shared memory filesystem, which exists on GNU/Linux only.
+;; Other platforms such as macOS have no /dev/shm, so keep the default there.
+(when (and (eq system-type 'gnu/linux)
+           (file-directory-p "/dev/shm"))
+  (setq temporary-file-directory "/dev/shm"))
 
 ;; Scroll one line at a time
 (setq scroll-conservatively 1)

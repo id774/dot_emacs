@@ -176,6 +176,9 @@
 (load-p "persistent-scratch")
 
 ;; ESS
+;; The bundled ESS only builds against Emacs 24 through 26, so keep the
+;; loader within that range and leave R and S support to a separately
+;; installed ESS elsewhere.
 (when (and (>= emacs-major-version 24)
            (<= emacs-major-version 26))
   (load-p "ess-site"))
