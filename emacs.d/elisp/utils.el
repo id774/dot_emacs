@@ -33,11 +33,15 @@
               (lambda ()
                 ,@sexplist))))
 
-(defun load-p (loadlib)
-  "Load LOADLIB safely without stopping on failure."
+(defun load-p (loadlib &optional quiet)
+  "Load LOADLIB safely without stopping on failure.
+With non-nil QUIET, stay silent when LOADLIB is absent.  Use it for
+libraries that are optional by design, such as a private site-lisp
+loader."
   ;; Try loading with missing-ok.  If it fails, emit a message quietly.
   (let ((load-status (load loadlib t)))
     (or load-status
+        quiet
         (message (format "failed to load %s" loadlib)))
     load-status))
 

@@ -21,6 +21,7 @@ v26.07 (Release Date: TBD)
 - Declare my-load-path with defvar in init.el before assigning it.
 - Remove the unused auto-save-buffers block from autoloads.el, which could double up with auto-save-buffers-enhanced.
 - Turn off hl-line in toggle-view-mode by calling hl-line-mode instead of assigning to its variable.
+- Add a quiet argument to load-p and use it for the optional site-lisp loader, which reported a failure on every startup.
 
 v26.03 (2026-03-28)
 -------------------

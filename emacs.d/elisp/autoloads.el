@@ -221,7 +221,7 @@
 ;; configs (loaded last)
 (load-p "configs")
 
-;; site-lisp loader
-(load-p "loader")
+;; site-lisp loader (optional, so do not report its absence)
+(load-p "loader" t)
 
 ;;; autoloads.el ends here
