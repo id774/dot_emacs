@@ -15,6 +15,7 @@ v26.07 (Release Date: TBD)
 - Disable the blinking cursor explicitly, since a nil argument now enables the mode instead of toggling it.
 - Replace the removed default-major-mode setting with setq-default on major-mode.
 - Fix with-suppressed-message so message-log-max is bound at run time instead of macro expansion time.
+- Stop redefining the built-in previous-buffer, and bind M-n to a new forward-buffer command instead.
 
 v26.03 (2026-03-28)
 -------------------

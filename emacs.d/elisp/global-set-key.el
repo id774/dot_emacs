@@ -136,8 +136,10 @@
 (define-key global-map "\C-x\ j" 'toggle-view-mode)
 
 ;; Switch buffers with M-n and M-p
-(defun previous-buffer ()
-  "Select previous window."
+;; Do not redefine the built-in `previous-buffer', which is bound to
+;; C-x <left> by default.
+(defun forward-buffer ()
+  "Select forward buffer by burying the current one."
   (interactive)
   (bury-buffer))
 
@@ -147,7 +149,7 @@
   (switch-to-buffer
    (car (reverse (buffer-list)))))
 
-(global-set-key "\M-n" 'previous-buffer)
+(global-set-key "\M-n" 'forward-buffer)
 (global-set-key "\M-p" 'backward-buffer)
 
 ;; Buffer list
