@@ -97,7 +97,11 @@
   (unless (fboundp 'lexical-let)
     (defmacro lexical-let (bindings &rest body)
       "Very small shim; not fully equivalent to lexical binding."
-      `(let ,bindings ,@body))))
+      `(let ,bindings ,@body)))
+  (unless (fboundp 'lexical-let*)
+    (defmacro lexical-let* (bindings &rest body)
+      "Very small shim; not fully equivalent to lexical binding."
+      `(let* ,bindings ,@body))))
 
 ;; Remaining legacy names, which cl-lib provides only with a cl- prefix.
 ;; The obsolete cl package used to define them as aliases, and bundled
@@ -120,7 +124,6 @@
                    (sort* . cl-sort)
                    (defsubst* . cl-defsubst)
                    (function* . cl-function)
-                   (define-setf-method . define-setf-expander)
                    ;; Blocks and non-local exits.
                    block return return-from
                    ;; Control structures.

@@ -32,6 +32,7 @@ v26.07 (Release Date: TBD)
 - Remove the bundled shadow.el and its settings, which collided with the built-in shadow.el and broke find-file.
 - Remove the unused new-file-p.el and the bundled foreign-regexp.el, which are no longer loaded.
 - Bridge the legacy CL names cl-lib provides only with a cl- prefix, such as block, return, getf and subseq, which broke C-x b with a void-variable error.
+- Add a lexical-let* shim next to the existing lexical-let one, which anything-config.el and other bundled files still use.
 - Give dolist and dotimes an implicit nil block, so legacy return calls keep working without the obsolete cl package.
 
 v26.03 (2026-03-28)
