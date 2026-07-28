@@ -49,13 +49,12 @@
 #    requires a usable Emacs binary. Remove the configuration before removing Emacs.
 #
 #  Version History:
-#  v3.6 2026-07-28
-#       Add -n and --no-sudo aliases for the legacy nosudo argument.
 #  v3.5 2026-07-28
 #       Resolve the script directory before changing the working directory,
 #       so relative invocations such as ./install_dotemacs.sh work.
 #       Byte-compile with the elisp load path, so files requiring the
 #       compatibility bridges are compiled.
+#       Add -n and --no-sudo aliases for the legacy nosudo argument.
 #  v3.4 2026-07-21
 #       Allow nosudo installs and uninstalls when sudo is unavailable.
 #  v3.3 2026-07-11
