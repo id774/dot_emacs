@@ -56,7 +56,10 @@
     ("p" . ,(lambda () (interactive) (scroll-down 1)))
     ("[" . forward-sexp)
     ("]" . backward-sexp)
-    ("." anything-c-moccur-occur-by-moccur)
+    ;; Disabled: this entry was missing its dot, so the cdr was a list and
+    ;; pressing "." signalled a commandp error.  anything-c-moccur is not
+    ;; bundled either, so leave the key unbound.
+    ;; ("." . anything-c-moccur-occur-by-moccur)
     ("c" . scroll-other-window-down)
     ("v" . scroll-other-window)))
 
