@@ -3,6 +3,8 @@ dot_emacs Repository Version History
 
 v26.07 (Release Date: TBD)
 --------------------------
+- Resolve the installer script directory before changing the working directory, so relative invocations work.
+- Byte-compile with the elisp load path, so bundled files requiring the compatibility bridges are compiled.
 - Allow nosudo installs and uninstalls to run when the sudo command is unavailable.
 - Replace awk {n,} interval expression in usage() with a portable equivalent for mawk compatibility.
 - Declare my-load-path with defvar in init.el before assigning it.
