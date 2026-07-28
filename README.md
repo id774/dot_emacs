@@ -80,6 +80,8 @@ This removes the installed configuration from your system.
 For safety, `--uninstall` removes only `/usr/local/etc/emacs.d`.
 Custom installation targets are not removed automatically.
 
+`--uninstall` shares the environment setup with the installer, so it still requires a usable Emacs binary. Remove the configuration before removing Emacs itself.
+
 ---
 
 ## 4. Default Behavior

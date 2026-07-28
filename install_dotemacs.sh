@@ -35,6 +35,7 @@
 #  - [emacs_binary]: Path to the Emacs binary (default: emacs).
 #    macOS users can use: /Applications/Emacs.app/Contents/MacOS/Emacs
 #  - [target_path]: Path to the installation directory (default: /usr/local/etc/emacs.d).
+#    Ignored by --uninstall, but keep it as a placeholder when passing [nosudo].
 #  - [nosudo]: If specified, the script runs without sudo.
 #  - Fallback: When 'emacs' is not found and [emacs_binary] is not an executable path,
 #    the script tries /Applications/Emacs.app/Contents/MacOS/Emacs on macOS.
@@ -43,6 +44,8 @@
 #  - The --uninstall option will remove installed files and user configuration.
 #  - Keep the uninstall target fixed at /usr/local/etc/emacs.d to prevent accidental deletion.
 #  - Do not remove custom installation targets automatically.
+#  - The --uninstall option shares the environment setup with install, so it still
+#    requires a usable Emacs binary. Remove the configuration before removing Emacs.
 #
 #  Version History:
 #  v3.4 2026-07-21
