@@ -124,11 +124,6 @@
 ;; zlc
 (load-p "zlc-settings")
 
-;; auto-save-buffers
-(when (load-p "auto-save-buffers")
-  (setq auto-save-buffers-regexp "^/[^:]+/")
-  (run-with-idle-timer 0.1 t 'auto-save-buffers))
-
 ;; uniquify
 (when (load-p "uniquify")
   (setq uniquify-buffer-name-style 'post-forward-angle-brackets))
@@ -226,7 +221,7 @@
 ;; configs (loaded last)
 (load-p "configs")
 
-;; site-lisp loader
-(load-p "loader")
+;; site-lisp loader (optional, so do not report its absence)
+(load-p "loader" t)
 
 ;;; autoloads.el ends here

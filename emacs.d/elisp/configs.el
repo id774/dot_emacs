@@ -218,7 +218,7 @@
 (hl-line-mode 1)
 
 ;; Start in view-mode after opening a file (toggle with C-x j)
-(add-hook 'find-file-hooks
+(add-hook 'find-file-hook
           (lambda ()
             (cond (view-mode)
                   (t

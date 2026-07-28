@@ -17,8 +17,9 @@
 ;;; Code:
 
 ;; multi-term
-(eval-when-compile
-  (require 'cl))
+;; `lexical-let' and `loop' below come from the cl compatibility bridge,
+;; not from the obsolete cl package.
+(require 'cl-compat-bridge)
 
 (require 'multi-term)
 

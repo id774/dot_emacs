@@ -35,7 +35,7 @@
 (key-chord-define-global "jk" 'toggle-view-mode)
 
 ;; Buffer switching
-(key-chord-define-global "m," 'previous-buffer)
+(key-chord-define-global "m," 'forward-buffer)
 (key-chord-define-global "ui" 'backward-buffer)
 
 ;; Move to buffer beginning/end
