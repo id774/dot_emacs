@@ -19,6 +19,7 @@ v26.07 (Release Date: TBD)
 - Replace the obsolete find-file-hooks alias with find-file-hook in configs.el.
 - Require cl-compat-bridge instead of the obsolete cl package in multi-term-settings.el.
 - Declare my-load-path with defvar in init.el before assigning it.
+- Remove the unused auto-save-buffers block from autoloads.el, which could double up with auto-save-buffers-enhanced.
 
 v26.03 (2026-03-28)
 -------------------
