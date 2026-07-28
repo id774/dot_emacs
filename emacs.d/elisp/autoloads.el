@@ -165,9 +165,6 @@
  ((>= emacs-major-version '23)
   (load-p "hlinum")))
 
-;; new-file-p
-;(load-p "new-file-p")
-
 ;; persistent-scratch
 (load-p "persistent-scratch")
 

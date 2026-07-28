@@ -246,7 +246,6 @@ byte_compile_all() {
         global-set-key.el \
         key-chord-define-global.el \
         kill-all-buffers.el \
-        new-file-p.el \
         persistent-scratch.el \
         physical-line.el \
         proxy.el \
