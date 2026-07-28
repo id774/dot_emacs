@@ -22,7 +22,8 @@
 (which-func-mode)
 
 ;; blink
-(blink-cursor-mode nil)
+;; Pass -1 explicitly, since a nil argument now enables the mode
+(blink-cursor-mode -1)
 
 ;; Hide tool bar and scroll bar
 (if window-system

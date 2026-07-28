@@ -34,7 +34,8 @@
 (load-p "mew-settings")
 
 ;; default major mode
-(setq default-major-mode 'text-mode)
+;; Set the default of major-mode, since default-major-mode was removed
+(setq-default major-mode 'text-mode)
 
 ;; auto-complete
 (load-p "auto-complete-settings")
