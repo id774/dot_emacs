@@ -128,7 +128,9 @@
   (interactive)
   (cond (view-mode
          (toggle-read-only)
-         (setq hl-line-mode nil))
+         ;; Call the mode function so its own teardown runs, mirroring
+         ;; the (hl-line-mode 1) in view-mode-hook0
+         (hl-line-mode -1))
         (t
          (toggle-read-only))))
 
