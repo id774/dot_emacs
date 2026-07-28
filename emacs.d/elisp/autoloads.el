@@ -81,12 +81,12 @@
 ;; riece / navi2ch
 (load-p "riece-navi2ch")
 
-;; mic-paren
-(when (load-p "mic-paren")
+;; mic-paren (not bundled, so stay quiet when it is absent)
+(when (load-p "mic-paren" t)
   (paren-activate))
 
-;; develock
-(when (load-p "develock")
+;; develock (not bundled, so stay quiet when it is absent)
+(when (load-p "develock" t)
   (global-font-lock-mode t))
 
 ;; physical-line

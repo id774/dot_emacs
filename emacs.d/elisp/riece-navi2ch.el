@@ -80,7 +80,8 @@
 ;;                     (visible-bell t))
 ;;                 (ding)))))
 
-(load-p "italk")
+;; italk is not bundled, so stay quiet when it is absent
+(load-p "italk" t)
 
 ;; navi2ch
 (when (autoload-p 'navi2ch "navi2ch" "navi2ch" 'interactive)
