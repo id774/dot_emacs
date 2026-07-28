@@ -138,9 +138,6 @@
 ;; diminish
 (load-p "diminish-settings")
 
-;; shadow
-(load-p "shadow-settings")
-
 ;; tramp
 (load-p "tramp-settings")
 

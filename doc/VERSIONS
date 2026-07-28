@@ -11,6 +11,7 @@ v26.07 (Release Date: TBD)
 - Guard screen.el against an unset TERM environment variable to avoid a string-match error on startup.
 - Drop the redundant .el suffix from the markdown-mode autoload-p call in lang-mode.el for consistency.
 - Allow nosudo installs and uninstalls to run when the sudo command is unavailable.
+- Remove the bundled shadow.el and its settings, which collided with the built-in shadow.el and broke find-file.
 
 v26.03 (2026-03-28)
 -------------------
