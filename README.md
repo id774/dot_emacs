@@ -47,11 +47,22 @@ Run the `install_dotemacs.sh` script to install DOT_EMACS:
 ### Usage:
 
 ```bash
-# Install dot_emacs
-#  $1 = emacs's binary path
-#  $2 = installation target
-#  $3 = nosudo
+./install_dotemacs.sh [emacs_binary] [target_path] [nosudo]
+./install_dotemacs.sh --uninstall [emacs_binary] [target_path] [nosudo]
 ```
+
+Arguments:
+
+- `[emacs_binary]`: Path to the Emacs binary (default: `emacs`).
+- `[target_path]`: Installation directory (default: `/usr/local/etc/emacs.d`).
+  Ignored by `--uninstall`, but keep it as a placeholder when passing `[nosudo]`.
+- `[nosudo]`: If specified, the script runs without `sudo`.
+
+Options:
+
+- `-h`, `--help`: Show the help message and exit.
+- `-v`, `--version`: Show the script header and exit.
+- `-u`, `--uninstall`: Remove the installed dot_emacs components.
 
 ### Default Installation:
 
@@ -68,6 +79,16 @@ This installs DOT_EMACS to the default location. Root privileges (via `sudo`) ar
 ```
 
 This installs DOT_EMACS to `~/.emacs.d`, bypassing the need for `sudo`.
+
+### Installation on macOS:
+
+```bash
+~/dot_emacs/install_dotemacs.sh /Applications/Emacs.app/Contents/MacOS/Emacs
+```
+
+When the `emacs` command is not found and `[emacs_binary]` is not an executable
+path, the script falls back to `/Applications/Emacs.app/Contents/MacOS/Emacs`
+if it is executable, so passing the path explicitly is optional.
 
 ### Uninstallation:
 
