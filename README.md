@@ -112,6 +112,7 @@ DOT_EMACS:
 - Configures Emacs with preinstalled third-party libraries for enhanced functionality.
 - Loads user-specific configurations from the ~/.emacs.d/elisp/ directory, including init.el and additional settings if available.
 - Loads the bundled ESS (`ess-site`) only on Emacs 24 through 26. Outside that range ESS is skipped, so R and S support is unavailable unless it is installed separately.
+- Uses `/dev/shm` as the temporary file directory on GNU/Linux only. Other platforms, including macOS, keep the Emacs default.
 
 ---
 
