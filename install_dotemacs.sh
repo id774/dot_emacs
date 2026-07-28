@@ -16,8 +16,7 @@
 #  Contact: idnanashi@gmail.com
 #
 #  Usage:
-#      ./install_dotemacs.sh [emacs_binary] [target_path] [nosudo]
-#      ./install_dotemacs.sh --uninstall [emacs_binary] [target_path] [nosudo]
+#      ./install_dotemacs.sh [options] [emacs_binary] [target_path] [nosudo]
 #
 #  Examples:
 #      ./install_dotemacs.sh                    # Install using default emacs
@@ -31,6 +30,7 @@
 #      -h, --help        Show this help message and exit.
 #      -v, --version     Show this script header and exit.
 #      -u, --uninstall   Remove all installed dot_emacs components.
+#      -n, --no-sudo     Run without sudo.
 #
 #  Notes:
 #  - [emacs_binary]: Path to the Emacs binary (default: emacs).
@@ -49,6 +49,8 @@
 #    requires a usable Emacs binary. Remove the configuration before removing Emacs.
 #
 #  Version History:
+#  v3.6 2026-07-28
+#       Add -n and --no-sudo aliases for the legacy nosudo argument.
 #  v3.5 2026-07-28
 #       Resolve the script directory before changing the working directory,
 #       so relative invocations such as ./install_dotemacs.sh work.
@@ -379,7 +381,6 @@ install() {
 
 # Uninstall dot_emacs configuration
 uninstall() {
-    shift
     check_commands rm rmdir id dirname uname
     setup_environment "$@"
 
@@ -417,17 +418,43 @@ main() {
     SCRIPT_HOME=$(dirname "$(realpath "$0" 2>/dev/null || readlink -f "$0")")
     export SCRIPT_HOME
 
-    case "$1" in
-        -h|--help|-v|--version)
-            usage
-            ;;
-        -u|--uninstall)
-            uninstall "$@"
-            ;;
-        ""|*)
-            install "$@"
-            ;;
-    esac
+    UNINSTALL=""
+    NO_SUDO=""
+    EMACS_ARG=""
+    TARGET_ARG=""
+
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            -h|--help|-v|--version)
+                usage
+                ;;
+            -u|--uninstall)
+                UNINSTALL=1
+                ;;
+            -n|--no-sudo)
+                NO_SUDO=nosudo
+                ;;
+            *)
+                if [ -z "$EMACS_ARG" ]; then
+                    EMACS_ARG=$1
+                elif [ -z "$TARGET_ARG" ]; then
+                    TARGET_ARG=$1
+                elif [ "$1" = "nosudo" ]; then
+                    NO_SUDO=nosudo
+                else
+                    echo "[ERROR] Unexpected argument: $1" >&2
+                    exit 2
+                fi
+                ;;
+        esac
+        shift
+    done
+
+    if [ -n "$UNINSTALL" ]; then
+        uninstall "$EMACS_ARG" "$TARGET_ARG" "$NO_SUDO"
+    else
+        install "$EMACS_ARG" "$TARGET_ARG" "$NO_SUDO"
+    fi
     return 0
 }
 
