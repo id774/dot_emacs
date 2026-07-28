@@ -185,7 +185,6 @@ byte_compile_all() {
         cl-lib.el \
         js2.el \
         undo-tree.el \
-        shadow.el \
         viewer.el \
         ruby-block.el \
         jaspace.el \
