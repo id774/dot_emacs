@@ -24,7 +24,8 @@ v26.07 (Release Date: TBD)
 - Add a quiet argument to load-p and use it for the optional site-lisp loader, which reported a failure on every startup.
 - Set temporary-file-directory to /dev/shm only on GNU/Linux, since platforms such as macOS have no such directory.
 - Disable the malformed view-mode "." key entry, which signalled a commandp error instead of running a command.
-- Remove the invalid default major mode override that disrupted startup buffer initialization.
+- Remove the ineffective default major mode override.
+- Restore legacy list accessors required while loading Rinari on Emacs 30.
 
 v26.03 (2026-03-28)
 -------------------

@@ -57,6 +57,16 @@
   (defalias 'assoc*        #'cl-assoc)
   (defalias 'rassoc*       #'cl-rassoc)
   (defalias 'gensym        #'cl-gensym)
+  (unless (fboundp 'first)
+    (defalias 'first #'cl-first))
+  (unless (fboundp 'rest)
+    (defalias 'rest #'cl-rest))
+  (unless (fboundp 'second)
+    (defalias 'second #'cl-second))
+  (unless (fboundp 'third)
+    (defalias 'third #'cl-third))
+  (unless (fboundp 'fourth)
+    (defalias 'fourth #'cl-fourth))
 
   ;; Macros
   (defmacro loop (&rest body) `(cl-loop ,@body))
