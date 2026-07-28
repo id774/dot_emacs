@@ -89,9 +89,9 @@
   (setq navi2ch-mona-enable t)
 
   ;; Use proxy settings from init.el
-  (if global-proxy-use
-      (defvar navi2ch-net-http-proxy
-        (concat global-proxy-server ":" (number-to-string global-proxy-port)))
+  (when global-proxy-use
+    (defvar navi2ch-net-http-proxy
+      (concat global-proxy-server ":" (number-to-string global-proxy-port)))
     (defvar navi2ch-net-http-proxy-userid global-proxy-user)
     (defvar navi2ch-net-http-proxy-password global-proxy-password)))
 

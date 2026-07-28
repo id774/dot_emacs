@@ -21,6 +21,7 @@ v26.07 (Release Date: TBD)
 - Turn off hl-line in toggle-view-mode by calling hl-line-mode instead of assigning to its variable.
 - Disable the malformed view-mode "." key entry, which signalled a commandp error instead of running a command.
 - Require dired in dired-settings.el, which relied on another library to load dired-mode-map first.
+- Apply the navi2ch proxy user and password only when the proxy is enabled.
 - Fix with-suppressed-message so message-log-max is bound at run time instead of macro expansion time.
 - Require cl-compat-bridge instead of the obsolete cl package in multi-term-settings.el.
 - Restore legacy list accessors required while loading Rinari on Emacs 30.
