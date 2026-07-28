@@ -18,6 +18,7 @@ v26.07 (Release Date: TBD)
 - Stop redefining the built-in previous-buffer, and bind M-n to a new forward-buffer command instead.
 - Replace the obsolete find-file-hooks alias with find-file-hook in configs.el.
 - Require cl-compat-bridge instead of the obsolete cl package in multi-term-settings.el.
+- Declare my-load-path with defvar in init.el before assigning it.
 
 v26.03 (2026-03-28)
 -------------------

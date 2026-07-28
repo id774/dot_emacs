@@ -36,6 +36,9 @@
 It is used as a default value of target path to search file or
 subdirectory under load-path.")
 
+(defvar my-load-path nil
+  "*Additional directories prepended to `load-path'.")
+
 (setq my-load-path
       (list "/usr/local/share/emacs/site-lisp"
             (expand-file-name "~/.emacs.d/site-lisp")
