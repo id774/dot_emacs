@@ -29,6 +29,7 @@
 #
 #  Options:
 #      -h, --help        Show this help message and exit.
+#      -v, --version     Show this script header and exit.
 #      -u, --uninstall   Remove all installed dot_emacs components.
 #
 #  Notes:
@@ -48,6 +49,11 @@
 #    requires a usable Emacs binary. Remove the configuration before removing Emacs.
 #
 #  Version History:
+#  v3.5 2026-07-28
+#       Resolve the script directory before changing the working directory,
+#       so relative invocations such as ./install_dotemacs.sh work.
+#       Byte-compile with the elisp load path, so files requiring the
+#       compatibility bridges are compiled.
 #  v3.4 2026-07-21
 #       Allow nosudo installs and uninstalls when sudo is unavailable.
 #  v3.3 2026-07-11
@@ -157,7 +163,10 @@ emacs_private_settings() {
 # Compile an Emacs Lisp file
 emacs_batch_byte_compile() {
     while [ $# -gt 0 ]; do
-        $SUDO "$EMACS" --batch -Q -f batch-byte-compile "$1"
+        $SUDO "$EMACS" --batch -Q \
+            -L "$TARGET/elisp" \
+            -L "$TARGET/elisp/3rd-party" \
+            -f batch-byte-compile "$1"
         shift
     done
 }
@@ -237,7 +246,6 @@ byte_compile_all() {
         global-set-key.el \
         key-chord-define-global.el \
         kill-all-buffers.el \
-        new-file-p.el \
         persistent-scratch.el \
         physical-line.el \
         proxy.el \
@@ -332,8 +340,6 @@ setup_environment() {
     fi
     echo "[INFO] Copy options: $OPTIONS, Owner: $OWNER"
 
-    export SCRIPT_HOME=$(dirname "$(realpath "$0" 2>/dev/null || readlink -f "$0")")
-
     echo "[INFO] Environment setup completed."
 }
 
@@ -407,6 +413,10 @@ uninstall() {
 
 # Main entry point of the script
 main() {
+    # Resolve the script directory before any working directory change
+    SCRIPT_HOME=$(dirname "$(realpath "$0" 2>/dev/null || readlink -f "$0")")
+    export SCRIPT_HOME
+
     case "$1" in
         -h|--help|-v|--version)
             usage
