@@ -29,6 +29,7 @@
 #
 #  Options:
 #      -h, --help        Show this help message and exit.
+#      -v, --version     Show this script header and exit.
 #      -u, --uninstall   Remove all installed dot_emacs components.
 #
 #  Notes:
