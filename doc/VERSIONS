@@ -25,15 +25,14 @@ v26.07 (Release Date: TBD)
 - Apply the navi2ch proxy user and password only when the proxy is enabled.
 - Fix with-suppressed-message so message-log-max is bound at run time instead of macro expansion time.
 - Require cl-compat-bridge instead of the obsolete cl package in multi-term-settings.el.
-- Restore legacy list accessors required while loading Rinari on Emacs 30.
+- Bridge the legacy CL names cl-lib provides only with a cl- prefix, such as first, block, return, getf and subseq, which broke Rinari loading and C-x b on Emacs 30.
+- Add a lexical-let* shim next to the existing lexical-let one, which anything-config.el and other bundled files still use.
+- Give dolist and dotimes an implicit nil block, so legacy return calls keep working without the obsolete cl package.
 - Guard set-face-bold-p calls in faces.el with fboundp to avoid breaking font-lock-mode-hook if the obsolete function is removed.
 - Guard screen.el against an unset TERM environment variable to avoid a string-match error on startup.
 - Drop the redundant .el suffix from the markdown-mode autoload-p call in lang-mode.el for consistency.
 - Remove the bundled shadow.el and its settings, which collided with the built-in shadow.el and broke find-file.
 - Remove the unused new-file-p.el and the bundled foreign-regexp.el, which are no longer loaded.
-- Bridge the legacy CL names cl-lib provides only with a cl- prefix, such as block, return, getf and subseq, which broke C-x b with a void-variable error.
-- Add a lexical-let* shim next to the existing lexical-let one, which anything-config.el and other bundled files still use.
-- Give dolist and dotimes an implicit nil block, so legacy return calls keep working without the obsolete cl package.
 
 v26.03 (2026-03-28)
 -------------------
