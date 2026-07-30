@@ -56,7 +56,9 @@
   (defalias 'pairlis       #'cl-pairlis)
   (defalias 'assoc*        #'cl-assoc)
   (defalias 'rassoc*       #'cl-rassoc)
-  (defalias 'gensym        #'cl-gensym)
+  ;; Emacs 26.1 and newer provide gensym, so leave the built-in in place
+  (unless (fboundp 'gensym)
+    (defalias 'gensym #'cl-gensym))
   (unless (fboundp 'first)
     (defalias 'first #'cl-first))
   (unless (fboundp 'rest)

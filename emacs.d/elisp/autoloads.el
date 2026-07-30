@@ -162,7 +162,7 @@
 
 ;; hlinum
 (cond
- ((>= emacs-major-version '23)
+ ((>= emacs-major-version 23)
   (load-p "hlinum")))
 
 ;; persistent-scratch
@@ -202,10 +202,6 @@
 (load-p "clear-kill-ring")
 
 (load-p "auto-save-buffers-settings")
-
-;; web-mode
-;; http://web-mode.org/
-(load-p "web-mode-settings")
 
 ;; dired-async
 (when (load-p "dired-async")

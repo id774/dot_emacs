@@ -20,7 +20,7 @@
 (load-p "ruby-optional-load")
 
 ;; scala-mode
-(require 'scala-mode-auto)
+(require 'scala-mode-auto nil t)
 
 ;; rd-mode
 (when (autoload-p 'rd-mode "RD-mode" "RDtool" 'interactive)
@@ -60,18 +60,17 @@
 
 ;; jsp
 (cond
- ((< emacs-major-version '25)
+ ((< emacs-major-version 25)
   (load-p "autostart")))
 
 ;; gtags-mode
 (when (autoload-p 'gtags-mode "gtags" "GNU GLOBAL" 'interactive)
-  (setq gtags-mode-hook
-        (function
-         (lambda ()
-           (local-set-key "\M-f" 'gtags-find-tag)    ; override etags
-           (local-set-key "\M-r" 'gtags-find-rtag)   ; reverse tag
-           (local-set-key "\M-s" 'gtags-find-symbol) ; find symbol
-           (local-set-key "\C-t" 'gtags-pop-stack)))) ; pop stack
+  (add-hook 'gtags-mode-hook
+            (lambda ()
+              (local-set-key "\M-f" 'gtags-find-tag)    ; override etags
+              (local-set-key "\M-r" 'gtags-find-rtag)   ; reverse tag
+              (local-set-key "\M-s" 'gtags-find-symbol) ; find symbol
+              (local-set-key "\C-t" 'gtags-pop-stack))) ; pop stack
   ;; Always enable gtags in C-derived modes
   (defun-add-hook 'c-mode-common-hook (gtags-mode 1)))
 
@@ -79,8 +78,8 @@
 (when (autoload-p 'js2-mode "js2" "js2" 'interactive)
   (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
   (add-hook 'js2-mode-hook
-            '(lambda ()
-               (setq js2-basic-offset 4))))
+            (lambda ()
+              (setq js2-basic-offset 4))))
 
 ;; actionscript-mode
 (when (require 'actionscript-mode nil t)
@@ -110,8 +109,8 @@
 (when (autoload-p 'haml-mode "haml-mode" "haml-mode" 'interactive)
   (add-to-list 'auto-mode-alist '("\\.haml\\'" . haml-mode))
   (add-hook 'haml-mode-hook
-            '(lambda ()
-               (setq indent-tabs-mode nil))))
+            (lambda ()
+              (setq indent-tabs-mode nil))))
 
 ;; sass-mode
 (when (autoload-p 'sass-mode "sass-mode" "sass-mode" 'interactive)

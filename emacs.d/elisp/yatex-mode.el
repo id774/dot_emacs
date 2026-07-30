@@ -36,7 +36,7 @@
 
 ;; Disable auto-fill in YaTeX buffers
 (add-hook 'yatex-mode-hook
-          '(lambda ()
-             (setq auto-fill-function nil)))
+          (lambda ()
+            (setq auto-fill-function nil)))
 
 ;;; yatex-mode.el ends here

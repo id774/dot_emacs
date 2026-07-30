@@ -35,9 +35,9 @@
 ;; Save .recentf every 3600 seconds
 (run-with-idle-timer
  3600 t
- '(lambda ()
-    (with-suppressed-message
-      (recentf-save-list))))
+ (lambda ()
+   (with-suppressed-message
+     (recentf-save-list))))
 
 (require 'recentf-ext)
 

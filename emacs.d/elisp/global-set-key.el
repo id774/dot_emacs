@@ -38,9 +38,9 @@
 
 ;; Toggle line numbers with C-x t
 (cond
- ((>= emacs-major-version '23)
+ ((>= emacs-major-version 23)
   (define-key global-map "\C-x\ t" 'linum-mode))
- ((< emacs-major-version '23)
+ ((< emacs-major-version 23)
   (define-key global-map "\C-x\ t" 'wb-line-number-toggle)))
 
 ;; Toggle auto-complete-mode with C-x C-y or C-x y

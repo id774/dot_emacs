@@ -123,6 +123,12 @@ DOT_EMACS:
 DOT_EMACS uses the `<year>.<month>` versioning format starting from version `11.09`.
 Example: `24.12`
 
+A third `<patch>` level is appended when a release only corrects an earlier one
+in the same month. Example: `25.08.1`
+
+Release versions are independent of the versions recorded in the header of each
+executable script, which use a two-level `<major>.<minor>` format.
+
 For detailed version history, please refer to the [VERSIONS](doc/VERSIONS) file.
 
 ---
