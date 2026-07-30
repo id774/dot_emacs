@@ -49,6 +49,10 @@
 #    requires a usable Emacs binary. Remove the configuration before removing Emacs.
 #
 #  Version History:
+#  v4.1 2026-07-30
+#       Build the bundled helm only on Emacs 24 to 26, the range where it is
+#       actually loaded, since its Makefile fails on newer Emacs.
+#       Drop the unreachable adaptive history cleanup from the uninstaller.
 #  v4.0 2026-07-28
 #       Resolve the script directory before changing the working directory,
 #       so relative invocations such as ./install_dotemacs.sh work.
@@ -172,11 +176,37 @@ emacs_batch_byte_compile() {
     done
 }
 
+# Report the major version of the Emacs binary in use
+emacs_major_version() {
+    "$EMACS" --batch -Q --eval '(princ emacs-major-version)' 2>/dev/null
+}
+
+# Build the bundled helm, which anything-helm.el loads on Emacs 24 to 26 only.
+# Its Makefile calls update-directory-autoloads, removed in Emacs 29, so skip
+# the build outside that range instead of failing on every install.
+build_helm() {
+    EMACS_MAJOR=$(emacs_major_version)
+
+    case "$EMACS_MAJOR" in
+        ''|*[!0-9]*)
+            echo "[INFO] Skipping the helm build, since the Emacs major version is unknown."
+            return 0
+            ;;
+    esac
+
+    if [ "$EMACS_MAJOR" -lt 24 ] || [ "$EMACS_MAJOR" -gt 26 ]; then
+        echo "[INFO] Skipping the helm build, which supports Emacs 24 to 26 only."
+        return 0
+    fi
+
+    cd "$TARGET/elisp/3rd-party/helm" && $SUDO make
+}
+
 # Byte-compile all necessary Emacs Lisp files
 byte_compile_all() {
     echo "[INFO] Byte-compiling Emacs Lisp files..."
 
-    cd "$TARGET/elisp/3rd-party/helm" && $SUDO make
+    build_helm
 
     cd "$TARGET/elisp/3rd-party/jade-mode" && emacs_batch_byte_compile \
         sws-mode.el \
@@ -391,12 +421,10 @@ uninstall() {
     [ -f "$HOME/.mew.el" ] && rm -f "$HOME/.mew.el"
     [ -L "$HOME/.emacs.d/elisp" ] && rm -f "$HOME/.emacs.d/elisp"
 
+    # Removing the anything directory also removes the adaptive history file
     for dir in site-lisp anything backups tmp tramp-auto-save auto-save-list; do
         [ -d "$HOME/.emacs.d/$dir" ] && rm -rf "$HOME/.emacs.d/$dir"
     done
-
-    [ -f "$HOME/.emacs.d/anything/anything-c-adaptive-history" ] && \
-        rm -f "$HOME/.emacs.d/anything/anything-c-adaptive-history"
 
     [ -d "$HOME/.emacs.d" ] && rmdir "$HOME/.emacs.d" 2>/dev/null
 
