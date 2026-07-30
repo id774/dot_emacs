@@ -49,11 +49,11 @@
 #    requires a usable Emacs binary. Remove the configuration before removing Emacs.
 #
 #  Version History:
-#  v4.1 2026-07-30
+#  v4.0 2026-07-30
 #       Build the bundled helm only on Emacs 24 to 26, the range where it is
 #       actually loaded, since its Makefile fails on newer Emacs.
 #       Drop the unreachable adaptive history cleanup from the uninstaller.
-#  v4.0 2026-07-28
+#  v3.5 2026-07-28
 #       Resolve the script directory before changing the working directory,
 #       so relative invocations such as ./install_dotemacs.sh work.
 #       Byte-compile with the elisp load path, so files requiring the
