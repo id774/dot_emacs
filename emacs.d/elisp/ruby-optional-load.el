@@ -20,7 +20,7 @@
   ;; ruby-electric: automatic insertion of matching delimiters
   (when (require 'ruby-electric)
     (add-hook 'ruby-mode-hook
-              '(lambda () (ruby-electric-mode t))))
+              (lambda () (ruby-electric-mode t))))
 
   ;; rubydb2x: debugger autoload
   (autoload 'rubydb "rubydb2x"
@@ -48,7 +48,7 @@ and source-file directory for your debugger."
     "Set local key defs for inf-ruby in ruby-mode")
 
   (add-hook 'ruby-mode-hook
-            '(lambda () (inf-ruby-keys)))
+            (lambda () (inf-ruby-keys)))
 
   ;; GNU/Linux specific setup
   (cond
@@ -59,7 +59,7 @@ and source-file directory for your debugger."
   (cond
    ((eq system-type 'darwin)
     (cond
-     ((< emacs-major-version '23)
+     ((< emacs-major-version 23)
       (ruby-optional-load))))))
 
 ;;; ruby-optional-load.el ends here

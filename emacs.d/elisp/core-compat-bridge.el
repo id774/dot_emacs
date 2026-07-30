@@ -30,7 +30,8 @@
     `(eval-after-load ,file
        (lambda () ,@body))))
 
-;; Provide toggle-read-only on old Emacs versions.
+;; Emacs 29 removed toggle-read-only, so restore it on top of read-only-mode.
+;; Older Emacs versions still define it and keep their own implementation.
 (unless (fboundp 'toggle-read-only)
   (defun toggle-read-only (&optional arg)
     "Toggle read-only status of the current buffer.

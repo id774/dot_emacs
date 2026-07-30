@@ -17,7 +17,7 @@
 ;;; Code:
 
 (cond
- ((< emacs-major-version '25)
+ ((< emacs-major-version 25)
 
   ;; sequential-command
   ;; Provide sequential behavior for C-a / C-e.

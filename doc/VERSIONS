@@ -36,7 +36,14 @@ v26.07 (Release Date: TBD)
 - Drop the redundant .el suffix from the markdown-mode autoload-p call in lang-mode.el for consistency.
 - Remove the bundled shadow.el and its settings, which collided with the built-in shadow.el and broke find-file.
 - Remove the unused new-file-p.el and the bundled foreign-regexp.el, which are no longer loaded.
-- Add -n and --no-sudo aliases for the installer and uninstaller.
+- Remove web-mode-settings.el, whose indentation settings used web-mode 7 variable names that web-mode 8 ignores.
+- Require scala-mode-auto optionally in lang-mode.el, since a missing scala-mode aborted the rest of the startup.
+- Keep the built-in gensym in cl-compat-bridge.el instead of aliasing it to cl-gensym.
+- Stop calling viewer-stay-in-setup twice in view-mode-key.el, and provide the feature under the file name.
+- Add to python-mode-hook and gtags-mode-hook instead of replacing them, so other settings survive.
+- Replace quoted lambdas in hooks and timers with plain ones, which lexical binding turns into closures.
+- Compare emacs-major-version against plain numbers instead of quoted ones.
+- Correct the toggle-read-only comment in core-compat-bridge.el, which described the shim as being for old Emacs.
 
 v26.03 (2026-03-28)
 -------------------

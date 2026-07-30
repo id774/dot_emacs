@@ -121,19 +121,19 @@
       (setq font-lock-maximum-decoration t)
       ;; Customize default colors
       (add-hook 'font-lock-mode-hook
-                '(lambda ()
-                   (set-face-foreground 'font-lock-builtin-face "spring green")
-                   (set-face-foreground 'font-lock-comment-face "slate gray")
-                   (set-face-foreground 'font-lock-string-face  "spring green")
-                   (set-face-foreground 'font-lock-keyword-face "khaki")
-                   (set-face-foreground 'font-lock-constant-face "violet")
-                   (set-face-foreground 'font-lock-function-name-face "hot pink")
-                   (set-face-foreground 'font-lock-variable-name-face "hot pink")
-                   (set-face-foreground 'font-lock-type-face "cyan")
-                   (set-face-foreground 'font-lock-warning-face "magenta")
-                   ;; Guard against removal of this obsolete function in future Emacs
-                   (when (fboundp 'set-face-bold-p)
-                     (set-face-bold-p 'font-lock-function-name-face t)
-                     (set-face-bold-p 'font-lock-warning-face nil))))))
+                (lambda ()
+                  (set-face-foreground 'font-lock-builtin-face "spring green")
+                  (set-face-foreground 'font-lock-comment-face "slate gray")
+                  (set-face-foreground 'font-lock-string-face  "spring green")
+                  (set-face-foreground 'font-lock-keyword-face "khaki")
+                  (set-face-foreground 'font-lock-constant-face "violet")
+                  (set-face-foreground 'font-lock-function-name-face "hot pink")
+                  (set-face-foreground 'font-lock-variable-name-face "hot pink")
+                  (set-face-foreground 'font-lock-type-face "cyan")
+                  (set-face-foreground 'font-lock-warning-face "magenta")
+                  ;; Guard against removal of this obsolete function in future Emacs
+                  (when (fboundp 'set-face-bold-p)
+                    (set-face-bold-p 'font-lock-function-name-face t)
+                    (set-face-bold-p 'font-lock-warning-face nil))))))
 
 ;;; faces.el ends here

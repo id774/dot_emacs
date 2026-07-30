@@ -25,7 +25,7 @@
 
 (require 'viewer)
 
-;; Keep view-mode active when switching buffers
+;; Keep view-mode active when switching buffers, and stay in it for read-only files
 (viewer-stay-in-setup)
 
 ;; Override RET behavior in view-mode for specific major modes
@@ -94,9 +94,6 @@
       (view-file file)
     ad-do-it))
 
-;; Prevent leaving view-mode for read-only files
-(viewer-stay-in-setup)
-
-(provide 'view-support)
+(provide 'view-mode-key)
 
 ;;; view-mode-key.el ends here

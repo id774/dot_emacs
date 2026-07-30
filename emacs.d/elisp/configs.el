@@ -229,11 +229,11 @@
                    (view-mode)))
             ;; line numbers (toggle with C-x t)
             (cond
-             ((>= emacs-major-version '23)
+             ((>= emacs-major-version 23)
               (linum-mode)
               (custom-set-variables
                '(global-linum-mode t)))
-             ((< emacs-major-version '23)
+             ((< emacs-major-version 23)
               (require 'wb-line-number)
               (custom-set-faces
                '(wb-line-number-face ((t (:foreground "LightGrey"))))

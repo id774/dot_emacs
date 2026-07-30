@@ -63,24 +63,24 @@
   (term-send-raw-string "\C-n"))
 
 (add-hook 'term-mode-hook
-          '(lambda ()
-             (let* ((key-and-func
-                     `(("\C-p"           term-send-previous-line)
-                       ("\C-n"           term-send-next-line)
-                       ("\C-b"           term-send-backward-char)
-                       ("\C-f"           term-send-forward-char)
-                       (,(kbd "C-h")     term-send-backspace)
-                       (,(kbd "C-y")     term-paste)
-                       (,(kbd "ESC ESC") term-send-raw)
-                       (,(kbd "C-S-p")   multi-term-prev)
-                       (,(kbd "C-S-n")   multi-term-next)
-                       (,(kbd "<up>")    windmove-up)
-                       (,(kbd "<down>")  windmove-down)
-                       (,(kbd "<left>")  windmove-left)
-                       (,(kbd "<right>") windmove-right)
-                       ;; ("\C-r" helm-shell-history)
-                       )))
-               (loop for (keybind function) in key-and-func
-                     do (define-key term-raw-map keybind function)))))
+          (lambda ()
+            (let* ((key-and-func
+                    `(("\C-p"           term-send-previous-line)
+                      ("\C-n"           term-send-next-line)
+                      ("\C-b"           term-send-backward-char)
+                      ("\C-f"           term-send-forward-char)
+                      (,(kbd "C-h")     term-send-backspace)
+                      (,(kbd "C-y")     term-paste)
+                      (,(kbd "ESC ESC") term-send-raw)
+                      (,(kbd "C-S-p")   multi-term-prev)
+                      (,(kbd "C-S-n")   multi-term-next)
+                      (,(kbd "<up>")    windmove-up)
+                      (,(kbd "<down>")  windmove-down)
+                      (,(kbd "<left>")  windmove-left)
+                      (,(kbd "<right>") windmove-right)
+                      ;; ("\C-r" helm-shell-history)
+                      )))
+              (loop for (keybind function) in key-and-func
+                    do (define-key term-raw-map keybind function)))))
 
 ;;; multi-term-settings.el ends here
