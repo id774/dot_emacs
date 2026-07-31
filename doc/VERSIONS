@@ -1,8 +1,8 @@
 dot_emacs Repository Version History
 ====================================
 
-v26.07 (Release Date: TBD)
---------------------------
+v26.07 (2026-07-31)
+-------------------
 - Resolve the installer script directory before changing the working directory, so relative invocations work.
 - Byte-compile with the elisp load path, so bundled files requiring the compatibility bridges are compiled.
 - Allow nosudo installs and uninstalls to run when the sudo command is unavailable.
