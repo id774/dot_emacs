@@ -1,6 +1,11 @@
 dot_emacs Repository Version History
 ====================================
 
+v26.08 (Release Date: TBD)
+--------------------------
+- Add .gitattributes, marking the Markdown documents for diff and language, and the vendored third-party README files as vendored.
+- Add the document file naming and attribute recommendations to doc/GUIDELINES.
+
 v26.07 (2026-07-31)
 -------------------
 - Resolve the installer script directory before changing the working directory, so relative invocations work.
