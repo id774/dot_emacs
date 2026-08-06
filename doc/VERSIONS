@@ -3,78 +3,123 @@ dot_emacs Repository Version History
 
 v26.08 (Release Date: TBD)
 --------------------------
-- Add .gitattributes, marking the Markdown documents for diff and the vendored third-party README files as vendored.
-- Add the document file naming and attribute recommendations to doc/GUIDELINES.
+- Add .gitattributes, marking the Markdown documents for diff and the
+  vendored third-party README files as vendored.
+- Add the document file naming and attribute recommendations to
+  doc/GUIDELINES.
+- Wrap the lines of this file at 75 columns.
 
 v26.07 (2026-07-31)
 -------------------
-- Resolve the installer script directory before changing the working directory, so relative invocations work.
-- Byte-compile with the elisp load path, so bundled files requiring the compatibility bridges are compiled.
-- Allow nosudo installs and uninstalls to run when the sudo command is unavailable.
+- Resolve the installer script directory before changing the working
+  directory, so relative invocations work.
+- Byte-compile with the elisp load path, so bundled files requiring the
+  compatibility bridges are compiled.
+- Allow nosudo installs and uninstalls to run when the sudo command is
+  unavailable.
 - Add -n and --no-sudo aliases for the installer and uninstaller.
-- Replace awk {n,} interval expression in usage() with a portable equivalent for mawk compatibility.
-- Build the bundled helm only on Emacs 24 through 26, where it is actually loaded, since its Makefile fails on newer Emacs.
+- Replace awk {n,} interval expression in usage() with a portable
+  equivalent for mawk compatibility.
+- Build the bundled helm only on Emacs 24 through 26, where it is actually
+  loaded, since its Makefile fails on newer Emacs.
 - Drop the unreachable adaptive history cleanup from the uninstaller.
 - Declare my-load-path with defvar in init.el before assigning it.
 - Fix the dired-async loader so dired-async-mode is enabled at startup.
 - Simplify the redundant timidity autoload wrapper in autoloads.el.
-- Fix the recentf-ext-settings.el load typo and clean up two obsolete autoload entries.
-- Remove the unused auto-save-buffers block from autoloads.el, which could double up with auto-save-buffers-enhanced.
-- Remove the obsolete default-major-mode setting, which no longer affects the major mode of new buffers.
-- Add a quiet argument to load-p and use it for the optional site-lisp loader, which reported a failure on every startup.
-- Stay quiet about the italk, mic-paren, and develock loaders, which are not bundled and failed on every startup.
-- Disable the blinking cursor explicitly, since a nil argument now enables the mode instead of toggling it.
-- Replace the obsolete find-file-hooks alias with find-file-hook in configs.el.
-- Set temporary-file-directory to /dev/shm only on GNU/Linux, since platforms such as macOS have no such directory.
-- Stop redefining the built-in previous-buffer, and bind M-n to a new forward-buffer command instead.
-- Turn off hl-line in toggle-view-mode by calling hl-line-mode instead of assigning to its variable.
-- Disable the malformed view-mode "." key entry, which signalled a commandp error instead of running a command.
-- Require dired in dired-settings.el, which relied on another library to load dired-mode-map first.
+- Fix the recentf-ext-settings.el load typo and clean up two obsolete
+  autoload entries.
+- Remove the unused auto-save-buffers block from autoloads.el, which could
+  double up with auto-save-buffers-enhanced.
+- Remove the obsolete default-major-mode setting, which no longer affects
+  the major mode of new buffers.
+- Add a quiet argument to load-p and use it for the optional site-lisp
+  loader, which reported a failure on every startup.
+- Stay quiet about the italk, mic-paren, and develock loaders, which are
+  not bundled and failed on every startup.
+- Disable the blinking cursor explicitly, since a nil argument now enables
+  the mode instead of toggling it.
+- Replace the obsolete find-file-hooks alias with find-file-hook in
+  configs.el.
+- Set temporary-file-directory to /dev/shm only on GNU/Linux, since
+  platforms such as macOS have no such directory.
+- Stop redefining the built-in previous-buffer, and bind M-n to a new
+  forward-buffer command instead.
+- Turn off hl-line in toggle-view-mode by calling hl-line-mode instead of
+  assigning to its variable.
+- Disable the malformed view-mode "." key entry, which signalled a commandp
+  error instead of running a command.
+- Require dired in dired-settings.el, which relied on another library to
+  load dired-mode-map first.
 - Apply the navi2ch proxy user and password only when the proxy is enabled.
-- Fix with-suppressed-message so message-log-max is bound at run time instead of macro expansion time.
-- Require cl-compat-bridge instead of the obsolete cl package in multi-term-settings.el.
-- Bridge the legacy CL names cl-lib provides only with a cl- prefix, such as first, block, return, getf and subseq, which broke Rinari loading and C-x b on Emacs 30.
-- Add a lexical-let* shim next to the existing lexical-let one, which anything-config.el and other bundled files still use.
-- Give dolist and dotimes an implicit nil block, so legacy return calls keep working without the obsolete cl package.
-- Guard set-face-bold-p calls in faces.el with fboundp to avoid breaking font-lock-mode-hook if the obsolete function is removed.
-- Guard screen.el against an unset TERM environment variable to avoid a string-match error on startup.
-- Drop the redundant .el suffix from the markdown-mode autoload-p call in lang-mode.el for consistency.
-- Remove the bundled shadow.el and its settings, which collided with the built-in shadow.el and broke find-file.
-- Remove the unused new-file-p.el and the bundled foreign-regexp.el, which are no longer loaded.
-- Remove web-mode-settings.el, whose indentation settings used web-mode 7 variable names that web-mode 8 ignores.
-- Require scala-mode-auto optionally in lang-mode.el, since a missing scala-mode aborted the rest of the startup.
-- Keep the built-in gensym in cl-compat-bridge.el instead of aliasing it to cl-gensym.
-- Stop calling viewer-stay-in-setup twice in view-mode-key.el, and provide the feature under the file name.
-- Add to python-mode-hook and gtags-mode-hook instead of replacing them, so other settings survive.
-- Replace quoted lambdas in hooks and timers with plain ones, which lexical binding turns into closures.
+- Fix with-suppressed-message so message-log-max is bound at run time
+  instead of macro expansion time.
+- Require cl-compat-bridge instead of the obsolete cl package in
+  multi-term-settings.el.
+- Bridge the legacy CL names cl-lib provides only with a cl- prefix, such
+  as first, block, return, getf and subseq, which broke Rinari loading and
+  C-x b on Emacs 30.
+- Add a lexical-let* shim next to the existing lexical-let one, which
+  anything-config.el and other bundled files still use.
+- Give dolist and dotimes an implicit nil block, so legacy return calls
+  keep working without the obsolete cl package.
+- Guard set-face-bold-p calls in faces.el with fboundp to avoid breaking
+  font-lock-mode-hook if the obsolete function is removed.
+- Guard screen.el against an unset TERM environment variable to avoid a
+  string-match error on startup.
+- Drop the redundant .el suffix from the markdown-mode autoload-p call in
+  lang-mode.el for consistency.
+- Remove the bundled shadow.el and its settings, which collided with the
+  built-in shadow.el and broke find-file.
+- Remove the unused new-file-p.el and the bundled foreign-regexp.el, which
+  are no longer loaded.
+- Remove web-mode-settings.el, whose indentation settings used web-mode 7
+  variable names that web-mode 8 ignores.
+- Require scala-mode-auto optionally in lang-mode.el, since a missing
+  scala-mode aborted the rest of the startup.
+- Keep the built-in gensym in cl-compat-bridge.el instead of aliasing it to
+  cl-gensym.
+- Stop calling viewer-stay-in-setup twice in view-mode-key.el, and provide
+  the feature under the file name.
+- Add to python-mode-hook and gtags-mode-hook instead of replacing them, so
+  other settings survive.
+- Replace quoted lambdas in hooks and timers with plain ones, which lexical
+  binding turns into closures.
 - Compare emacs-major-version against plain numbers instead of quoted ones.
-- Correct the toggle-read-only comment in core-compat-bridge.el, which described the shim as being for old Emacs.
+- Correct the toggle-read-only comment in core-compat-bridge.el, which
+  described the shim as being for old Emacs.
 
 v26.03 (2026-03-28)
 -------------------
-- Add IPAexGothic as explicit Japanese font for GNU/Linux and adjust default frame size.
+- Add IPAexGothic as explicit Japanese font for GNU/Linux and adjust
+  default frame size.
 - Switch default font from Bitstream Vera Sans Mono to DejaVu Sans Mono.
-- Configure auto-save interval for auto-save-buffers-enhanced to stabilize background saving behavior.
+- Configure auto-save interval for auto-save-buffers-enhanced to stabilize
+  background saving behavior.
 - Simplify GUI platform settings and remove hard-coded Java paths.
 - Adopt lexical-binding headers across all Emacs Lisp files.
 - Normalize comments and indentation across Emacs Lisp configuration files.
-- Expand Emacs Lisp design guidelines with long-term compatibility and maintenance policy.
+- Expand Emacs Lisp design guidelines with long-term compatibility and
+  maintenance policy.
 
 v26.02 (2026-02-27)
 -------------------
-- Adjust Emacs transparency to 90/75 for better readability with minimal background interference.
+- Adjust Emacs transparency to 90/75 for better readability with minimal
+  background interference.
 
 v25.11 (2025-11-28)
 -------------------
 - Document long-term Emacs Lisp compatibility policy in doc/GUIDELINES.
-- Adjust core-compat-bridge.el to use a correct with-eval-after-load fallback on old Emacs.
+- Adjust core-compat-bridge.el to use a correct with-eval-after-load
+  fallback on old Emacs.
 - Align cl-compat-bridge.el with 23.4..30.1 cl/cl-lib usage policy.
-- Simplify ess-compat-bridge.el to alias old/new ESS variable names without overriding values.
+- Simplify ess-compat-bridge.el to alias old/new ESS variable names without
+  overriding values.
 
 v25.10 (2025-10-24)
 -------------------
 - Normalize chmod numeric modes to four digit octal across shell scripts.
-- Standardize all shell scripts by removing trailing exit status lines (exit $?) for POSIX-safe reuse.
+- Standardize all shell scripts by removing trailing exit status lines
+  (exit $?) for POSIX-safe reuse.
 - Add C-c C-k key binding for clear-kill-ring in global-set-key.el.
 
 v25.08.1 (2025-08-29)
@@ -83,7 +128,8 @@ v25.08.1 (2025-08-29)
 
 v25.08 (2025-08-20)
 -------------------
-- Official release supporting a wide range from Emacs 23.4 on Debian 7 to Emacs 30.1 on Debian 13.
+- Official release supporting a wide range from Emacs 23.4 on Debian 7 to
+  Emacs 30.1 on Debian 13.
 
 v11.09 (2011-09-20)
 -------------------
@@ -91,4 +137,5 @@ v11.09 (2011-09-20)
 
 First Commit (2010-08-08)
 -------------------------
-- Commemorating the first commit and push, marking the inception of the project.
+- Commemorating the first commit and push, marking the inception of the
+  project.
