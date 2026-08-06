@@ -7,7 +7,6 @@ v26.08 (Release Date: TBD)
   vendored third-party README files as vendored.
 - Add the document file naming and attribute recommendations to
   doc/GUIDELINES.
-- Wrap the lines of this file at 75 columns.
 
 v26.07 (2026-07-31)
 -------------------
