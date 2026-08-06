@@ -235,6 +235,53 @@ Emacs 31, 32, and beyond.
 
 ------------------------------------------------------------------------
 
+## 13. Document File Naming
+
+Documentation outlives the code it describes, and a path in this
+repository is read as a public URL. File names are therefore chosen for
+stability rather than for uniformity.
+
+Recommendations:
+
+-   A newly created Markdown document should take a `.md` extension.
+-   The licence files keep the extensionless names by which they are
+    recognised: `COPYING`, `COPYING.LESSER`, and `LICENSE`.
+-   A document that is not Markdown takes no extension, or `.txt`.
+-   Avoid renaming an existing document merely to add or change an
+    extension. `doc/GUIDELINES` is named in the header of many `.el` files
+    and linked from outside this repository, and the references that live
+    outside can be neither found nor repaired.
+-   `doc/GUIDELINES` and `doc/VERSIONS` therefore keep their names. A
+    repository started later may name the same kind of document
+    differently, and that is acceptable: the recommendation applies at
+    creation, and names that agree across repositories matter less than a
+    published path staying where it is.
+-   Rename only when the current name causes an actual failure, and then
+    only after examining the references to it. Being shown as plain text
+    on GitHub is not such a failure: `doc/GUIDELINES` is Markdown that
+    GitHub does not render, and that is accepted.
+
+`.gitattributes` records what the documents are, so that Git and GitHub
+can treat them as Markdown without any file being renamed:
+
+-   `*.md` and the extensionless Markdown documents take `diff=markdown`,
+    so that a diff hunk header names the section it falls in.
+-   `doc/GUIDELINES` and `doc/LICENSE` also take
+    `linguist-language=Markdown`, which gives them Markdown highlighting.
+    No attribute makes GitHub render them.
+-   A document created with `.md` is covered by the `*.md` line and needs
+    no entry of its own.
+-   `doc/VERSIONS` is left out. It is underlined plain text, and
+    `diff=markdown` empties the hunk headers that otherwise name the
+    version.
+-   `doc/COPYING` and `doc/COPYING.LESSER` are left out as the licence
+    texts.
+-   The vendored documents under `emacs.d/elisp/3rd-party/` are marked
+    `linguist-vendored`, so that GitHub does not present them as documents
+    of this repository.
+
+------------------------------------------------------------------------
+
 ## Summary
 
 This policy favors:

@@ -1,0 +1,14 @@
+# Markdown documents, including the fixed names that carry no extension.
+# The extensionless documents are listed one path at a time.
+*.md           diff=markdown
+doc/GUIDELINES diff=markdown linguist-language=Markdown
+doc/LICENSE    diff=markdown linguist-language=Markdown
+
+# doc/VERSIONS is underlined plain text, not Markdown. With diff=markdown its
+# hunk headers lose the version line they now carry. doc/COPYING and
+# doc/COPYING.LESSER are the licence texts.
+
+# The vendored documents are not this repository's own. They keep diff=markdown
+# from the line above, and are marked as vendored so that GitHub does not
+# present them as documents of this repository.
+emacs.d/elisp/3rd-party/**/README.md linguist-vendored
