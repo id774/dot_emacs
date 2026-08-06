@@ -256,21 +256,23 @@ Recommendations:
     differently, and that is acceptable: the recommendation applies at
     creation, and names that agree across repositories matter less than a
     published path staying where it is.
--   Rename only when the current name causes an actual failure, and then
-    only after examining the references to it. Being shown as plain text
-    on GitHub is not such a failure: `doc/GUIDELINES` is Markdown that
-    GitHub does not render, and that is accepted.
+-   Rename only when the current name causes a failure that outweighs the
+    links it breaks, and then only after examining the references to it.
+    GitHub shows `doc/GUIDELINES` as plain text instead of rendering it,
+    and that cost is accepted here, because the `.el` headers and the
+    references outside this repository outweigh it.
 
-`.gitattributes` records what the documents are, so that Git and GitHub
-can treat them as Markdown without any file being renamed:
+`.gitattributes` records what the documents are:
 
 -   `*.md` and the extensionless Markdown documents take `diff=markdown`,
     so that a diff hunk header names the section it falls in.
--   `doc/GUIDELINES` and `doc/LICENSE` also take
-    `linguist-language=Markdown`, which gives them Markdown highlighting.
-    No attribute makes GitHub render them.
 -   A document created with `.md` is covered by the `*.md` line and needs
     no entry of its own.
+-   No file is given `linguist-language`. Nothing in `.gitattributes`
+    makes GitHub render a document that carries no extension, and setting
+    that attribute changed how `doc/GUIDELINES` and `doc/LICENSE` are
+    displayed on the web, for the worse. How a document reads on GitHub is
+    decided by its name, not by an attribute.
 -   `doc/VERSIONS` is left out. It is underlined plain text, and
     `diff=markdown` empties the hunk headers that otherwise name the
     version.
