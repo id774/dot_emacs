@@ -7,6 +7,7 @@ v26.08 (Release Date: TBD)
   vendored third-party README files as vendored.
 - Add the document file naming and attribute recommendations to
   doc/GUIDELINES.
+- Add the terminating period to the Policy header line of dot_emacs and the doc/GUIDELINES example.
 - Wrap the lines of this file at 75 columns.
 - Add the shared version history description guidelines to the end of this file.
 
