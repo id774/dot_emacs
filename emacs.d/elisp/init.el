@@ -65,6 +65,19 @@ subdirectory under load-path.")
 (setq user-full-name "id774")
 (setq user-mail-address "idnanashi@gmail.com")
 
+;; native compilation warnings
+;; Emacs 28 and newer compile bundled Emacs Lisp in the background, and the
+;; historical third-party files under elisp/3rd-party define some of their
+;; functions conditionally, so the compiler reports them as unknown.  Those
+;; reports are harmless, but they raise a window on every startup.  Keep the
+;; entries in the *Warnings* buffer for review and only stop the pop-up.
+;; This has to run before autoloads.el pulls the files in.
+(cond
+ ((boundp 'native-comp-async-report-warnings-errors)
+  (setq native-comp-async-report-warnings-errors 'silent))
+ ((boundp 'comp-async-report-warnings-errors)
+  (setq comp-async-report-warnings-errors 'silent)))
+
 ;; main entry point
 (load "autoloads")
 

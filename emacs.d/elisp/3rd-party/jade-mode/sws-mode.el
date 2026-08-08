@@ -83,7 +83,10 @@
   "Moves left is dir is null, otherwise right. prog is '+ or '-"
   (save-excursion
     (let (first-indent indent-diff
-	  (num-lines-indented (count-lines-region begin end))
+	  ;; count-lines-region was an interactive command that only printed
+	  ;; the count, and Emacs 29 removed it.  count-lines returns the
+	  ;; number this code actually wants and exists in every version.
+	  (num-lines-indented (count-lines begin end))
 	  )
       (goto-char begin)
       (setq first-indent (current-indentation))

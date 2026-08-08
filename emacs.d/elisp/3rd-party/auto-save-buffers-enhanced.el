@@ -152,7 +152,9 @@ as other normal files.")
 ;;;; -------------------------------------------------------------------------
 
 (eval-when-compile
-(require 'cl-compat-bridge))
+(require 'cl-compat-bridge)
+;; toggle-read-only below is restored by core-compat-bridge on Emacs 29+.
+(require 'core-compat-bridge nil t))
 
 (defvar auto-save-buffers-enhanced-activity-flag t
   "*If non-nil, `auto-save-buffers-enhanced' saves buffers.")
