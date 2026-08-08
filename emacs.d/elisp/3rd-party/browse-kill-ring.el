@@ -251,6 +251,9 @@
     (set-text-properties 0 (length str) nil str)
     str))
 
+;; Defined by the cond below.
+(declare-function browse-kill-ring-propertize "browse-kill-ring")
+
 (cond ((fboundp 'propertize)
        (defalias 'browse-kill-ring-propertize 'propertize))
       ;; Maybe save some memory :)
@@ -478,6 +481,9 @@ call `browse-kill-ring' again.")
          (pt (cdr data)))
     (browse-kill-ring-do-insert buf pt))
   (browse-kill-ring-quit))
+
+;; Defined by the if below.
+(declare-function browse-kill-ring-fit-window "browse-kill-ring")
 
 (if (fboundp 'fit-window-to-buffer)
     (defalias 'browse-kill-ring-fit-window 'fit-window-to-buffer)
