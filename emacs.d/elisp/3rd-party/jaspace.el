@@ -96,7 +96,7 @@
   :group 'convenience)
 
 (defcustom jaspace-alternate-jaspace-string
-  (if (<= 21 emacs-major-version) " ")
+  (if (<= 21 emacs-major-version) "")
   "Alternate string to indicate a Japanese whitespace."
   :type '(choice (const nil) string)
   :group 'jaspace)
@@ -257,7 +257,7 @@ Setting this variable directly does not take effect; use the command
 
 (defun jaspace-font-lock-keywords ()
   "Return a list of font lock keywords used by jaspace-mode."
-  (let ((keywords '(("@" (0 'jaspace-highlight-jaspace-face prepend)))))
+  (let ((keywords '(("@" (0 'jaspace-highlight-jaspace-face prepend)))))
 	(if (and jaspace-alternate-eol-string
 			 (string-lessp "" jaspace-alternate-eol-string))
 		(setq keywords (cons '("\n" (0 'jaspace-highlight-eol-face prepend))
@@ -319,7 +319,7 @@ Setting this variable directly does not take effect; use the command
 									 (make-display-table)))
 	  ;; make Japanese whitespace visible.
 	  (if jaspace-alternate-jaspace-string
-		  (aset buffer-display-table ?@
+		  (aset buffer-display-table ?@
 				(vconcat jaspace-alternate-jaspace-string)))
 	  ;; set end-of-line marker. this may cause a problem regarding
 	  ;; vertical motion on Emacs 21.3.50.1 (as of Jan 2005) if
