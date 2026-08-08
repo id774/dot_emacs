@@ -17,7 +17,8 @@
 
 -   **Prefer compatibility layers over rewrites:**\
     When upstream APIs change, introduce compatibility bridges rather
-    than rewriting historical configuration code.
+    than rewriting historical configuration or bundled third-party
+    code.
 
 -   **Avoid internal APIs:**\
     Never rely on `--private` functions or undocumented variables.
@@ -168,6 +169,13 @@ Long-lived configurations must track upstream evolution.
 
 Do **not remove working legacy code unless it breaks compatibility.**
 
+A warning is a report, not a defect on its own. Rebuilding or upgrading
+Emacs changes the native compilation cache directory, so every bundled
+file is compiled again and the warnings already sitting in the cached
+output are all reported at once. That is the previous state becoming
+visible again, not a regression, and is not by itself a reason to change
+anything.
+
 ------------------------------------------------------------------------
 
 ## 9. Dependency Policy
@@ -203,6 +211,64 @@ Compatibility layers allow:
 
 This strategy avoids large-scale rewrites and preserves long-term
 maintainability.
+
+The bundled files under `emacs.d/elisp/3rd-party/` are historical
+third-party code, kept as received so that the upstream text stays
+recognisable and a later copy can replace them. A bridge exists so that
+they keep working untouched. The bridge is therefore the default place
+for a fix, and editing a bundled file is the exception that has to be
+argued for.
+
+What a bridge can reach:
+
+-   A bridge is loaded into the same session as the code it serves, so
+    it can repair whatever lives in state that the session keeps:
+    function cells and aliases, symbol properties such as the
+    obsolescence mark a deprecated alias carries, variables, features,
+    hooks, and `load-path`.
+-   A bridge cannot reach state that is created and discarded inside one
+    compilation. `byte-compile-function-environment` is bound afresh for
+    every compilation and `byte-compile-unresolved-functions` is reset
+    for every file, so `declare-function` counts only inside the file
+    that makes the call. A declaration for a conditionally defined or
+    optional function has to sit in that file.
+-   A bridge cannot reach a defect in the text of the bundled file
+    itself. A call written wrongly, such as a `case` clause whose key is
+    quoted, is in the file, and only the file can carry the correction.
+-   Decide by that reach, not by the size of the diff. A one line change
+    to a bundled file is still a change to a bundled file, and a repair
+    in the bridge that removes a hundred reports is still one change to
+    our own code.
+
+What a bridge must not do:
+
+-   Do not silence a class of warnings. Suppressing a category, such as
+    unresolved function calls, hides the same report everywhere,
+    including in our own files, and contradicts section 8. Repair the
+    specific names the bridge is responsible for.
+-   Do not widen a repair past what the bridge supplies. Clearing an
+    obsolescence mark applies to the names the bridge itself bridges,
+    and an unrelated deprecation keeps warning.
+-   Do not change what a bundled file means. A bridge supplies the names
+    the file expects; it does not redefine the file's own macros to give
+    its calls a different reading.
+-   Do not leave another package's definitions broken. Repair the least
+    that achieves the result, so whatever that package alone provides
+    keeps working.
+-   Guard each repair by the condition that makes it necessary, so it is
+    a no-op elsewhere. A bridge runs on every supported Emacs, and a
+    repair aimed at a modern deprecation must do nothing on the versions
+    that never had it.
+
+When a bundled file must be edited:
+
+-   Establish first that the reach above rules a bridge out, and say so
+    in the request, so that the exception is visible.
+-   Prefer a compiler-only annotation, such as `declare-function`, which
+    expands to nil and adds no run-time behavior.
+-   Otherwise confine the change to the expression that is wrong.
+-   Restructuring bundled code is the last resort, and is not done to
+    remove a report that the compiler merely emits.
 
 ------------------------------------------------------------------------
 
