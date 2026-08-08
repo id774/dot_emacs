@@ -257,6 +257,9 @@ the directories under VCS."
     (auto-save-buffers-enhanced-quiet-save-buffer))
    (t (save-buffer))))
 
+;; Created by the fset below at run time.
+(declare-function original-write-region "auto-save-buffers-enhanced")
+
 (defun auto-save-buffers-enhanced-quiet-save-buffer ()
   (fset 'original-write-region (symbol-function 'write-region))
   (flet

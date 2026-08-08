@@ -234,6 +234,9 @@ Setting this variable directly does not take effect; use the command
   '(if font-lock-mode
 	   (font-lock-fontify-buffer)))
 
+;; Defined by the if below.
+(declare-function jaspace-font-lock-remove-keywords "jaspace")
+
 ;; Emacs 20.7 does not have font-lock-remove-keywords.
 (if (fboundp 'font-lock-remove-keywords)
 	(defun jaspace-font-lock-remove-keywords ()
@@ -488,6 +491,11 @@ With prefix ARG, turn JaSpace mode on if ARG is positive, othrewise off."
 					  ad-do-it)
 				  ad-do-it))))
  jaspace-advice-functions)
+
+;; Provided by the optional mmm-mode package.
+(declare-function mmm-regions-alist "ext:mmm-region")
+(declare-function mmm-update-mode-info "ext:mmm-region")
+(declare-function mmm-refontify-maybe "ext:mmm-region")
 
 ;; mmm-mode support... could depend on mmm-mode version?
 (defun jaspace-synch-mmm-maybe ()

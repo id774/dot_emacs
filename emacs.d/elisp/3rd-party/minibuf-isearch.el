@@ -300,6 +300,9 @@
 (defvar minibuff-isearch-mode-matchenum 0)
 (defvar minibuf-isearch-comp-winheight nil)
 
+;; Defined at the end of this file, inside an unless.
+(declare-function minibuf-isearch-mode "minibuf-isearch")
+
 (defvar minibuf-isearch-debug nil)
 
 (defmacro minibuf-isearch-ifdebug (&rest body)
