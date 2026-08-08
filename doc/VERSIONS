@@ -5,8 +5,10 @@ v26.08 (Release Date: TBD)
 --------------------------
 - Add .gitattributes, marking the Markdown documents for diff and the
   vendored third-party README files as vendored.
-- Add the document file naming and attribute recommendations to
-  doc/GUIDELINES.
+- Expand doc/GUIDELINES with the document file naming and attribute
+  recommendations, the reach of a compatibility bridge and when a bundled
+  file may be edited instead, the scope and history of a pull request, and
+  the width a version history entry keeps.
 - Add the terminating period to the Policy header line of dot_emacs and the
   doc/GUIDELINES example.
 - Wrap the lines of this file at 75 columns.
@@ -22,9 +24,8 @@ v26.08 (Release Date: TBD)
   bundled browse-kill-ring.el, jaspace.el, minibuf-isearch.el and
   auto-save-buffers-enhanced.el, so the compiler no longer reports them as
   unknown.
-- Absorb the obsolete cl aliases in cl-compat-bridge.el, so the bundled files that still load cl stop reporting every call.
-- Add the pull request scope and history section to doc/GUIDELINES, keeping a request to one purpose and one commit.
-- Record in doc/GUIDELINES what a compatibility bridge can and cannot reach, and when a bundled file may be edited instead.
+- Absorb the obsolete cl aliases in cl-compat-bridge.el, so the bundled
+  files that still load cl stop reporting every call.
 
 v26.07 (2026-07-31)
 -------------------
