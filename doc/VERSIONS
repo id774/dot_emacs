@@ -7,7 +7,8 @@ v26.08 (Release Date: TBD)
   vendored third-party README files as vendored.
 - Expand doc/GUIDELINES with the document file naming and attribute
   recommendations, the reach of a compatibility bridge and when a bundled
-  file may be edited instead, and the scope and history of a pull request.
+  file may be edited instead, the scope and history of a pull request, and
+  the width a version history entry keeps.
 - Add the terminating period to the Policy header line of dot_emacs and the
   doc/GUIDELINES example.
 - Wrap the lines of this file at 75 columns.
