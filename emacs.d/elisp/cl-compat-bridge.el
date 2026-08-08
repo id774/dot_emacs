@@ -191,6 +191,39 @@
     (unless (advice-member-p 'cl-compat-wrap-in-nil-block macro)
       (advice-add macro :around 'cl-compat-wrap-in-nil-block))))
 
+;; Some bundled third-party files still load the obsolete cl package.  Doing
+;; so replaces the names bridged above with obsolete aliases, and the
+;; compiler then reports every historical call in every file expanded later
+;; in the same compilation, including files that never mention cl at all.
+;; Absorb that here rather than rewriting the bundled code.
+;;
+;; Only the obsolescence mark is cleared, and only on a name this bridge is
+;; responsible for, which is a name the cl to cl-lib rename moved to the same
+;; name under the cl- prefix.  The definitions cl installs are left alone, so
+;; whatever it alone provides, such as defsetf, keeps working, and a
+;; deprecation that is not one of those renames, such as cl-map-extents,
+;; keeps warning.
+(defun cl-compat--renamed-to (name)
+  "Return the cl-lib name NAME was renamed to by the cl to cl-lib rename.
+The rename dropped a trailing asterisk, so both loop and sort* are covered."
+  (let ((old (symbol-name name)))
+    (intern (concat "cl-" (if (string-match "\\`\\(.+\\)\\*\\'" old)
+                              (match-string 1 old)
+                            old)))))
+
+;; with-eval-after-load runs the form at once when cl is already loaded, so
+;; the order in which a file reaches cl and this bridge does not matter.
+;; Emacs before 27.1 marks none of these names, where this is a no-op.
+(when (and (featurep 'cl-lib) (fboundp 'with-eval-after-load))
+  (with-eval-after-load 'cl
+    (mapatoms
+     (lambda (name)
+       (let ((info (get name 'byte-obsolete-info)))
+         (when (and (consp info)
+                    (symbolp (car info))
+                    (eq (car info) (cl-compat--renamed-to name)))
+           (put name 'byte-obsolete-info nil)))))))
+
 (provide 'cl-compat-bridge)
 
 ;;; cl-compat-bridge.el ends here
