@@ -10,9 +10,10 @@ A pluggable and comprehensive configuration for Emacs that includes third-party 
 2. [Supported Environments](#2-supported-environments)
 3. [Installation](#3-installation)
 4. [Default Behavior](#4-default-behavior)
-5. [Versioning](#5-versioning)
-6. [Contribution](#6-contribution)
-7. [License](#7-license)
+5. [Directory Structure](#5-directory-structure)
+6. [Versioning](#6-versioning)
+7. [Contribution](#7-contribution)
+8. [License](#8-license)
 
 ---
 
@@ -118,7 +119,54 @@ DOT_EMACS:
 
 ---
 
-## 5. Versioning
+## 5. Directory Structure
+
+This section describes the main directories of the repository and what each one
+is for. It is not a complete file listing: `emacs.d/elisp/` alone holds several
+dozen files, and only the entries worth knowing about before editing anything
+are shown.
+
+```
+.
+├── dot_emacs                 Installed as ~/.emacs. Loads ~/.emacs.d/elisp/init.el and nothing else.
+├── dot_mew.el                Installed as ~/.mew.el. Mew (mail) settings.
+├── dot_emacs_on_meadow       Separate configuration for Meadow on Windows. Not installed by the script.
+├── install_dotemacs.sh       Installer and uninstaller.
+├── emacs.d/
+│   ├── elisp/                The configuration itself. Copied to the target and byte-compiled.
+│   │   ├── init.el           Entry point. Sets paths, then loads autoloads.el.
+│   │   ├── autoloads.el      Loads each settings module in order, then configs.el.
+│   │   ├── configs.el        Settings applied last, after every module is loaded.
+│   │   ├── *-settings.el     One file per package or mode (dired, mew, tramp, auto-complete, ...).
+│   │   ├── *-compat-bridge.el  Shims that keep old code loadable on current Emacs.
+│   │   └── 3rd-party/        Bundled third-party libraries, including ess, helm and yatex-mode.
+│   └── site-lisp/            Placeholder, as are anything/, backups/, tmp/ and the other
+│                             run-time directories beside it. See the note below.
+└── doc/
+    ├── GUIDELINES            Coding style and Emacs Lisp compatibility policy.
+    ├── VERSIONS              Version history of the repository.
+    ├── LICENSE               License notice.
+    ├── COPYING               GPL version 3 text.
+    └── COPYING.LESSER        LGPL version 3 text.
+```
+
+Only `emacs.d/elisp/` is deployed to the installation target (by default
+`/usr/local/etc/emacs.d/elisp`, symlinked as `~/.emacs.d/elisp`). The remaining
+directories under `emacs.d/` are empty placeholders: the installer creates the
+real ones in the user's home directory, so that a system-wide configuration tree
+stays read-only while Emacs still has somewhere to write backups, temporary
+files and history.
+
+Within `emacs.d/elisp/`, the loading order is `init.el` → `autoloads.el` →
+each module → `configs.el`. A new setting normally becomes a new
+`<name>-settings.el` file plus one `load` line in `autoloads.el`. Anything that
+must win over the modules belongs in `configs.el`, since it is loaded after them
+all. See [GUIDELINES](doc/GUIDELINES) for the compatibility rules these files
+follow.
+
+---
+
+## 6. Versioning
 
 DOT_EMACS uses the `<year>.<month>` versioning format starting from version `11.09`.
 Example: `24.12`
@@ -133,7 +181,7 @@ For detailed version history, please refer to the [VERSIONS](doc/VERSIONS) file.
 
 ---
 
-## 6. Contribution
+## 7. Contribution
 
 We welcome contributions! Here's how you can help:
 1. Fork the repository.
@@ -147,7 +195,7 @@ see the [GUIDELINES](doc/GUIDELINES) document.
 
 ---
 
-## 7. License
+## 8. License
 
 This repository is dual licensed under the [GPL version 3](https://www.gnu.org/licenses/gpl-3.0.html) or the [LGPL version 3](https://www.gnu.org/licenses/lgpl-3.0.html), at your option.
 For full details, please refer to the [LICENSE](doc/LICENSE) file.  See also [COPYING](doc/COPYING) and [COPYING.LESSER](doc/COPYING.LESSER) for the complete license texts.
