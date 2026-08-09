@@ -26,6 +26,7 @@ v26.08 (Release Date: TBD)
   unknown.
 - Absorb the obsolete cl aliases in cl-compat-bridge.el, so the bundled
   files that still load cl stop reporting every call.
+- Normalize jaspace.el line endings to LF.
 
 v26.07 (2026-07-31)
 -------------------
@@ -174,4 +175,3 @@ Version History Guidelines
   same file or feature.
 - Place closely related entries near each other.
 - Append an independent new change to the end of the current version entry.
-- Normalize jaspace.el line endings to LF.
