@@ -161,7 +161,9 @@ First Commit (2010-08-08)
 
 Version History Guidelines
 ==========================
-- Write one coherent change per physical line.
+- Write one coherent change per physical line, as a rule. Where a version
+  history has already settled on a width and a layout of its own, keep that
+  format instead; the exception does not withdraw the rule.
 - Keep entries near 100 columns where practical. Necessary file names,
   command names, option names, and configuration names may extend an entry
   to approximately 120 columns.
