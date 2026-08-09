@@ -28,6 +28,7 @@ v26.08 (Release Date: TBD)
 - Absorb the obsolete cl aliases in cl-compat-bridge.el, so the bundled
   files that still load cl stop reporting every call.
 - Normalize jaspace.el line endings to LF.
+- Describe each main directory in the README Directory Structure section.
 
 v26.07 (2026-07-31)
 -------------------
