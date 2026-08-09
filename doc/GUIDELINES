@@ -282,6 +282,17 @@ Each file should clearly document its compatibility expectations.
 ;; Policy  : Preserve historical behavior and maintain backward compatibility.
 ```
 
+Executable script versions:
+
+-   An executable script that carries its own version history uses that
+    version independently of the repository version.
+-   Update the script version when the executable behavior of that script
+    changes.
+-   Documentation-only, comment-only, and formatting-only changes do not
+    require a script version update.
+-   When the script version changes, update its own version history in the
+    same change.
+
 ------------------------------------------------------------------------
 
 ## 12. Long-Term Maintenance Philosophy
