@@ -282,6 +282,17 @@ Each file should clearly document its compatibility expectations.
 ;; Policy  : Preserve historical behavior and maintain backward compatibility.
 ```
 
+Executable script versions:
+
+-   An executable script that carries its own version history uses that
+    version independently of the repository version.
+-   Update the script version when the executable behavior of that script
+    changes.
+-   Documentation-only, comment-only, and formatting-only changes do not
+    require a script version update.
+-   When the script version changes, update its own version history in the
+    same change.
+
 ------------------------------------------------------------------------
 
 ## 12. Long-Term Maintenance Philosophy
@@ -410,10 +421,11 @@ the work happened; the version history records what it amounts to.
 
 One change per line:
 
--   One coherent change is one bullet, written on one physical line. The
-    entry is a list meant to be scanned, and a wrapped bullet costs it
-    that: the eye no longer finds the changes by counting lines, and a
-    diff no longer shows one added line per added change.
+-   One coherent change is one bullet, written on one physical line. That
+    is the rule, and the one exception to it is recorded at the end of
+    this list. The entry is a list meant to be scanned, and a wrapped
+    bullet costs it that: the eye no longer finds the changes by counting
+    lines, and a diff no longer shows one added line per added change.
 -   This is a deliberate exception to the line length guidance of the
     previous section, not an oversight in that file. Do not rewrap
     `doc/VERSIONS` to 80 columns, and do not report a long bullet there
@@ -430,10 +442,13 @@ One change per line:
     rule applies to what is written from now on.
 -   `doc/VERSIONS` carries these guidelines again at its foot, and an entry
     written into it follows the reasons recorded there.
--   Where the file has settled on a width of its own, a new bullet is
+-   The exception to that rule is a file whose version history has already
+    settled on a width and a layout of its own. There a new bullet is
     wrapped to that width and balanced against the lines already standing,
-    so that the version history stays of a piece. That consistency comes
-    before the one physical line asked for above.
+    so that the version history stays of a piece, and that consistency
+    comes before the one physical line asked for above. Keeping an
+    established layout does not withdraw the rule: where a version history
+    has settled on no such layout, one change is one physical line.
 
 Shortening a long entry:
 

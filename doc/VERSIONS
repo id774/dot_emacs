@@ -7,8 +7,9 @@ v26.08 (Release Date: TBD)
   vendored third-party README files as vendored.
 - Expand doc/GUIDELINES with the document file naming and attribute
   recommendations, the reach of a compatibility bridge and when a bundled
-  file may be edited instead, the scope and history of a pull request, and
-  the width a version history entry keeps.
+  file may be edited instead, the scope and history of a pull request, the
+  width a version history entry keeps, and when an executable script's own
+  version is updated.
 - Add the terminating period to the Policy header line of dot_emacs and the
   doc/GUIDELINES example.
 - Wrap the lines of this file at 75 columns.
@@ -161,7 +162,9 @@ First Commit (2010-08-08)
 
 Version History Guidelines
 ==========================
-- Write one coherent change per physical line.
+- Write one coherent change per physical line, as a rule. Where a version
+  history has already settled on a width and a layout of its own, keep that
+  format instead; the exception does not withdraw the rule.
 - Keep entries near 100 columns where practical. Necessary file names,
   command names, option names, and configuration names may extend an entry
   to approximately 120 columns.
