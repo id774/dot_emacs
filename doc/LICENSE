@@ -1,12 +1,20 @@
 # License
 
-This software is distributed under a **dual license**:
+The parts of this software copyrighted by id774 are distributed under a
+**dual license**:
 You may choose either the [GNU General Public License v3](https://www.gnu.org/licenses/gpl-3.0.html)
 or the [GNU Lesser General Public License v3](https://www.gnu.org/licenses/lgpl-3.0.html), at your discretion.
 
 For the full legal text, please refer to the included files:
 - [`COPYING`](COPYING) (GPLv3)
 - [`COPYING.LESSER`](COPYING.LESSER) (LGPLv3)
+
+## Third-Party Software
+
+This dual license does not apply to the third-party software bundled under
+`emacs.d/elisp/3rd-party/`. Each of those files and packages remains the
+property of its respective copyright holders and is covered by the license
+conditions accompanying it.
 
 ---
 

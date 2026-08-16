@@ -29,6 +29,7 @@ v26.08 (Release Date: TBD)
   files that still load cl stop reporting every call.
 - Normalize jaspace.el line endings to LF.
 - Describe each main directory in the README Directory Structure section.
+- Clarify the license exclusions for the bundled third-party software.
 
 v26.07 (2026-07-31)
 -------------------
