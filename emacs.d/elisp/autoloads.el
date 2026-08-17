@@ -154,11 +154,8 @@
 (setq fuzzy-format-default-indent-tabs-mode nil)
 (global-fuzzy-format-mode t)
 
-;; jaspace-mode
-(when (load-p "jaspace-mode")
-  ;;(setq jaspace-alternate-jaspace-string "□")
-  (setq jaspace-alternate-eol-string "$\n")
-  (setq jaspace-highlight-tabs t))
+;; whitespace
+(load-p "whitespace-settings")
 
 ;; hlinum
 (cond

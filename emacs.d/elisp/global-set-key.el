@@ -253,9 +253,9 @@
 
 (global-set-key "\C-x\C-c" 'confirm-save-buffers-kill-emacs)
 
-;; Toggle jaspace-mode to show tabs, full-width spaces, and trailing spaces
-(define-key global-map "\C-c\C-c\C-t" 'jaspace-mode)
-(define-key global-map "\C-x\ 9" 'jaspace-mode)
+;; Toggle whitespace-mode to show tabs, full-width spaces, and trailing spaces
+(define-key global-map "\C-c\C-c\C-t" 'whitespace-mode)
+(define-key global-map "\C-x\ 9" 'whitespace-mode)
 
 ;; Delete trailing whitespace
 (define-key global-map "\C-c\C-c\ t" 'delete-trailing-whitespace)

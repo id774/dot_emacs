@@ -22,14 +22,16 @@ v26.08 (Release Date: TBD)
 - Silence the native compilation warning pop-up in init.el, keeping the
   entries in the *Warnings* buffer.
 - Declare the conditionally defined and optional mmm-mode functions of the
-  bundled browse-kill-ring.el, jaspace.el, minibuf-isearch.el and
+  bundled browse-kill-ring.el, minibuf-isearch.el and
   auto-save-buffers-enhanced.el, so the compiler no longer reports them as
   unknown.
 - Absorb the obsolete cl aliases in cl-compat-bridge.el, so the bundled
   files that still load cl stop reporting every call.
-- Normalize jaspace.el line endings to LF.
 - Describe each main directory in the README Directory Structure section.
 - Clarify the license exclusions for the bundled third-party software.
+- Replace jaspace with the standard whitespace mode, enabled globally, and
+  remove the bundled jaspace.el, whose display table showed an ASCII @ as a
+  box.
 
 v26.07 (2026-07-31)
 -------------------
