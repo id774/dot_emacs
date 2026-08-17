@@ -230,7 +230,6 @@ byte_compile_all() {
         undo-tree.el \
         viewer.el \
         ruby-block.el \
-        jaspace.el \
         auto-async-byte-compile.el \
         auto-save-buffers-enhanced.el \
         actionscript-mode.el \
