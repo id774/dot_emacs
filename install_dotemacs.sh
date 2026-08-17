@@ -49,6 +49,10 @@
 #    requires a usable Emacs binary. Remove the configuration before removing Emacs.
 #
 #  Version History:
+#  v4.1 2026-08-17
+#       Byte-compile every DOT_EMACS module in active use, loading utils
+#       first so its load-p, autoload-p and defun-add-hook helpers resolve
+#       while the modules that use them are compiled.
 #  v4.0 2026-07-30
 #       Build the bundled helm only on Emacs 24 to 26, the range where it is
 #       actually loaded, since its Makefile fails on newer Emacs.
@@ -176,6 +180,18 @@ emacs_batch_byte_compile() {
     done
 }
 
+# Compile a DOT_EMACS module with the utils helpers loaded
+emacs_batch_byte_compile_with_utils() {
+    while [ $# -gt 0 ]; do
+        $SUDO "$EMACS" --batch -Q \
+            -L "$TARGET/elisp" \
+            -L "$TARGET/elisp/3rd-party" \
+            -l utils \
+            -f batch-byte-compile "$1"
+        shift
+    done
+}
+
 # Report the major version of the Emacs binary in use
 emacs_major_version() {
     "$EMACS" --batch -Q --eval '(princ emacs-major-version)' 2>/dev/null
@@ -262,26 +278,55 @@ byte_compile_all() {
         wb-line-number.el \
         zencoding-mode.el
 
+    # utils.el defines the load-p, autoload-p and defun-add-hook helpers the
+    # other modules use, so compile it first and then load it for the rest.
     cd "$TARGET/elisp" && emacs_batch_byte_compile \
-        init.el \
-        mew-settings.el \
+        utils.el
+
+    # The compatibility bridges are required by the modules that follow.
+    emacs_batch_byte_compile_with_utils \
         core-compat-bridge.el \
         cl-compat-bridge.el \
-        ess-compat-bridge.el \
+        ess-compat-bridge.el
+
+    emacs_batch_byte_compile_with_utils \
+        init.el \
+        mew-settings.el \
+        auto-async-settings.el \
+        auto-complete-settings.el \
+        auto-save-buffers-settings.el \
+        autoloads.el \
         clear-kill-ring.el \
+        configs.el \
         delete-empty-file.el \
+        diminish-settings.el \
         dired-settings.el \
         emacs-w3m.el \
         faces.el \
         global-set-key.el \
+        google-this-settings.el \
         key-chord-define-global.el \
         kill-all-buffers.el \
+        lang-mode.el \
+        multi-term-settings.el \
+        paredit-settings.el \
         persistent-scratch.el \
         physical-line.el \
+        popwin-el.el \
         proxy.el \
+        python-mode-settings.el \
+        recentf-ext-settings.el \
+        redo-settings.el \
+        riece-navi2ch.el \
+        ruby-optional-load.el \
+        screen.el \
+        smartchr-settings.el \
         tab4.el \
-        utils.el \
-        yatex-mode.el
+        tramp-settings.el \
+        view-mode-key.el \
+        whitespace-settings.el \
+        yatex-mode.el \
+        zlc-settings.el
 }
 
 # Create symbolic links for Emacs configuration files
