@@ -176,6 +176,57 @@ output are all reported at once. That is the previous state becoming
 visible again, not a regression, and is not by itself a reason to change
 anything.
 
+### 8.1 Byte Compilation Scope
+
+Byte compilation is not applied to every active DOT_EMACS module as a
+blanket policy. Whether a file is loaded at startup is not the test for
+whether it should be byte-compiled; a file earns byte compilation by its
+role, not by the fact that `autoloads.el` loads it.
+
+Classify each file before compiling it:
+
+-   **Bootstrap / orchestration** files build the load environment itself:
+    `load-path`, load order, and which modules get pulled in. `init.el`
+    and `autoloads.el` are this category. Here load order and runtime
+    environment matter more than execution speed, and the risk of an
+    `.el`/`.elc` mismatch or a compile-time dependency outweighs any
+    benefit from compiling them. Load these from source.
+-   **Configuration / hook registration** files set values, register
+    hooks, and configure modes, often through project-local macros such
+    as `defun-add-hook`, or otherwise depend on load order. `configs.el`,
+    `lang-mode.el`, `screen.el`, and `diminish-settings.el` are this
+    category: each expands `defun-add-hook`, defined in `utils.el`, and a
+    macro must be defined in the compiling process *before* its call
+    sites are compiled. Load these from source rather than adding
+    `utils.el` to the compile-time load order to make them compilable.
+-   **Independent library / compatibility module** files, such as the
+    compatibility bridges and self-contained helpers, have a clear,
+    local compile-time dependency and are safe to byte-compile. Being
+    compilable is necessary but not sufficient: confirm the dependency is
+    actually explicit before adding a file here.
+
+A file that is byte-compiled without its macro dependencies resolved does
+not simply lose an optimization: a macro call the compiler does not
+recognize as a macro is compiled as an ordinary function call instead of
+being expanded, so its arguments run immediately at load time rather than
+being deferred into the hook body. That is what previously made
+`c-set-style` run against `*scratch*` on startup — `configs.el` byte-compiled
+without `utils.el`'s `defun-add-hook` in effect turned a hook registration
+into code that ran outright.
+
+When a file's byte compilation status changes, whether to add it or to
+exclude it, keep every path that can regenerate an `.elc` for it
+consistent: the installer's compile step and `auto-async-byte-compile`'s
+exclude list (`emacs.d/elisp/auto-async-settings.el`) must agree, so a
+file excluded by one is not silently recompiled by the other. Passing
+`batch-byte-compile` is not the bar to clear; the compiled code's
+compile-time dependencies and its meaning at load time must match the
+source-loaded behavior. And weigh the tradeoff itself correctly: for a
+configuration meant to run across decades and many Emacs versions, a
+small startup-time gain from wider compilation coverage is not worth
+added compile-time dependencies, less deterministic load order, or a
+harder-to-debug source/compiled mismatch.
+
 ------------------------------------------------------------------------
 
 ## 9. Dependency Policy

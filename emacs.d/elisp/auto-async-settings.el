@@ -18,8 +18,14 @@
 
 ;; Enable asynchronous byte compilation for Emacs Lisp buffers
 (when (load-p "auto-async-byte-compile")
-  ;; Skip files located under /junk/
-  (setq auto-async-byte-compile-exclude-files-regexp "/junk/")
+  ;; Skip files located under /junk/, and skip the DOT_EMACS bootstrap,
+  ;; orchestration and configuration/hook-registration files that
+  ;; install_dotemacs.sh also excludes from byte compilation for the same
+  ;; reason: they are meant to be loaded from source, and some depend on
+  ;; the defun-add-hook macro at compile time.  See doc/GUIDELINES for the
+  ;; byte compilation scope policy.
+  (setq auto-async-byte-compile-exclude-files-regexp
+        "/junk/\\|/\\(init\\|autoloads\\|configs\\|lang-mode\\|screen\\|diminish-settings\\)\\.el\\'")
   (add-hook 'emacs-lisp-mode-hook 'enable-auto-async-byte-compile-mode))
 
 ;;; auto-async-settings.el ends here

@@ -32,7 +32,8 @@ v26.08 (Release Date: TBD)
 - Replace jaspace with the standard whitespace mode, enabled globally, and
   remove the bundled jaspace.el, whose display table showed an ASCII @ as a
   box.
-- Complete byte-compilation coverage for active DOT_EMACS modules.
+- Exclude init.el, autoloads.el, configs.el, lang-mode.el, screen.el and
+  diminish-settings.el from byte compilation; load them from source.
 
 v26.07 (2026-07-31)
 -------------------

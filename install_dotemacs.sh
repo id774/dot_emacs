@@ -41,7 +41,9 @@
 #  - Fallback: When 'emacs' is not found and [emacs_binary] is not an executable path,
 #    the script tries /Applications/Emacs.app/Contents/MacOS/Emacs on macOS.
 #  - The script will remove existing Emacs configurations before installation.
-#  - Byte-compilation is performed to improve Emacs performance.
+#  - Byte-compilation is performed selectively: independent library and
+#    compatibility modules are compiled, while bootstrap/orchestration and
+#    configuration/hook-registration files are left to load from source.
 #  - The --uninstall option will remove installed files and user configuration.
 #  - Keep the uninstall target fixed at /usr/local/etc/emacs.d to prevent accidental deletion.
 #  - Do not remove custom installation targets automatically.
@@ -49,6 +51,8 @@
 #    requires a usable Emacs binary. Remove the configuration before removing Emacs.
 #
 #  Version History:
+#  v4.2 2026-08-18
+#       Stop byte-compiling bootstrap and hook-registration files.
 #  v4.1 2026-08-17
 #       Byte-compile every DOT_EMACS module in active use, loading utils
 #       first so its load-p, autoload-p and defun-add-hook helpers resolve
@@ -289,17 +293,18 @@ byte_compile_all() {
         cl-compat-bridge.el \
         ess-compat-bridge.el
 
+    # Bootstrap/orchestration files (init.el, autoloads.el) and
+    # configuration/hook-registration files that depend on the
+    # defun-add-hook macro at compile time (configs.el, lang-mode.el,
+    # screen.el, diminish-settings.el) are loaded from source instead.
+    # See doc/GUIDELINES for the byte compilation scope policy.
     emacs_batch_byte_compile_with_utils \
-        init.el \
         mew-settings.el \
         auto-async-settings.el \
         auto-complete-settings.el \
         auto-save-buffers-settings.el \
-        autoloads.el \
         clear-kill-ring.el \
-        configs.el \
         delete-empty-file.el \
-        diminish-settings.el \
         dired-settings.el \
         emacs-w3m.el \
         faces.el \
@@ -307,7 +312,6 @@ byte_compile_all() {
         google-this-settings.el \
         key-chord-define-global.el \
         kill-all-buffers.el \
-        lang-mode.el \
         multi-term-settings.el \
         paredit-settings.el \
         persistent-scratch.el \
@@ -319,7 +323,6 @@ byte_compile_all() {
         redo-settings.el \
         riece-navi2ch.el \
         ruby-optional-load.el \
-        screen.el \
         smartchr-settings.el \
         tab4.el \
         tramp-settings.el \
