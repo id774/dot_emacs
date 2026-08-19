@@ -34,6 +34,8 @@ v26.08 (Release Date: TBD)
   box.
 - Exclude init.el, autoloads.el, configs.el, lang-mode.el, screen.el and
   diminish-settings.el from byte compilation; load them from source.
+- Stop the installer when its existing target cannot be removed, so stale
+  files are not mixed with the new configuration.
 
 v26.07 (2026-07-31)
 -------------------

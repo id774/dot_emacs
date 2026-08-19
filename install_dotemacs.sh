@@ -51,6 +51,9 @@
 #    requires a usable Emacs binary. Remove the configuration before removing Emacs.
 #
 #  Version History:
+#  v4.3 2026-08-19
+#       Stop installation when the existing target cannot be removed, so
+#       stale files are not mixed with the replacement configuration.
 #  v4.2 2026-08-18
 #       Stop byte-compiling bootstrap and hook-registration files.
 #  v4.1 2026-08-17
@@ -130,7 +133,10 @@ check_sudo() {
 setup_dotemacs() {
     echo "[INFO] Setting up dot_emacs configuration..."
 
-    [ -d "$TARGET" ] && $SUDO rm -rf "$TARGET/"
+    if [ -d "$TARGET" ] && ! $SUDO rm -rf "$TARGET/"; then
+        echo "[ERROR] Failed to remove existing target directory $TARGET." >&2
+        exit 1
+    fi
     [ -f "$HOME/.emacs" ] && rm -f "$HOME/.emacs"
     [ -d "$HOME/.emacs.d" ] && rm -rf "$HOME/.emacs.d"
 
