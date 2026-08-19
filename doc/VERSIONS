@@ -36,6 +36,8 @@ v26.08 (Release Date: TBD)
   diminish-settings.el from byte compilation; load them from source.
 - Stop the installer when its existing target cannot be removed, so stale
   files are not mixed with the new configuration.
+- Let find-file open nonexistent paths as editable new files instead of
+  routing them through view-mode.
 
 v26.07 (2026-07-31)
 -------------------

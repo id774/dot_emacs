@@ -89,7 +89,8 @@
 ;; Open non-writable files using view-mode automatically
 (defadvice find-file
   (around find-file-switch-to-view-file (file &optional wild) activate)
-  (if (and (not (file-writable-p file))
+  (if (and (file-exists-p file)
+           (not (file-writable-p file))
            (not (file-directory-p file)))
       (view-file file)
     ad-do-it))
