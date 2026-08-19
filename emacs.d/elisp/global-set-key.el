@@ -47,10 +47,6 @@
 (define-key global-map "\C-x\C-y" 'auto-complete-mode)
 (define-key global-map "\C-x\ y" 'auto-complete-mode)
 
-;; Toggle zencoding-mode with C-x C-z or C-x z
-(define-key global-map "\C-x\C-z" 'zencoding-mode)
-(define-key global-map "\C-x\ z" 'zencoding-mode)
-
 ;; Adjust tab width
 (defun my-increase-tab-width ()
   (interactive)
@@ -97,15 +93,6 @@
 (define-key global-map "\C-c\C-c\ w" 'other-window)
 (define-key global-map "\C-c\C-c\C-c" 'other-window)
 (define-key global-map "\C-c\C-c\ c" 'other-window)
-
-;; navi2ch
-(defun switch-to-navi2ch()
-  (interactive)
-  (split-one-window-p)
-  (navi2ch))
-
-(define-key global-map "\C-c\C-c\C-i" 'switch-to-navi2ch)
-(define-key global-map "\C-c\C-c\ i" 'switch-to-navi2ch)
 
 ;; Resize text with C-x 5 and C-x 6
 (define-key global-map "\C-x\ 5" 'text-scale-increase)

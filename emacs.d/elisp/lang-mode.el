@@ -86,13 +86,6 @@
   (setq auto-mode-alist
         (cons '("\.as\'" . actionscript-mode) auto-mode-alist)))
 
-;; zencoding-mode
-(when (load-p "zencoding-mode")
-  (add-hook 'sgml-mode-hook 'zencoding-mode)
-  (add-hook 'html-mode-hook 'zencoding-mode)
-  (add-hook 'text-mode-hook 'zencoding-mode)
-  (define-key zencoding-mode-keymap "\C-i" 'zencoding-expand-line))
-
 ;; Use larger text in text-mode
 (add-hook 'text-mode-hook
           (lambda ()
@@ -122,9 +115,8 @@
   (add-to-list 'auto-mode-alist '("\\.coffee\\'" . coffee-mode))
   (add-to-list 'auto-mode-alist '("Cakefile" . coffee-mode)))
 
-;; jade-mode
-(when (require 'jade-mode nil t)
-  (require 'sws-mode)
+;; sws-mode
+(when (require 'sws-mode nil t)
   (add-to-list 'auto-mode-alist '("\\.styl\\'" . sws-mode)))
 
 ;; pig-mode
