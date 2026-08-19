@@ -27,8 +27,6 @@ Emacs Lisp implementations:
   Emacs Lisp code.
 - `emacs.d/elisp/view-mode-key.el` refers to several external implementations
   and contains code derived from them.
-- `emacs.d/elisp/physical-line.el` contains code that is identical or
-  substantially equivalent to an existing external Emacs Lisp implementation.
 
 The third-party portions of those files remain the property of their respective
 original authors and are covered by the license conditions that apply to them.

@@ -235,8 +235,7 @@ byte_compile_all() {
     build_helm
 
     cd "$TARGET/elisp/3rd-party/jade-mode" && emacs_batch_byte_compile \
-        sws-mode.el \
-        jade-mode.el
+        sws-mode.el
 
     cd "$TARGET/elisp/3rd-party/ruby-mode" && emacs_batch_byte_compile \
         inf-ruby.el \
@@ -268,10 +267,7 @@ byte_compile_all() {
         erlang.el \
         findr.el \
         inflections.el \
-        git.el \
-        git-blame.el \
         google-this.el \
-        minibuf-isearch.el \
         minor-mode-hack.el \
         multi-term.el \
         open-junk-file.el \
@@ -280,13 +276,11 @@ byte_compile_all() {
         scss-mode.el \
         haml-mode.el \
         sass-mode.el \
-        savekill.el \
         smartchr.el \
         sequential-command.el \
         recentf-ext.el \
         web-mode.el \
-        wb-line-number.el \
-        zencoding-mode.el
+        wb-line-number.el
 
     # utils.el defines the load-p, autoload-p and defun-add-hook helpers the
     # other modules use, so compile it first and then load it for the rest.
@@ -321,13 +315,11 @@ byte_compile_all() {
         multi-term-settings.el \
         paredit-settings.el \
         persistent-scratch.el \
-        physical-line.el \
         popwin-el.el \
         proxy.el \
         python-mode-settings.el \
         recentf-ext-settings.el \
         redo-settings.el \
-        riece-navi2ch.el \
         ruby-optional-load.el \
         smartchr-settings.el \
         tab4.el \

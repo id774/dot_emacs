@@ -45,10 +45,6 @@
 ;; multi-term
 (load-p "multi-term-settings")
 
-;; git
-(load-p "git")
-(load-p "git-blame")
-
 ;; open-junk-file
 (load-p "open-junk-file")
 
@@ -78,8 +74,8 @@
 ;; emacs-w3m
 (load-p "emacs-w3m")
 
-;; riece / navi2ch
-(load-p "riece-navi2ch")
+;; italk is not bundled, so stay quiet when it is absent
+(load-p "italk" t)
 
 ;; mic-paren (not bundled, so stay quiet when it is absent)
 (when (load-p "mic-paren" t)
@@ -88,9 +84,6 @@
 ;; develock (not bundled, so stay quiet when it is absent)
 (when (load-p "develock" t)
   (global-font-lock-mode t))
-
-;; physical-line
-(load-p "physical-line")
 
 ;; windmove
 (when (load-p "windmove")
@@ -109,9 +102,6 @@
 ;; wdired
 (when (require 'wdired nil t)
   (define-key dired-mode-map "r" 'wdired-change-to-wdired-mode))
-
-;; minibuf-isearch
-(require 'minibuf-isearch)
 
 ;; browse-kill-ring
 (when (require 'browse-kill-ring nil t)
@@ -192,8 +182,10 @@
 (when (require 'highlight-unique-symbol nil t)
   (highlight-unique-symbol t))
 
-;; savekill
-(require 'savekill)
+;; kill-ring persistence across sessions
+(require 'savehist)
+(add-to-list 'savehist-additional-variables 'kill-ring)
+(savehist-mode 1)
 
 ;; clear-kill-ring
 (load-p "clear-kill-ring")

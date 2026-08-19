@@ -38,6 +38,16 @@ v26.08 (Release Date: TBD)
   files are not mixed with the new configuration.
 - Let find-file open nonexistent paths as editable new files instead of
   routing them through view-mode.
+- Remove the obsolete navi2ch and Riece configuration, along with their key
+  bindings, and keep the optional italk load in autoloads.el.
+- Remove the bundled legacy git.el and git-blame.el in favor of the standard
+  version control commands.
+- Remove the minibuf-isearch and physical-line implementations, whose
+  behavior the supported Emacs versions already provide.
+- Replace savekill with the built-in savehist, which now saves the kill ring
+  between sessions.
+- Remove jade-mode while keeping the Stylus support of sws-mode.
+- Remove zencoding-mode, its mode hooks and its key bindings.
 
 v26.07 (2026-07-31)
 -------------------
