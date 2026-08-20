@@ -270,10 +270,13 @@ byte_compile_all() {
         core-compat-bridge.el \
         cl-compat-bridge.el
 
-    # Bootstrap/orchestration files (init.el, autoloads.el) and
-    # configuration/hook-registration files that depend on the
-    # defun-add-hook macro at compile time (configs.el, lang-mode.el,
-    # screen.el, diminish-settings.el) are loaded from source instead.
+    # Bootstrap/orchestration files (init.el, autoloads.el) are loaded
+    # from source. Configuration files with compile-time or load-order
+    # dependencies are also source-loaded: configs.el, lang-mode.el,
+    # screen.el and diminish-settings.el depend on defun-add-hook from
+    # utils.el, while anything-settings.el depends on the
+    # with-eval-after-load compatibility macro from core-compat-bridge.el
+    # on older GNU Emacs versions.
     # See doc/GUIDELINES for the byte compilation scope policy.
     emacs_batch_byte_compile_with_utils \
         mew-settings.el \
