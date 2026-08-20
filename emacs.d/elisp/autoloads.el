@@ -33,9 +33,6 @@
 ;; auto-complete
 (load-p "auto-complete-settings")
 
-;; smartchr
-(load-p "smartchr-settings")
-
 ;; recentf-ext
 (load-p "recentf-ext-settings")
 

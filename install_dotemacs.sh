@@ -224,7 +224,6 @@ byte_compile_all() {
     cd "$TARGET/elisp/3rd-party" && emacs_batch_byte_compile \
         py-autopep8.el \
         browse-kill-ring.el \
-        cl-lib.el \
         js2.el \
         undo-tree.el \
         viewer.el \
@@ -237,7 +236,6 @@ byte_compile_all() {
         key-chord.el \
         anything.el \
         bat-mode.el \
-        erlang.el \
         findr.el \
         inflections.el \
         google-this.el \
@@ -248,8 +246,6 @@ byte_compile_all() {
         scss-mode.el \
         haml-mode.el \
         sass-mode.el \
-        smartchr.el \
-        sequential-command.el \
         recentf-ext.el
 
     # utils.el defines the load-p, autoload-p and defun-add-hook helpers the
@@ -290,7 +286,6 @@ byte_compile_all() {
         recentf-ext-settings.el \
         redo-settings.el \
         ruby-optional-load.el \
-        smartchr-settings.el \
         tab4.el \
         tramp-settings.el \
         view-mode-key.el \
@@ -393,11 +388,6 @@ set_permission() {
     echo "[INFO] Setting ownership for $TARGET"
     if ! $SUDO chown -R "$OWNER" "$TARGET"; then
         echo "[ERROR] Failed to change ownership for $TARGET." >&2
-        exit 1
-    fi
-
-    if ! $SUDO chown "$(id -un):$(id -gn)" "$TARGET/elisp/3rd-party/nxhtml/etc/schema/xhtml-loader.rnc"; then
-        echo "[ERROR] Failed to change ownership for xhtml-loader.rnc." >&2
         exit 1
     fi
 
