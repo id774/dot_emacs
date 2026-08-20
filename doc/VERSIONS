@@ -34,8 +34,9 @@ v26.08 (Release Date: TBD)
   saving the kill ring immediately on every update.
 - Add the Apple Silicon Homebrew directory /opt/homebrew/bin to exec-path
   and PATH when it exists.
-- Add .gitattributes, marking the Markdown documents for diff and the
-  vendored third-party README files as vendored.
+- Add .gitattributes, assigning the Markdown diff driver to Markdown files
+  and selected extensionless plain-text documents, and marking the bundled
+  third-party README files as vendored.
 - Add a README Directory Structure section describing each main directory.
 - Expand doc/GUIDELINES with the deliberate retirement of a legacy
   component, the scope of byte compilation, the document file naming and
