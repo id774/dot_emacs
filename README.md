@@ -111,8 +111,8 @@ Custom installation targets are not removed automatically.
 
 DOT_EMACS:
 
-- Configures Emacs with preinstalled third-party libraries for enhanced functionality.
-- Loads user-specific configurations from the ~/.emacs.d/elisp/ directory, including init.el and additional settings if available.
+- Configures Emacs with selected bundled third-party libraries.
+- Loads the installed DOT_EMACS configuration from ~/.emacs.d/elisp/, starting with init.el and its configured modules.
 - Persists minibuffer history and the kill ring across Emacs sessions using the built-in `savehist`.
 - Language-specific packages not bundled with DOT_EMACS must be installed and configured separately.
 - Uses `/dev/shm` as the temporary file directory on GNU/Linux only. Other platforms, including macOS, keep the Emacs default.
@@ -133,8 +133,8 @@ are shown.
 ├── install_dotemacs.sh       Installer and uninstaller.
 ├── emacs.d/
 │   ├── elisp/                The configuration itself. Copied to the target; selected
-│   │                         libraries are byte-compiled while bootstrap and configuration
-│   │                         files remain source-loaded.
+│   │                         modules are byte-compiled while bootstrap/orchestration and
+│   │                         load-order-sensitive configuration files remain source-loaded.
 │   │   ├── init.el           Entry point. Sets paths, then loads autoloads.el.
 │   │   ├── autoloads.el      Loads each settings module in order, then configs.el.
 │   │   ├── configs.el        Settings applied last, after every module is loaded.

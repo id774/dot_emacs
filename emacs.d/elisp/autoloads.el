@@ -7,7 +7,7 @@
 
 ;; Support : Emacs 23.4+
 ;; Extended: Emacs 30+
-;; Policy  : Preserve historical behavior and maintain backward compatibility.
+;; Policy  : Preserve supported behavior and maintain backward compatibility.
 ;; Package : DOT_EMACS
 
 ;;; Commentary:
@@ -167,7 +167,8 @@
 (load-p "auto-save-buffers-settings")
 
 ;; dired-async
-(when (load-p "dired-async")
+(when (and (require 'cl-lib nil t)
+           (load-p "dired-async"))
   (dired-async-mode 1))
 
 ;; faces
