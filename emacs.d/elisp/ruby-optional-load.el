@@ -53,13 +53,6 @@ and source-file directory for your debugger."
   ;; GNU/Linux specific setup
   (cond
    ((eq system-type 'gnu/linux)
-    (ruby-optional-load)))
-
-  ;; macOS compatibility for older Emacs
-  (cond
-   ((eq system-type 'darwin)
-    (cond
-     ((< emacs-major-version 23)
-      (ruby-optional-load))))))
+    (ruby-optional-load))))
 
 ;;; ruby-optional-load.el ends here

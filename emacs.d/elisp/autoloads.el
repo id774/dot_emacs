@@ -27,9 +27,6 @@
 ;; cl / cl-lib compatibility
 (load-p "cl-compat-bridge")
 
-;; ESS compatibility
-(load-p "ess-compat-bridge")
-
 ;; mew
 (load-p "mew-settings")
 
@@ -148,20 +145,10 @@
 (load-p "whitespace-settings")
 
 ;; hlinum
-(cond
- ((>= emacs-major-version 23)
-  (load-p "hlinum")))
+(load-p "hlinum")
 
 ;; persistent-scratch
 (load-p "persistent-scratch")
-
-;; ESS
-;; The bundled ESS only builds against Emacs 24 through 26, so keep the
-;; loader within that range and leave R and S support to a separately
-;; installed ESS elsewhere.
-(when (and (>= emacs-major-version 24)
-           (<= emacs-major-version 26))
-  (load-p "ess-site"))
 
 ;; anything
 (load-p "anything-settings")
@@ -171,16 +158,6 @@
 (when (load-p "key-chord")
   (setq key-chord-two-keys-delay 0.02)
   (key-chord-mode 1))
-
-;; minor-mode priority
-(load-p "minor-mode-hack")
-;;(lower-minor-mode-map-alist 'ruby-electric-mode)
-;;(raise-minor-mode-map-alist 'anthy-minor-mode)
-
-;; highlight-unique-symbol
-;; http://hitode909.hatenablog.com/entry/2013/02/11/233449
-(when (require 'highlight-unique-symbol nil t)
-  (highlight-unique-symbol t))
 
 ;; kill-ring persistence across sessions
 (require 'savehist)
