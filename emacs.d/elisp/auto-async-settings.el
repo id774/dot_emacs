@@ -25,7 +25,7 @@
   ;; the defun-add-hook macro at compile time.  See doc/GUIDELINES for the
   ;; byte compilation scope policy.
   (setq auto-async-byte-compile-exclude-files-regexp
-        "/junk/\\|/\\(init\\|autoloads\\|configs\\|lang-mode\\|screen\\|diminish-settings\\)\\.el\\'")
+        "/junk/\\|/\\(init\\|autoloads\\|configs\\|lang-mode\\|screen\\|diminish-settings\\|anything-settings\\)\\.el\\'")
   (add-hook 'emacs-lisp-mode-hook 'enable-auto-async-byte-compile-mode))
 
 ;;; auto-async-settings.el ends here
