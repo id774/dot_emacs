@@ -32,7 +32,7 @@
 (if window-system
     (progn
       (cond
-       ;; Windows (Meadow3)
+       ;; Windows
        ;; Requires VL Gothic
        ;; http://dicey.org/vlgothic/
        ((eq system-type 'windows-nt)

@@ -232,7 +232,6 @@ byte_compile_all() {
         auto-async-byte-compile.el \
         auto-save-buffers-enhanced.el \
         actionscript-mode.el \
-        flymake-cursor.el \
         fuzzy.el \
         popup.el \
         key-chord.el \
@@ -242,7 +241,6 @@ byte_compile_all() {
         findr.el \
         inflections.el \
         google-this.el \
-        minor-mode-hack.el \
         multi-term.el \
         open-junk-file.el \
         paredit.el \
@@ -252,9 +250,7 @@ byte_compile_all() {
         sass-mode.el \
         smartchr.el \
         sequential-command.el \
-        recentf-ext.el \
-        web-mode.el \
-        wb-line-number.el
+        recentf-ext.el
 
     # utils.el defines the load-p, autoload-p and defun-add-hook helpers the
     # other modules use, so compile it first and then load it for the rest.
@@ -264,8 +260,7 @@ byte_compile_all() {
     # The compatibility bridges are required by the modules that follow.
     emacs_batch_byte_compile_with_utils \
         core-compat-bridge.el \
-        cl-compat-bridge.el \
-        ess-compat-bridge.el
+        cl-compat-bridge.el
 
     # Bootstrap/orchestration files (init.el, autoloads.el) and
     # configuration/hook-registration files that depend on the

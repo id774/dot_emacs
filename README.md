@@ -34,7 +34,6 @@ DOT_EMACS is confirmed to work on:
 - GNU Emacs on Debian/Ubuntu stable (from Debian 7 Wheezy with Emacs 23.4 to Debian 13 Trixie with Emacs 30.1).
 - GNU Emacs on other Linux distributions within the same version range.
 - Emacs for macOS (from [emacsformacosx.com](http://emacsformacosx.com/)).
-- Meadow based on Emacs 22.3.1 or later on Windows 7 (partial support, with limited functionality).
 
 Supported Emacs versions:
 - GNU Emacs 23.4 and later (up to and including 30.1, with future releases expected to be supported).
@@ -115,7 +114,7 @@ DOT_EMACS:
 - Configures Emacs with preinstalled third-party libraries for enhanced functionality.
 - Loads user-specific configurations from the ~/.emacs.d/elisp/ directory, including init.el and additional settings if available.
 - Persists minibuffer history and the kill ring across Emacs sessions using the built-in `savehist`.
-- Loads the bundled ESS (`ess-site`) only on Emacs 24 through 26. Outside that range ESS is skipped, so R and S support is unavailable unless it is installed separately.
+- ESS is not bundled or loaded by DOT_EMACS; users who need R or S support must install and configure ESS separately.
 - Uses `/dev/shm` as the temporary file directory on GNU/Linux only. Other platforms, including macOS, keep the Emacs default.
 
 ---
@@ -131,7 +130,6 @@ are shown.
 .
 ├── dot_emacs                 Installed as ~/.emacs. Loads ~/.emacs.d/elisp/init.el and nothing else.
 ├── dot_mew.el                Installed as ~/.mew.el. Mew (mail) settings.
-├── dot_emacs_on_meadow       Separate configuration for Meadow on Windows. Not installed by the script.
 ├── install_dotemacs.sh       Installer and uninstaller.
 ├── emacs.d/
 │   ├── elisp/                The configuration itself. Copied to the target and byte-compiled.
@@ -140,7 +138,7 @@ are shown.
 │   │   ├── configs.el        Settings applied last, after every module is loaded.
 │   │   ├── *-settings.el     One file per package or mode (dired, mew, tramp, auto-complete, ...).
 │   │   ├── *-compat-bridge.el  Shims that keep old code loadable on current Emacs.
-│   │   └── 3rd-party/        Bundled third-party libraries, including ess and yatex-mode.
+│   │   └── 3rd-party/        Bundled third-party libraries, including yatex-mode.
 │   └── site-lisp/            Placeholder, as are anything/, backups/, tmp/ and the other
 │                             run-time directories beside it. See the note below.
 └── doc/

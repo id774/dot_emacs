@@ -20,8 +20,6 @@ The following files are also excluded from this dual license, because they
 originate from third-party code or contain code derived from existing external
 Emacs Lisp implementations:
 
-- `dot_emacs_on_meadow` carries the copyright notice of the Meadow Team and
-  names several original authors.
 - `emacs.d/elisp/utils.el` refers to and uses existing external Emacs Lisp code.
 - `emacs.d/elisp/persistent-scratch.el` refers to and uses existing external
   Emacs Lisp code.

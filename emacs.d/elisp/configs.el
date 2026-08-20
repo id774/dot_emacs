@@ -228,17 +228,9 @@
                   (t
                    (view-mode)))
             ;; line numbers (toggle with C-x t)
-            (cond
-             ((>= emacs-major-version 23)
-              (linum-mode)
-              (custom-set-variables
-               '(global-linum-mode t)))
-             ((< emacs-major-version 23)
-              (require 'wb-line-number)
-              (custom-set-faces
-               '(wb-line-number-face ((t (:foreground "LightGrey"))))
-               '(wb-line-number-scroll-bar-face
-                 ((t (:foreground "white" :background "LightBlue2")))))))))
+            (linum-mode)
+            (custom-set-variables
+             '(global-linum-mode t))))
 
 ;; Wrap at window edge
 (setq truncate-partial-width-windows nil)
@@ -312,8 +304,6 @@
       (global-set-key (kbd "<zenkaku-hankaku>") 'toggle-input-method)))
 
    ((eq system-type 'darwin)
-    (if (< emacs-major-version 23)
-        (set-frame-parameter nil 'fullscreen 'fullboth)
-      (tool-bar-mode 0)))))
+    (tool-bar-mode 0))))
 
 ;;; configs.el ends here

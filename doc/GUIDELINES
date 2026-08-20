@@ -252,7 +252,6 @@ Examples:
 
     core-compat-bridge.el
     cl-compat-bridge.el
-    ess-compat-bridge.el
 
 Compatibility layers allow:
 
