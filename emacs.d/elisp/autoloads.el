@@ -101,8 +101,12 @@
 (when (require 'browse-kill-ring nil t)
   (global-set-key (kbd "C-c k") 'browse-kill-ring))
 
-;; zlc
-(load-p "zlc-settings")
+;; Minibuffer completion navigation.
+;; GNU Emacs 30+ provides visible completion navigation natively;
+;; older versions keep using the historical zlc implementation.
+(if (boundp 'minibuffer-visible-completions)
+    (setq minibuffer-visible-completions t)
+  (load-p "zlc-settings"))
 
 ;; uniquify
 (when (load-p "uniquify")
@@ -141,8 +145,9 @@
 ;; whitespace
 (load-p "whitespace-settings")
 
-;; hlinum
-(load-p "hlinum")
+;; hlinum is retained for GNU Emacs 23.4 through 28.x.
+(when (< emacs-major-version 29)
+  (load-p "hlinum"))
 
 ;; persistent-scratch
 (load-p "persistent-scratch")

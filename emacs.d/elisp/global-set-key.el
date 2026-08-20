@@ -31,13 +31,17 @@
 (cond ((eq window-system 'x)
        (progn
          (global-set-key [delete] 'delete-char)))
-      ((eq window-system 'mac)
+      ((memq window-system '(mac ns))
        t) ;; ok
       (t
        (keyboard-translate ?\C-h ?\C-?)))
 
 ;; Toggle line numbers with C-x t
-(define-key global-map "\C-x\ t" 'linum-mode)
+(define-key global-map "\C-x\ t"
+  (if (and (>= emacs-major-version 29)
+           (fboundp 'display-line-numbers-mode))
+      'display-line-numbers-mode
+    'linum-mode))
 
 ;; Toggle auto-complete-mode with C-x C-y or C-x y
 (define-key global-map "\C-x\C-y" 'auto-complete-mode)

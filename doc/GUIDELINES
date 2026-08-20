@@ -217,6 +217,13 @@ Classify each file before compiling it:
     compilable is necessary but not sufficient: confirm the dependency is
     actually explicit before adding a file here.
 
+Byte compilation during installation is best-effort. A failure for one
+file must be reported accurately, but it must not abort compilation of
+the remaining files or the remaining installation steps. Installation
+should complete with a summary of successful and failed compilations so
+that optional or version-specific failures do not make the entire
+configuration unavailable.
+
 A file that is byte-compiled without its macro dependencies resolved does
 not simply lose an optimization: a macro call the compiler does not
 recognize as a macro is compiled as an ordinary function call instead of

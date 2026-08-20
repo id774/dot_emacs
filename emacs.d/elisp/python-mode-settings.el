@@ -19,17 +19,20 @@
 ;; python-pep8
 (load-p "python-pep8")
 
-;; Python interpreter
-(setq python-shell-interpreter "/opt/python/current/bin/python")
-
-;; Add Python to exec-path
-(setq exec-path
-      (cons (expand-file-name "/opt/python/current/bin") exec-path))
+;; Historical /opt/python/current environment: use it when present, but do
+;; not override Emacs / python.el's default interpreter selection otherwise.
+(let ((python-dir "/opt/python/current/bin")
+      (python-bin "/opt/python/current/bin/python"))
+  (when (file-directory-p python-dir)
+    (add-to-list 'exec-path python-dir))
+  (when (file-executable-p python-bin)
+    (setq python-shell-interpreter python-bin)))
 
 ;; python-mode
 (add-hook 'python-mode-hook
           (lambda ()
-            (local-set-key "\C-c\ p" 'python-pep8)
+            (when (fboundp 'python-pep8)
+              (local-set-key "\C-c\ p" 'python-pep8))
             (require 'py-autopep8)
             (define-key python-mode-map (kbd "C-c F") 'py-autopep8)
             (define-key python-mode-map (kbd "C-c f") 'py-autopep8-region)))
