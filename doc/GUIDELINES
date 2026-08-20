@@ -24,8 +24,14 @@
     than rewriting historical configuration or bundled third-party
     code.
 
--   **Avoid internal APIs:**\
-    Never rely on `--private` functions or undocumented variables.
+-   **Avoid new internal API dependencies:**\
+    Project-owned code must not introduce new dependencies on
+    `--private` functions or undocumented variables. Existing internal
+    API dependencies in historical bundled third-party code may be
+    retained when they are required for compatibility with older GNU
+    Emacs versions; where a stable built-in replacement exists on newer
+    versions, contain the historical path behind a compatibility or
+    capability check instead of rewriting it unnecessarily.
 
 -   **Prioritize longevity over trend adoption:**\
     Avoid short-lived frameworks or experimental APIs unless they can
