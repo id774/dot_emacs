@@ -59,6 +59,7 @@ v26.08 (Release Date: TBD)
 - Remove legacy nxhtml, smartchr, sequential-command and bundled
   Erlang paths, plus unused auto-complete metadata and the cl-lib
   backport.
+- Align documentation with current maintenance policy and finalize installer v5.0.
 
 v26.07 (2026-07-31)
 -------------------

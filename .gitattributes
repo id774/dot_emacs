@@ -1,5 +1,5 @@
-# Markdown documents, including the fixed names that carry no extension.
-# The extensionless documents are listed one path at a time.
+# Files using the Markdown diff driver, including selected extensionless
+# plain-text documents. The extensionless documents are listed one path at a time.
 *.md           diff=markdown
 doc/GUIDELINES diff=markdown
 doc/LICENSE    diff=markdown
