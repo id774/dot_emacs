@@ -24,9 +24,17 @@
         (and (= emacs-major-version 24)
              (>= emacs-minor-version 3)))))
 
-;; Load cl on older Emacs and cl-lib on newer Emacs.
+;; Load cl on older Emacs and cl-lib on newer Emacs.  cl-lib does not
+;; provide lexical-let/lexical-let*, so when they are still missing after
+;; requiring cl-lib, also require the obsolete cl package for its
+;; historical closure semantics rather than approximating them here.
 (if cl-compat--has-cl-lib
-    (require 'cl-lib)
+    (progn
+      (require 'cl-lib)
+      (unless (and (fboundp 'lexical-let)
+                   (fboundp 'lexical-let*))
+        (with-no-warnings
+          (require 'cl))))
   (require 'cl)) ;; Old Common Lisp extensions.
 
 ;; Define legacy macro and function shims only when missing.
@@ -93,17 +101,7 @@
     (defmacro etypecase (keyform &rest clauses) `(cl-etypecase ,keyform ,@clauses)))
   (unless (fboundp 'destructuring-bind)
     (defmacro destructuring-bind (pattern expr &rest body)
-      `(cl-destructuring-bind ,pattern ,expr ,@body)))
-
-  ;; Keep a minimal lexical-let shim for very old code.
-  (unless (fboundp 'lexical-let)
-    (defmacro lexical-let (bindings &rest body)
-      "Very small shim; not fully equivalent to lexical binding."
-      `(let ,bindings ,@body)))
-  (unless (fboundp 'lexical-let*)
-    (defmacro lexical-let* (bindings &rest body)
-      "Very small shim; not fully equivalent to lexical binding."
-      `(let* ,bindings ,@body))))
+      `(cl-destructuring-bind ,pattern ,expr ,@body))))
 
 ;; Remaining legacy names, which cl-lib provides only with a cl- prefix.
 ;; The obsolete cl package used to define them as aliases, and bundled

@@ -73,6 +73,10 @@ v26.08 (Release Date: TBD)
   minibuf-isearch.el, so the compiler no longer reports them as unknown.
 - Absorb the obsolete cl aliases in cl-compat-bridge.el, so the bundled
   files that still load cl stop reporting every call.
+- Fix cl-compat-bridge.el so GNU Emacs 24.3+ also requires the obsolete
+  cl package when cl-lib lacks lexical-let and lexical-let*, restoring
+  their historical closure semantics for bundled deferred, concurrent
+  and Anything callbacks that capture lexical bindings for later use.
 - Clarify the license exclusions for the bundled third-party software.
 - Update the README overview and default behavior sections to match the
   bundled software that remains.
