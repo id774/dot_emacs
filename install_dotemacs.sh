@@ -51,17 +51,14 @@
 #    requires a usable Emacs binary. Remove the configuration before removing Emacs.
 #
 #  Version History:
-#  v4.4 2026-08-20
-#       Remove the Helm-specific build path after dropping the bundled Helm.
+#  v5.0 2026-08-20
+#       Streamline installation, selective byte compilation, and retired bundled-package handling.
 #  v4.3 2026-08-19
-#       Stop installation when the existing target cannot be removed, so
-#       stale files are not mixed with the replacement configuration.
+#       Abort installation when the existing target cannot be removed.
 #  v4.2 2026-08-18
-#       Stop byte-compiling bootstrap and hook-registration files.
+#       Exclude bootstrap and hook-registration files from byte compilation.
 #  v4.1 2026-08-17
-#       Byte-compile every DOT_EMACS module in active use, loading utils
-#       first so its load-p, autoload-p and defun-add-hook helpers resolve
-#       while the modules that use them are compiled.
+#       Byte-compile active DOT_EMACS modules with required helpers loaded.
 #  v4.0 2026-07-30
 #       Build the bundled helm only on Emacs 24 to 26, the range where it is
 #       actually loaded, since its Makefile fails on newer Emacs.

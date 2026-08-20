@@ -1,6 +1,6 @@
 # DOT_EMACS
 
-A pluggable and comprehensive configuration for Emacs that includes third-party libraries to create an all-in-one Emacs environment.
+A curated and modular Emacs configuration with selected bundled third-party libraries.
 
 ---
 
@@ -22,7 +22,7 @@ A pluggable and comprehensive configuration for Emacs that includes third-party 
 DOT_EMACS is designed to:
 
 - Simplify the setup of a powerful Emacs environment with preconfigured settings.
-- Include third-party libraries for enhanced functionality.
+- Include selected third-party libraries where they remain useful.
 - Provide a modular and customizable structure for user preferences.
 
 ---
@@ -114,7 +114,7 @@ DOT_EMACS:
 - Configures Emacs with preinstalled third-party libraries for enhanced functionality.
 - Loads user-specific configurations from the ~/.emacs.d/elisp/ directory, including init.el and additional settings if available.
 - Persists minibuffer history and the kill ring across Emacs sessions using the built-in `savehist`.
-- ESS is not bundled or loaded by DOT_EMACS; users who need R or S support must install and configure ESS separately.
+- Language-specific packages not bundled with DOT_EMACS must be installed and configured separately.
 - Uses `/dev/shm` as the temporary file directory on GNU/Linux only. Other platforms, including macOS, keep the Emacs default.
 
 ---
@@ -132,7 +132,9 @@ are shown.
 ├── dot_mew.el                Installed as ~/.mew.el. Mew (mail) settings.
 ├── install_dotemacs.sh       Installer and uninstaller.
 ├── emacs.d/
-│   ├── elisp/                The configuration itself. Copied to the target and byte-compiled.
+│   ├── elisp/                The configuration itself. Copied to the target; selected
+│   │                         libraries are byte-compiled while bootstrap and configuration
+│   │                         files remain source-loaded.
 │   │   ├── init.el           Entry point. Sets paths, then loads autoloads.el.
 │   │   ├── autoloads.el      Loads each settings module in order, then configs.el.
 │   │   ├── configs.el        Settings applied last, after every module is loaded.
