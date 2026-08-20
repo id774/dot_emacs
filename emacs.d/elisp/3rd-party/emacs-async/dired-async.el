@@ -126,6 +126,35 @@ Should take same args as `message'."
     (unless (> (length processes) 1)
       (dired-async--modeline-mode -1))))
 
+(defun dired-async--after-file-create-notify (total operation failures skipped)
+  "Notify the result of an operation handled by `dired-create-file'.
+TOTAL, OPERATION, FAILURES and SKIPPED are passed explicitly so that
+this runs correctly as a timer function on Emacs without lexical
+binding."
+  ;; First send error messages.
+  (cond (failures
+         (funcall dired-async-message-function
+                  "%s failed for %d of %d file%s -- See *Dired log* buffer"
+                  'dired-async-failures
+                  (car operation) (length failures)
+                  total (dired-plural-s total)))
+        (skipped
+         (funcall dired-async-message-function
+                  "%s: %d of %d file%s skipped -- See *Dired log* buffer"
+                  'dired-async-failures
+                  (car operation) (length skipped) total
+                  (dired-plural-s total))))
+  (when dired-buffers
+    (cl-loop for (_f . b) in dired-buffers
+             when (buffer-live-p b)
+             do (with-current-buffer b (revert-buffer nil t))))
+  ;; Finally send the success message.
+  (funcall dired-async-message-function
+           "Asynchronous %s of %s on %s file%s done"
+           'dired-async-message
+           (car operation) (cadr operation)
+           total (dired-plural-s total)))
+
 (defun dired-async-after-file-create (total operation failures skipped)
   "Callback function used for operation handled by `dired-create-file'."
   (unless (dired-async-processes)
@@ -145,30 +174,8 @@ Should take same args as `message'."
           (delete-file dired-async-log-file))
         (run-with-timer
          0.1 nil
-         (lambda ()
-           ;; First send error messages.
-           (cond (failures
-                  (funcall dired-async-message-function
-                           "%s failed for %d of %d file%s -- See *Dired log* buffer"
-                           'dired-async-failures
-                           (car operation) (length failures)
-                           total (dired-plural-s total)))
-                 (skipped
-                  (funcall dired-async-message-function
-                           "%s: %d of %d file%s skipped -- See *Dired log* buffer"
-                           'dired-async-failures
-                           (car operation) (length skipped) total
-                           (dired-plural-s total))))
-           (when dired-buffers
-             (cl-loop for (_f . b) in dired-buffers
-                      when (buffer-live-p b)
-                      do (with-current-buffer b (revert-buffer nil t))))
-           ;; Finally send the success message.
-           (funcall dired-async-message-function
-                    "Asynchronous %s of %s on %s file%s done"
-                    'dired-async-message
-                    (car operation) (cadr operation)
-                    total (dired-plural-s total)))))))
+         #'dired-async--after-file-create-notify
+         total operation failures skipped))))
 
 (defun dired-async-maybe-kill-ftp ()
   "Return a form to kill ftp process in child emacs."
@@ -180,6 +187,23 @@ Should take same args as `message'."
                                        "\\`\\*ftp.*"
                                        (buffer-name b)) b))))
        (when buf (kill-buffer buf))))))
+
+(defun dired-async--finish-create-files (total operation async-fn-list
+                                               failures skipped
+                                               &optional _ignore)
+  "Finish callback for `dired-async-create-files'.
+TOTAL, OPERATION, ASYNC-FN-LIST, FAILURES and SKIPPED are bound in
+advance with `apply-partially', so this does not rely on lexical
+binding to keep the state of the finished operation."
+  (dired-async-after-file-create
+   total (list operation (length async-fn-list)) failures skipped)
+  (when (string= (downcase operation) "rename")
+    (cl-loop for (file . to) in async-fn-list
+             for bf = (get-file-buffer file)
+             for destp = (file-exists-p to)
+             do (and bf destp
+                     (with-current-buffer bf
+                       (set-visited-file-name to t t))))))
 
 (defvar overwrite-query)
 (defun dired-async-create-files (file-creator operation fn-list name-constructor
@@ -274,16 +298,12 @@ ESC or `q' to not overwrite any of the remaining files,
                         (dired-plural-s total)))))
       ;; Setup callback.
       (setq callback
-            (lambda (&optional _ignore)
-               (dired-async-after-file-create
-                total (list operation (length async-fn-list)) failures skipped)
-               (when (string= (downcase operation) "rename")
-                 (cl-loop for (file . to) in async-fn-list
-                          for bf = (get-file-buffer file)
-                          for destp = (file-exists-p to)
-                          do (and bf destp
-                                  (with-current-buffer bf
-                                    (set-visited-file-name to t t))))))))
+            (apply-partially #'dired-async--finish-create-files
+                             total
+                             operation
+                             async-fn-list
+                             failures
+                             skipped)))
     ;; Start async process.
     (when async-fn-list
       (async-start `(lambda ()

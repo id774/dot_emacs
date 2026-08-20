@@ -83,6 +83,9 @@ v26.08 (Release Date: TBD)
   cl package when cl-lib lacks lexical-let and lexical-let*, restoring
   their historical closure semantics for bundled deferred, concurrent
   and Anything callbacks that capture lexical bindings for later use.
+- Fix the delayed dired-async callbacks on GNU Emacs 23.4 by passing their
+  state to named functions explicitly, instead of relying on the
+  file-local lexical binding of dired-async.el.
 - Clarify the license exclusions for bundled third-party software and
   project files containing third-party-derived code.
 - Update the README overview and default behavior sections to match the
