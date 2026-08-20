@@ -247,16 +247,21 @@ ESC or `q' to not overwrite any of the remaining files,
                                    operation from to)))
                   (push (cons from to) async-fn-list)))))
       ;; Fix tramp issue #80 with emacs-26, use "-q" only when needed.
-      (setq async-quiet-switch
-            (if (and (boundp 'tramp-cache-read-persistent-data)
-                     async-fn-list
-                     (cl-loop for (_from . to) in async-fn-list
-                              thereis (file-remote-p to)))
-                "-q" "-Q"))
-      ;; When failures have been printed to dired log add the date at bob.
-      (when (or failures skipped) (dired-log t))
-      ;; When async-fn-list is empty that's mean only one file
-      ;; had to be copied and user finally answer NO.
+            (lexical-let ((total total)
+                          (operation operation)
+                          (async-fn-list async-fn-list)
+                          (failures failures)
+                          (skipped skipped))
+              (lambda (&optional _ignore)
+                (dired-async-after-file-create
+                 total (list operation (length async-fn-list)) failures skipped)
+                (when (string= (downcase operation) "rename")
+                  (cl-loop for (file . to) in async-fn-list
+                           for bf = (get-file-buffer file)
+                           for destp = (file-exists-p to)
+                           do (and bf destp
+                                   (with-current-buffer bf
+                                     (set-visited-file-name to t t)))))))))
       ;; In this case async process will never start and callback
       ;; will have no chance to run, so notify failures here.
       (unless async-fn-list
