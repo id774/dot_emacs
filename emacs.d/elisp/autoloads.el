@@ -33,11 +33,18 @@
 ;; auto-complete
 (load-p "auto-complete-settings")
 
+;; smartchr
+(load-p "smartchr-settings")
+
 ;; recentf-ext
 (load-p "recentf-ext-settings")
 
 ;; multi-term
 (load-p "multi-term-settings")
+
+;; git
+(load-p "git")
+(load-p "git-blame")
 
 ;; open-junk-file
 (load-p "open-junk-file")
@@ -96,6 +103,9 @@
 ;; wdired
 (when (require 'wdired nil t)
   (define-key dired-mode-map "r" 'wdired-change-to-wdired-mode))
+
+;; minibuf-isearch
+(require 'minibuf-isearch)
 
 ;; browse-kill-ring
 (when (require 'browse-kill-ring nil t)
@@ -157,6 +167,11 @@
   (setq key-chord-two-keys-delay 0.02)
   (key-chord-mode 1))
 
+;; highlight-unique-symbol
+;; http://hitode909.hatenablog.com/entry/2013/02/11/233449
+(when (require 'highlight-unique-symbol nil t)
+  (highlight-unique-symbol t))
+
 ;; kill-ring persistence across sessions
 (require 'savehist)
 (add-to-list 'savehist-additional-variables 'kill-ring)
@@ -168,8 +183,7 @@
 (load-p "auto-save-buffers-settings")
 
 ;; dired-async
-(when (and (require 'cl-lib nil t)
-           (load-p "dired-async"))
+(when (load-p "dired-async")
   (dired-async-mode 1))
 
 ;; faces

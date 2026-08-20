@@ -5,10 +5,8 @@ v26.08 (Release Date: TBD)
 --------------------------
 - Remove the obsolete navi2ch and Riece configuration, along with their key
   bindings, and keep the optional italk load in autoloads.el.
-- Remove the bundled legacy git.el and git-blame.el in favor of the standard
-  version control commands.
-- Remove the minibuf-isearch and physical-line implementations, whose
-  behavior the supported Emacs versions already provide.
+- Remove the physical-line implementation, whose behavior the supported
+  Emacs versions already provide.
 - Replace savekill with the built-in savehist, which now saves the kill ring
   between sessions.
 - Replace jaspace with the standard whitespace mode, enabled globally, and
@@ -18,18 +16,14 @@ v26.08 (Release Date: TBD)
 - Remove zencoding-mode, its mode hooks and its key bindings.
 - Remove the bundled Helm path for Emacs 24 through 26 and use Anything on
   every supported Emacs version.
-- Remove minor-mode-hack, web-mode, flymake-cursor, anything-complete,
-  highlight-unique-symbol, deferred and concurrent.
+- Remove minor-mode-hack, web-mode, flymake-cursor and anything-complete.
 - Remove the bundled ESS and its compatibility bridge; ESS is now an
   external user-managed dependency when R or S support is needed.
 - Drop the legacy Meadow and pre-Emacs-23 fallbacks, including
   wb-line-number, while retaining GNU Emacs 23.4 as the minimum
   supported version.
-- Remove legacy nxhtml, smartchr, sequential-command and bundled
-  Erlang paths, plus unused auto-complete metadata and the cl-lib
-  backport.
-- Keep startup working on GNU Emacs 23.4 through 24.2 by enabling
-  dired-async only when cl-lib is available.
+- Remove the unused auto-complete-config.el and auto-complete-pkg.el
+  metadata files.
 - Fix the with-eval-after-load fallback so deferred Anything key bindings
   run correctly on GNU Emacs 23.4 through 24.3.
 - Exclude init.el, autoloads.el, configs.el, lang-mode.el, screen.el and

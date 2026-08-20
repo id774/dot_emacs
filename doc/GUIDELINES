@@ -10,6 +10,20 @@
     usefulness, maintenance cost, and dependencies, rather than kept
     unchanged forever.
 
+-   **Retire legacy components deliberately, not by inference:**\
+    Being obsolete, deprecated, or legacy is not by itself a reason to
+    remove a component, and neither is the existence of a built-in or
+    native replacement. Code that is actually loaded must not be
+    classified as unused, and a dependency must not be called orphaned
+    merely because its caller was removed first; check the full
+    dependency graph before retiring anything. Before retiring a
+    component, enumerate its user-visible behavior; when replacing it,
+    confirm the replacement is behaviorally equivalent, and keep any
+    historical behavior whose equivalence cannot be confirmed. A
+    cleanup or modernization that changes observable behavior is not a
+    plain refactoring, and in long-lived configuration, proven behavior
+    takes priority over code age.
+
 -   **Use features conditionally:**\
     Always verify feature existence with `fboundp`, `boundp`, or
     `featurep` before calling functions or variables.

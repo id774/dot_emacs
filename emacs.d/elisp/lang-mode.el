@@ -58,6 +58,11 @@
   (add-hook 'rhtml-mode-hook
             (lambda () (rinari-launch))))
 
+;; jsp
+(cond
+ ((< emacs-major-version 25)
+  (load-p "autostart")))
+
 ;; gtags-mode
 (when (autoload-p 'gtags-mode "gtags" "GNU GLOBAL" 'interactive)
   (add-hook 'gtags-mode-hook
@@ -136,5 +141,10 @@
 (when (autoload-p 'markdown-mode "markdown-mode" "Major mode for editing Markdown files" 'interactive)
   (setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
   (setq auto-mode-alist (cons '("\\.txt" . markdown-mode) auto-mode-alist)))
+
+;; erlang-mode
+(when (and (< emacs-major-version 27)
+           (require 'erlang nil 'noerror))
+  (add-to-list 'auto-mode-alist '("\\.erl\\'" . erlang-mode)))
 
 ;;; lang-mode.el ends here
