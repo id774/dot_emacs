@@ -30,6 +30,8 @@ v26.08 (Release Date: TBD)
   backport.
 - Keep startup working on GNU Emacs 23.4 through 24.2 by enabling
   dired-async only when cl-lib is available.
+- Fix the with-eval-after-load fallback so deferred Anything key bindings
+  run correctly on GNU Emacs 23.4 through 24.3.
 - Exclude init.el, autoloads.el, configs.el, lang-mode.el, screen.el and
   diminish-settings.el from byte compilation; load them from source.
 - Stop the installer when its existing target cannot be removed, so stale

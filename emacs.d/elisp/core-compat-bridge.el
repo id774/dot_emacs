@@ -26,9 +26,9 @@
 ;; Provide with-eval-after-load on very old Emacs versions.
 (unless (fboundp 'with-eval-after-load)
   (defmacro with-eval-after-load (file &rest body)
-    "Fallback to eval-after-load on old Emacs."
+    "Evaluate BODY after FILE is loaded on older Emacs versions."
     `(eval-after-load ,file
-       (lambda () ,@body))))
+       '(progn ,@body))))
 
 ;; Emacs 29 removed toggle-read-only, so restore it on top of read-only-mode.
 ;; Older Emacs versions still define it and keep their own implementation.
