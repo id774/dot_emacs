@@ -3,40 +3,6 @@ dot_emacs Repository Version History
 
 v26.08 (Release Date: TBD)
 --------------------------
-- Add .gitattributes, marking the Markdown documents for diff and the
-  vendored third-party README files as vendored.
-- Expand doc/GUIDELINES with the document file naming and attribute
-  recommendations, the reach of a compatibility bridge and when a bundled
-  file may be edited instead, the scope and history of a pull request, the
-  width a version history entry keeps, and when an executable script's own
-  version is updated.
-- Add the terminating period to the Policy header line of dot_emacs and the
-  doc/GUIDELINES example.
-- Wrap the lines of this file at 75 columns.
-- Add the shared version history description guidelines to the end of this
-  file.
-- Replace count-lines-region, removed in Emacs 29, with count-lines in
-  sws-mode.el, so indenting a region in sws-mode works again.
-- Require core-compat-bridge when compiling auto-save-buffers-enhanced.el,
-  so its toggle-read-only call no longer warns.
-- Silence the native compilation warning pop-up in init.el, keeping the
-  entries in the *Warnings* buffer.
-- Declare the conditionally defined and optional mmm-mode functions of the
-  bundled browse-kill-ring.el and auto-save-buffers-enhanced.el, so the
-  compiler no longer reports them as unknown.
-- Absorb the obsolete cl aliases in cl-compat-bridge.el, so the bundled
-  files that still load cl stop reporting every call.
-- Describe each main directory in the README Directory Structure section.
-- Clarify the license exclusions for the bundled third-party software.
-- Replace jaspace with the standard whitespace mode, enabled globally, and
-  remove the bundled jaspace.el, whose display table showed an ASCII @ as a
-  box.
-- Exclude init.el, autoloads.el, configs.el, lang-mode.el, screen.el and
-  diminish-settings.el from byte compilation; load them from source.
-- Stop the installer when its existing target cannot be removed, so stale
-  files are not mixed with the new configuration.
-- Let find-file open nonexistent paths as editable new files instead of
-  routing them through view-mode.
 - Remove the obsolete navi2ch and Riece configuration, along with their key
   bindings, and keep the optional italk load in autoloads.el.
 - Remove the bundled legacy git.el and git-blame.el in favor of the standard
@@ -45,6 +11,9 @@ v26.08 (Release Date: TBD)
   behavior the supported Emacs versions already provide.
 - Replace savekill with the built-in savehist, which now saves the kill ring
   between sessions.
+- Replace jaspace with the standard whitespace mode, enabled globally, and
+  remove the bundled jaspace.el, whose display table showed an ASCII @ as a
+  box.
 - Remove jade-mode while keeping the Stylus support of sws-mode.
 - Remove zencoding-mode, its mode hooks and its key bindings.
 - Remove the bundled Helm path for Emacs 24 through 26 and use Anything on
@@ -59,6 +28,39 @@ v26.08 (Release Date: TBD)
 - Remove legacy nxhtml, smartchr, sequential-command and bundled
   Erlang paths, plus unused auto-complete metadata and the cl-lib
   backport.
+- Keep startup working on GNU Emacs 23.4 through 24.2 by enabling
+  dired-async only when cl-lib is available.
+- Exclude init.el, autoloads.el, configs.el, lang-mode.el, screen.el and
+  diminish-settings.el from byte compilation; load them from source.
+- Stop the installer when its existing target cannot be removed, so stale
+  files are not mixed with the new configuration.
+- Let find-file open nonexistent paths as editable new files instead of
+  routing them through view-mode.
+- Replace count-lines-region, removed in Emacs 29, with count-lines in
+  sws-mode.el, so indenting a region in sws-mode works again.
+- Require core-compat-bridge when compiling auto-save-buffers-enhanced.el,
+  so its toggle-read-only call no longer warns.
+- Silence the native compilation warning pop-up in init.el, keeping the
+  entries in the *Warnings* buffer.
+- Declare the conditionally defined and optional mmm-mode functions of the
+  bundled browse-kill-ring.el and auto-save-buffers-enhanced.el, so the
+  compiler no longer reports them as unknown.
+- Absorb the obsolete cl aliases in cl-compat-bridge.el, so the bundled
+  files that still load cl stop reporting every call.
+- Describe each main directory in the README Directory Structure section.
+- Clarify the license exclusions for the bundled third-party software.
+- Add .gitattributes, marking the Markdown documents for diff and the
+  vendored third-party README files as vendored.
+- Expand doc/GUIDELINES with the document file naming and attribute
+  recommendations, the reach of a compatibility bridge and when a bundled
+  file may be edited instead, the scope and history of a pull request, the
+  width a version history entry keeps, and when an executable script's own
+  version is updated.
+- Add the terminating period to the Policy header line of dot_emacs and the
+  doc/GUIDELINES example.
+- Wrap the lines of this file at 75 columns.
+- Add the shared version history description guidelines to the end of this
+  file.
 - Align documentation with current maintenance policy and finalize installer v5.0.
 
 v26.07 (2026-07-31)

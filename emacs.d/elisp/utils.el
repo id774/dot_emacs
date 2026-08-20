@@ -7,7 +7,7 @@
 
 ;; Support : Emacs 23.4+
 ;; Extended: Emacs 30+
-;; Policy  : Preserve historical behavior and maintain backward compatibility.
+;; Policy  : Preserve supported behavior and maintain backward compatibility.
 ;; Package : DOT_EMACS
 
 ;;; Commentary:
@@ -34,7 +34,8 @@
                 ,@sexplist))))
 
 (defun load-p (loadlib &optional quiet)
-  "Load LOADLIB safely without stopping on failure.
+  "Load LOADLIB without failing when the library itself is absent.
+Errors raised while evaluating an existing library are not suppressed.
 With non-nil QUIET, stay silent when LOADLIB is absent.  Use it for
 libraries that are optional by design, such as a private site-lisp
 loader."

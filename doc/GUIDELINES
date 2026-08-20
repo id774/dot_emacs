@@ -37,7 +37,7 @@
 
 Separate stable core logic from version-specific enhancements.
 
-    mycore.el      # Core compatible with Emacs 23+
+    mycore.el      # Core compatible with GNU Emacs 23.4+
     myfeat-30.el   # Enhancements for Emacs 30+
     init.el        # Version-based loader
 
@@ -90,7 +90,7 @@ possible.
 ```
 
 2.  Prefer `cl-lib` over `cl`.\
-    If compatibility with Emacs 23 is required, provide a thin wrapper
+    If compatibility with GNU Emacs 23.4 is required, provide a thin wrapper
     layer.
 
 3.  Encapsulate version differences with helper macros.
@@ -111,7 +111,7 @@ possible.
 
 ## 5. Lexical Binding Policy
 
-DOT_EMACS standardizes on lexical binding for all Emacs Lisp files.
+DOT_EMACS standardizes on lexical binding for project-owned Emacs Lisp code.
 
 Although Emacs historically used dynamic binding, lexical binding has
 been available since Emacs 24 and is widely adopted in modern Emacs
@@ -200,14 +200,17 @@ Classify each file before compiling it:
     environment matter more than execution speed, and the risk of an
     `.el`/`.elc` mismatch or a compile-time dependency outweighs any
     benefit from compiling them. Load these from source.
--   **Configuration / hook registration** files set values, register
-    hooks, and configure modes, often through project-local macros such
-    as `defun-add-hook`, or otherwise depend on load order. `configs.el`,
-    `lang-mode.el`, `screen.el`, and `diminish-settings.el` are this
-    category: each expands `defun-add-hook`, defined in `utils.el`, and a
-    macro must be defined in the compiling process *before* its call
-    sites are compiled. Load these from source rather than adding
-    `utils.el` to the compile-time load order to make them compilable.
+-   **Configuration / hook-registration files with compile-time or
+    load-order dependencies** set values, register hooks, and configure
+    modes through project-local macros such as `defun-add-hook`, or
+    otherwise depend on load order. `configs.el`, `lang-mode.el`,
+    `screen.el`, and `diminish-settings.el` are this category: each
+    expands `defun-add-hook`, defined in `utils.el`, and a macro must be
+    defined in the compiling process *before* its call sites are
+    compiled. Load these specific files from source rather than adding
+    `utils.el` to the compile-time load order to make them compilable;
+    configuration files without such a dependency are byte-compiled like
+    any other module.
 -   **Independent library / compatibility module** files, such as the
     compatibility bridges and self-contained helpers, have a clear,
     local compile-time dependency and are safe to byte-compile. Being
@@ -272,11 +275,12 @@ This strategy avoids large-scale rewrites and preserves long-term
 maintainability.
 
 The bundled files under `emacs.d/elisp/3rd-party/` are historical
-third-party code, kept as received so that the upstream text stays
-recognisable and a later copy can replace them. A bridge exists so that
-they keep working untouched. The bridge is therefore the default place
-for a fix, and editing a bundled file is the exception that has to be
-argued for.
+third-party code, kept as close to the upstream text as possible so that
+it stays recognisable and a later copy can replace them. A bridge is the
+default place for a fix reaching the problem, and only when the bridge
+cannot reach it may a documented minimal compatibility fix be applied to
+the bundled source instead. Large-scale rewrites of bundled source are
+not done.
 
 What a bridge can reach:
 
@@ -338,7 +342,7 @@ Each file should clearly document its compatibility expectations.
 ``` elisp
 ;; Support : Emacs 23.4+
 ;; Extended: Emacs 30+
-;; Policy  : Preserve historical behavior and maintain backward compatibility.
+;; Policy  : Preserve supported behavior and maintain backward compatibility.
 ```
 
 Executable script versions:
@@ -424,9 +428,9 @@ Recommendations:
     and that cost is accepted here, because the `.el` headers and the
     references outside this repository outweigh it.
 
-`.gitattributes` records what the documents are:
+`.gitattributes` records how Git handles these documents for diffs:
 
--   `*.md` and the extensionless Markdown documents take `diff=markdown`,
+-   `*.md` and selected extensionless plain-text documents take `diff=markdown`,
     so that a diff hunk header names the section it falls in.
 -   `diff=markdown` is a diff aid and nothing else. It teaches `git diff`
     to recognise headings when it picks a hunk header. It changes no

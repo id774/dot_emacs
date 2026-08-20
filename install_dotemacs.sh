@@ -41,9 +41,9 @@
 #  - Fallback: When 'emacs' is not found and [emacs_binary] is not an executable path,
 #    the script tries /Applications/Emacs.app/Contents/MacOS/Emacs on macOS.
 #  - The script will remove existing Emacs configurations before installation.
-#  - Byte-compilation is performed selectively: independent library and
-#    compatibility modules are compiled, while bootstrap/orchestration and
-#    configuration/hook-registration files are left to load from source.
+#  - Byte-compilation is selective: libraries, compatibility modules, and
+#    safe configuration modules are compiled, while bootstrap/orchestration
+#    and load-order-sensitive configuration files are loaded from source.
 #  - The --uninstall option will remove installed files and user configuration.
 #  - Keep the uninstall target fixed at /usr/local/etc/emacs.d to prevent accidental deletion.
 #  - Do not remove custom installation targets automatically.
