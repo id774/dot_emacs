@@ -251,8 +251,9 @@ Rules:
 -   Prefer built-in packages whenever possible.
 -   Optional packages must degrade gracefully if absent.
 
-Failure to load a package should **reduce functionality, not break
-startup.**
+Absence of an optional package should **reduce functionality, not break
+startup.** Errors raised while evaluating an installed package should
+remain visible rather than being silently suppressed.
 
 ------------------------------------------------------------------------
 

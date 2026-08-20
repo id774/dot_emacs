@@ -39,7 +39,7 @@ Errors raised while evaluating an existing library are not suppressed.
 With non-nil QUIET, stay silent when LOADLIB is absent.  Use it for
 libraries that are optional by design, such as a private site-lisp
 loader."
-  ;; Try loading with missing-ok.  If it fails, emit a message quietly.
+  ;; Allow an absent library; report its absence unless QUIET is non-nil.
   (let ((load-status (load loadlib t)))
     (or load-status
         quiet
