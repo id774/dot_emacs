@@ -101,12 +101,8 @@
 (when (require 'browse-kill-ring nil t)
   (global-set-key (kbd "C-c k") 'browse-kill-ring))
 
-;; Minibuffer completion navigation.
-;; GNU Emacs 30+ provides visible completion navigation natively;
-;; older versions keep using the historical zlc implementation.
-(if (boundp 'minibuffer-visible-completions)
-    (load-p "minibuffer-completion-settings")
-  (load-p "zlc-settings"))
+;; zlc
+(load-p "zlc-settings")
 
 ;; uniquify
 (when (load-p "uniquify")
