@@ -140,7 +140,7 @@ are shown.
 │   │   ├── configs.el        Settings applied last, after every module is loaded.
 │   │   ├── *-settings.el     One file per package or mode (dired, mew, tramp, auto-complete, ...).
 │   │   ├── *-compat-bridge.el  Shims that keep old code loadable on current Emacs.
-│   │   └── 3rd-party/        Bundled third-party libraries, including ess, helm and yatex-mode.
+│   │   └── 3rd-party/        Bundled third-party libraries, including ess and yatex-mode.
 │   └── site-lisp/            Placeholder, as are anything/, backups/, tmp/ and the other
 │                             run-time directories beside it. See the note below.
 └── doc/

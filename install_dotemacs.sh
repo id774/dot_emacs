@@ -51,6 +51,8 @@
 #    requires a usable Emacs binary. Remove the configuration before removing Emacs.
 #
 #  Version History:
+#  v4.4 2026-08-20
+#       Remove the Helm-specific build path after dropping the bundled Helm.
 #  v4.3 2026-08-19
 #       Stop installation when the existing target cannot be removed, so
 #       stale files are not mixed with the replacement configuration.
@@ -202,37 +204,9 @@ emacs_batch_byte_compile_with_utils() {
     done
 }
 
-# Report the major version of the Emacs binary in use
-emacs_major_version() {
-    "$EMACS" --batch -Q --eval '(princ emacs-major-version)' 2>/dev/null
-}
-
-# Build the bundled helm, which anything-helm.el loads on Emacs 24 to 26 only.
-# Its Makefile calls update-directory-autoloads, removed in Emacs 29, so skip
-# the build outside that range instead of failing on every install.
-build_helm() {
-    EMACS_MAJOR=$(emacs_major_version)
-
-    case "$EMACS_MAJOR" in
-        ''|*[!0-9]*)
-            echo "[INFO] Skipping the helm build, since the Emacs major version is unknown."
-            return 0
-            ;;
-    esac
-
-    if [ "$EMACS_MAJOR" -lt 24 ] || [ "$EMACS_MAJOR" -gt 26 ]; then
-        echo "[INFO] Skipping the helm build, which supports Emacs 24 to 26 only."
-        return 0
-    fi
-
-    cd "$TARGET/elisp/3rd-party/helm" && $SUDO make
-}
-
 # Byte-compile all necessary Emacs Lisp files
 byte_compile_all() {
     echo "[INFO] Byte-compiling Emacs Lisp files..."
-
-    build_helm
 
     cd "$TARGET/elisp/3rd-party/jade-mode" && emacs_batch_byte_compile \
         sws-mode.el

@@ -163,8 +163,8 @@
            (<= emacs-major-version 26))
   (load-p "ess-site"))
 
-;; anything / helm
-(load-p "anything-helm")
+;; anything
+(load-p "anything-settings")
 
 ;; key-chord
 ;; http://www.emacswiki.org/cgi-bin/wiki/download/key-chord.el
