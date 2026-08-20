@@ -105,7 +105,7 @@
 ;; GNU Emacs 30+ provides visible completion navigation natively;
 ;; older versions keep using the historical zlc implementation.
 (if (boundp 'minibuffer-visible-completions)
-    (setq minibuffer-visible-completions t)
+    (load-p "minibuffer-completion-settings")
   (load-p "zlc-settings"))
 
 ;; uniquify
