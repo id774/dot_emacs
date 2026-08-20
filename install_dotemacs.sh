@@ -292,7 +292,6 @@ byte_compile_all() {
         google-this-settings.el \
         key-chord-define-global.el \
         kill-all-buffers.el \
-        minibuffer-completion-settings.el \
         multi-term-settings.el \
         paredit-settings.el \
         persistent-scratch.el \
