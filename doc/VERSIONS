@@ -34,9 +34,8 @@ v26.08 (Release Date: TBD)
   saving the kill ring immediately on every update.
 - Add the Apple Silicon Homebrew directory /opt/homebrew/bin to exec-path
   and PATH when it exists.
-- Add .gitattributes, assigning the Markdown diff driver to Markdown files
-  and selected extensionless plain-text documents, and marking bundled
-  third-party README files as vendored.
+- Add .gitattributes, marking the Markdown documents for diff and the
+  vendored third-party README files as vendored.
 - Add a README Directory Structure section describing each main directory.
 - Expand doc/GUIDELINES with the deliberate retirement of a legacy
   component, the scope of byte compilation, the document file naming and
@@ -68,9 +67,6 @@ v26.08 (Release Date: TBD)
 - Pass the bundled cl-lib directory to the dired-async child process on GNU
   Emacs 23.4 through 24.2, where the emacs -Q child cannot require cl-lib
   otherwise, and add nothing there on GNU Emacs 24.3+.
-- Preserve dired-async finish callback bindings explicitly with lexical-let,
-  so asynchronous completion remains valid on GNU Emacs 23.4 where file-local
-  lexical binding is unavailable.
 - Fix the with-eval-after-load fallback so deferred Anything key bindings
   run correctly on GNU Emacs 23.4 through 24.3.
 - Fix the asynchronous byte compilation status so that any nonzero exit
