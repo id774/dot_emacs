@@ -55,6 +55,9 @@
 #  Version History:
 #  v5.0 2026-08-20
 #       Streamline installation, selective byte compilation, and retired bundled-package handling.
+#       Compile sws-mode.el from 3rd-party root instead of the removed
+#       jade-mode directory, and compile the bundled cl-lib.el from its
+#       own cl-lib directory so it is not added to the shared -L path.
 #  v4.3 2026-08-19
 #       Abort installation when the existing target cannot be removed.
 #  v4.2 2026-08-18
@@ -220,8 +223,12 @@ byte_compile_all() {
     BYTE_COMPILE_SUCCEEDED=0
     BYTE_COMPILE_FAILED=0
 
-    cd "$TARGET/elisp/3rd-party/jade-mode" && emacs_batch_byte_compile \
-        sws-mode.el
+    # The bundled cl-lib.el lives in its own directory so that its
+    # directory is never added to the common -L search path used by
+    # emacs_batch_byte_compile, which would let it shadow the built-in
+    # cl-lib on GNU Emacs 24.3+. Compile it directly by path instead.
+    cd "$TARGET/elisp/3rd-party/cl-lib" && emacs_batch_byte_compile \
+        cl-lib.el
 
     cd "$TARGET/elisp/3rd-party/ruby-mode" && emacs_batch_byte_compile \
         inf-ruby.el \
@@ -236,7 +243,6 @@ byte_compile_all() {
     cd "$TARGET/elisp/3rd-party" && emacs_batch_byte_compile \
         py-autopep8.el \
         browse-kill-ring.el \
-        cl-lib.el \
         js2.el \
         undo-tree.el \
         viewer.el \
@@ -265,7 +271,8 @@ byte_compile_all() {
         sass-mode.el \
         smartchr.el \
         sequential-command.el \
-        recentf-ext.el
+        recentf-ext.el \
+        sws-mode.el
 
     # utils.el defines the load-p, autoload-p and defun-add-hook helpers the
     # other modules use, so compile it first and then load it for the rest.

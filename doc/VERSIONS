@@ -12,8 +12,11 @@ v26.08 (Release Date: TBD)
 - Replace jaspace with the standard whitespace mode, enabled globally, and
   remove the bundled jaspace.el, whose display table showed an ASCII @ as a
   box.
-- Remove jade-mode while keeping the Stylus support of sws-mode.
-- Remove zencoding-mode, its mode hooks and its key bindings.
+- Remove jade-mode, keeping the Stylus support of sws-mode.el as a
+  standalone third-party file, with its stale jade-mode load-path and
+  byte-compile entries removed.
+- Remove zencoding-mode, including the copy bundled inside nXhtml, along
+  with its mode hooks and key bindings, while keeping nXhtml itself.
 - Remove the bundled Helm path for Emacs 24 through 26 and use Anything on
   every supported Emacs version.
 - Remove minor-mode-hack, web-mode, flymake-cursor and anything-complete.
@@ -58,6 +61,9 @@ v26.08 (Release Date: TBD)
 - Add the shared version history description guidelines to the end of this
   file.
 - Align documentation with current maintenance policy and finalize installer v5.0.
+- Move the bundled cl-lib.el forward-compatibility copy into its own
+  directory and add it to load-path only on GNU Emacs 23.4 through 24.2,
+  so GNU Emacs 24.3+ uses its built-in cl-lib instead of shadowing it.
 
 v26.07 (2026-07-31)
 -------------------

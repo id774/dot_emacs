@@ -53,12 +53,21 @@ subdirectory under load-path.")
             (expand-file-name "~/.emacs.d/elisp/3rd-party/ruby-mode")
             (expand-file-name "~/.emacs.d/elisp/3rd-party/scala-mode")
             (expand-file-name "~/.emacs.d/elisp/3rd-party/yatex-mode")
-            (expand-file-name "~/.emacs.d/elisp/3rd-party/jade-mode")
             (expand-file-name "~/.emacs.d/elisp/3rd-party/nxhtml")
             (expand-file-name "~/.emacs.d/elisp/3rd-party/rhtml")
             (expand-file-name "~/.emacs.d/elisp/3rd-party/haml")
             (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari")
             (expand-file-name "~/.emacs.d/elisp/3rd-party/emacs-async")))
+
+;; The bundled cl-lib.el is a forward-compatibility copy for GNU Emacs
+;; versions that predate the built-in cl-lib (24.3).  Keep it out of
+;; load-path on 24.3+ so `(require 'cl-lib)' finds the built-in library
+;; instead of shadowing it with this historical copy.
+(when (or (< emacs-major-version 24)
+          (and (= emacs-major-version 24) (< emacs-minor-version 3)))
+  (setq my-load-path
+        (append my-load-path
+                (list (expand-file-name "~/.emacs.d/elisp/3rd-party/cl-lib")))))
 
 (setq load-path (append my-load-path default-load-path))
 
