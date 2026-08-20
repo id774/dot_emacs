@@ -262,6 +262,7 @@ byte_compile_all() {
         git-blame.el \
         google-this.el \
         minibuf-isearch.el \
+        minor-mode-hack.el \
         multi-term.el \
         open-junk-file.el \
         paredit.el \
@@ -269,6 +270,7 @@ byte_compile_all() {
         scss-mode.el \
         haml-mode.el \
         sass-mode.el \
+        savekill.el \
         smartchr.el \
         sequential-command.el \
         recentf-ext.el \
@@ -309,6 +311,7 @@ byte_compile_all() {
         multi-term-settings.el \
         paredit-settings.el \
         persistent-scratch.el \
+        physical-line.el \
         popwin-el.el \
         proxy.el \
         python-mode-settings.el \

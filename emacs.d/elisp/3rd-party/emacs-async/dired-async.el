@@ -287,6 +287,22 @@ ESC or `q' to not overwrite any of the remaining files,
     ;; Start async process.
     (when async-fn-list
       (async-start `(lambda ()
+                      ;; GNU Emacs 23.4 through 24.2 predate the built-in
+                      ;; cl-lib, so the parent adds a bundled copy to its
+                      ;; own load-path (see init.el).  The async child is
+                      ;; started as `emacs -Q' and does not inherit that
+                      ;; load-path, so `(require (quote cl-lib))' would
+                      ;; otherwise fail there.  Splice the parent-resolved
+                      ;; directory into the child's load-path only on
+                      ;; those versions; GNU Emacs 24.3+ already has
+                      ;; cl-lib built in and gets nothing spliced in here.
+                      ,@(when (and (or (< emacs-major-version 24)
+                                       (and (= emacs-major-version 24)
+                                            (< emacs-minor-version 3)))
+                                   (locate-library "cl-lib"))
+                          (list `(add-to-list
+                                  'load-path
+                                  ,(file-name-directory (locate-library "cl-lib")))))
                       (require 'cl-lib) (require 'dired-aux) (require 'dired-x)
                       ,(async-inject-variables dired-async-env-variables-regexp)
                           (let ((dired-recursive-copies (quote always))

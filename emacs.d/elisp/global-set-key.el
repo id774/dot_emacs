@@ -37,11 +37,7 @@
        (keyboard-translate ?\C-h ?\C-?)))
 
 ;; Toggle line numbers with C-x t
-(define-key global-map "\C-x\ t"
-  (if (and (>= emacs-major-version 29)
-           (fboundp 'display-line-numbers-mode))
-      'display-line-numbers-mode
-    'linum-mode))
+(define-key global-map "\C-x\ t" 'linum-mode)
 
 ;; Toggle auto-complete-mode with C-x C-y or C-x y
 (define-key global-map "\C-x\C-y" 'auto-complete-mode)
