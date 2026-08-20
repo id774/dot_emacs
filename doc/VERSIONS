@@ -26,6 +26,9 @@ v26.08 (Release Date: TBD)
   table showed an ASCII @ as a box.
 - Replace count-lines-region, removed in Emacs 29, with count-lines in
   sws-mode.el, so indenting a region in sws-mode works again.
+- Replace zlc with the built-in minibuffer-visible-completions navigation
+  on GNU Emacs 30+, while GNU Emacs 23.4 through 29.x retain the
+  historical zlc path.
 - Add savehist persistence for the minibuffer history and the kill ring
   with an explicit 300-second autosave interval, while savekill keeps
   saving the kill ring immediately on every update.
