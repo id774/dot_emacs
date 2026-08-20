@@ -30,6 +30,12 @@
         (concat "/usr/local/bin:/opt/local/bin:/usr/bin:"
                 (getenv "PATH")))
 
+;; Apple Silicon Homebrew path
+(when (file-directory-p "/opt/homebrew/bin")
+  (add-to-list 'exec-path "/opt/homebrew/bin")
+  (setenv "PATH"
+          (concat "/opt/homebrew/bin:" (getenv "PATH"))))
+
 ;;; my-load-path
 (defvar default-load-path load-path
   "*Base of `load-path'.

@@ -47,6 +47,29 @@ With prefix ARG, enable if ARG > 0, otherwise disable."
 (unless (fboundp 'which-func-mode)
   (defalias 'which-func-mode 'which-function-mode))
 
+;; auto-async-byte-compile's own `aabc/status' only treats exit status 1
+;; as an error, so other nonzero exit statuses (e.g. 2, 126, 127) are
+;; misjudged as normal or warning.  Provide a project-owned replacement
+;; that treats any nonzero EXITSTATUS as an error, and bridge it in once
+;; auto-async-byte-compile is loaded, without editing the third-party file.
+(defun dot-emacs-aabc-status (exitstatus buffer)
+  "Return the async byte-compile status for EXITSTATUS and BUFFER.
+Any nonzero EXITSTATUS is treated as an error.  When EXITSTATUS is
+zero, BUFFER is checked for the \":Warning:\" marker to distinguish a
+warning from a normal completion."
+  (cond
+   ((not (= exitstatus 0))
+    'error)
+   ((with-current-buffer buffer
+      (goto-char (point-min))
+      (search-forward ":Warning:" nil t))
+    'warning)
+   (t
+    'normal)))
+
+(with-eval-after-load 'auto-async-byte-compile
+  (defalias 'aabc/status 'dot-emacs-aabc-status))
+
 (provide 'core-compat-bridge)
 
 ;;; core-compat-bridge.el ends here

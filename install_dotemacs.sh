@@ -49,6 +49,8 @@
 #  - Do not remove custom installation targets automatically.
 #  - The --uninstall option shares the environment setup with install, so it still
 #    requires a usable Emacs binary. Remove the configuration before removing Emacs.
+#  - Byte-compilation failures are reported individually and summarized,
+#    but they do not abort the remaining installation steps.
 #
 #  Version History:
 #  v5.0 2026-08-20
@@ -181,10 +183,15 @@ emacs_private_settings() {
 # Compile an Emacs Lisp file
 emacs_batch_byte_compile() {
     while [ $# -gt 0 ]; do
-        $SUDO "$EMACS" --batch -Q \
+        if $SUDO "$EMACS" --batch -Q \
             -L "$TARGET/elisp" \
             -L "$TARGET/elisp/3rd-party" \
-            -f batch-byte-compile "$1"
+            -f batch-byte-compile "$1"; then
+            BYTE_COMPILE_SUCCEEDED=$((BYTE_COMPILE_SUCCEEDED + 1))
+        else
+            BYTE_COMPILE_FAILED=$((BYTE_COMPILE_FAILED + 1))
+            echo "[WARN] Byte compilation failed: $1" >&2
+        fi
         shift
     done
 }
@@ -192,11 +199,16 @@ emacs_batch_byte_compile() {
 # Compile a DOT_EMACS module with the utils helpers loaded
 emacs_batch_byte_compile_with_utils() {
     while [ $# -gt 0 ]; do
-        $SUDO "$EMACS" --batch -Q \
+        if $SUDO "$EMACS" --batch -Q \
             -L "$TARGET/elisp" \
             -L "$TARGET/elisp/3rd-party" \
             -l utils \
-            -f batch-byte-compile "$1"
+            -f batch-byte-compile "$1"; then
+            BYTE_COMPILE_SUCCEEDED=$((BYTE_COMPILE_SUCCEEDED + 1))
+        else
+            BYTE_COMPILE_FAILED=$((BYTE_COMPILE_FAILED + 1))
+            echo "[WARN] Byte compilation failed: $1" >&2
+        fi
         shift
     done
 }
@@ -204,6 +216,9 @@ emacs_batch_byte_compile_with_utils() {
 # Byte-compile all necessary Emacs Lisp files
 byte_compile_all() {
     echo "[INFO] Byte-compiling Emacs Lisp files..."
+
+    BYTE_COMPILE_SUCCEEDED=0
+    BYTE_COMPILE_FAILED=0
 
     cd "$TARGET/elisp/3rd-party/jade-mode" && emacs_batch_byte_compile \
         sws-mode.el
@@ -289,6 +304,11 @@ byte_compile_all() {
         whitespace-settings.el \
         yatex-mode.el \
         zlc-settings.el
+
+    echo "[INFO] Byte compilation summary: $BYTE_COMPILE_SUCCEEDED succeeded, $BYTE_COMPILE_FAILED failed."
+    if [ "$BYTE_COMPILE_FAILED" -gt 0 ]; then
+        echo "[WARN] Byte compilation completed with $BYTE_COMPILE_FAILED failure(s); installation will continue." >&2
+    fi
 }
 
 # Create symbolic links for Emacs configuration files
