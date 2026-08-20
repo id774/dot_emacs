@@ -5,10 +5,9 @@ v26.08 (Release Date: TBD)
 --------------------------
 - Remove the obsolete navi2ch and Riece configuration, along with their key
   bindings, and keep the optional italk load in autoloads.el.
-- Remove the physical-line implementation, whose behavior the supported
-  Emacs versions already provide.
-- Replace savekill with the built-in savehist, which now saves the kill ring
-  between sessions.
+- Keep savehist for minibuffer history and kill-ring persistence with an
+  explicit 300-second autosave interval, and restore savekill so the kill
+  ring is also saved immediately on every update.
 - Replace jaspace with the standard whitespace mode, enabled globally, and
   remove the bundled jaspace.el, whose display table showed an ASCII @ as a
   box.
@@ -19,7 +18,7 @@ v26.08 (Release Date: TBD)
   with its mode hooks and key bindings, while keeping nXhtml itself.
 - Remove the bundled Helm path for Emacs 24 through 26 and use Anything on
   every supported Emacs version.
-- Remove minor-mode-hack, web-mode, flymake-cursor and anything-complete.
+- Remove web-mode, flymake-cursor and anything-complete.
 - Remove the bundled ESS and its compatibility bridge; ESS is now an
   external user-managed dependency when R or S support is needed.
 - Drop the legacy Meadow and pre-Emacs-23 fallbacks, including

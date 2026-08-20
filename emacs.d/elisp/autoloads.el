@@ -86,6 +86,9 @@
 (when (load-p "develock" t)
   (global-font-lock-mode t))
 
+;; physical-line
+(load-p "physical-line")
+
 ;; windmove
 (when (load-p "windmove")
   (windmove-default-keybindings)
@@ -151,9 +154,10 @@
 ;; whitespace
 (load-p "whitespace-settings")
 
-;; hlinum is retained for GNU Emacs 23.4 through 28.x.
-(when (< emacs-major-version 29)
-  (load-p "hlinum"))
+;; hlinum
+(cond
+ ((>= emacs-major-version 23)
+  (load-p "hlinum")))
 
 ;; persistent-scratch
 (load-p "persistent-scratch")
@@ -167,6 +171,11 @@
   (setq key-chord-two-keys-delay 0.02)
   (key-chord-mode 1))
 
+;; minor-mode priority
+(load-p "minor-mode-hack")
+;;(lower-minor-mode-map-alist 'ruby-electric-mode)
+;;(raise-minor-mode-map-alist 'anthy-minor-mode)
+
 ;; highlight-unique-symbol
 ;; http://hitode909.hatenablog.com/entry/2013/02/11/233449
 (when (require 'highlight-unique-symbol nil t)
@@ -174,8 +183,12 @@
 
 ;; kill-ring persistence across sessions
 (require 'savehist)
+(setq savehist-autosave-interval 300)
 (add-to-list 'savehist-additional-variables 'kill-ring)
 (savehist-mode 1)
+
+;; savekill
+(require 'savekill)
 
 ;; clear-kill-ring
 (load-p "clear-kill-ring")

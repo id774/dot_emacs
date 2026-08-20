@@ -228,13 +228,9 @@
                   (t
                    (view-mode)))
             ;; line numbers (toggle with C-x t)
-            (if (and (>= emacs-major-version 29)
-                     (fboundp 'display-line-numbers-mode))
-                (display-line-numbers-mode 1)
-              (progn
-                (linum-mode)
-                (custom-set-variables
-                 '(global-linum-mode t))))))
+            (linum-mode)
+            (custom-set-variables
+             '(global-linum-mode t))))
 
 ;; Wrap at window edge
 (setq truncate-partial-width-windows nil)
