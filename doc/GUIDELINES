@@ -202,15 +202,15 @@ Classify each file before compiling it:
     benefit from compiling them. Load these from source.
 -   **Configuration / hook-registration files with compile-time or
     load-order dependencies** set values, register hooks, and configure
-    modes through project-local macros such as `defun-add-hook`, or
+    modes through project-local compatibility or helper macros, or
     otherwise depend on load order. `configs.el`, `lang-mode.el`,
-    `screen.el`, and `diminish-settings.el` are this category: each
-    expands `defun-add-hook`, defined in `utils.el`, and a macro must be
-    defined in the compiling process *before* its call sites are
-    compiled. Load these specific files from source rather than adding
-    `utils.el` to the compile-time load order to make them compilable;
-    configuration files without such a dependency are byte-compiled like
-    any other module.
+    `screen.el`, and `diminish-settings.el` depend on `defun-add-hook`
+    from `utils.el`; `anything-settings.el` depends on the
+    `with-eval-after-load` compatibility macro from
+    `core-compat-bridge.el` on older GNU Emacs versions. Load these
+    specific files from source rather than extending the compile-time
+    load order only to make them compilable; configuration files without
+    such a dependency are byte-compiled like any other module.
 -   **Independent library / compatibility module** files, such as the
     compatibility bridges and self-contained helpers, have a clear,
     local compile-time dependency and are safe to byte-compile. Being
@@ -338,7 +338,8 @@ When a bundled file must be edited:
 
 ## 11. Version Policy Header
 
-Each file should clearly document its compatibility expectations.
+Each project-owned Emacs Lisp file should clearly document its
+compatibility expectations.
 
 ``` elisp
 ;; Support : Emacs 23.4+
