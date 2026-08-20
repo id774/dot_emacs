@@ -16,8 +16,8 @@ v26.08 (Release Date: TBD)
 - Remove the legacy Meadow support, including dot_emacs_on_meadow, and the
   pre-Emacs-23 fallbacks such as wb-line-number, while retaining GNU Emacs
   23.4 as the minimum supported version.
-- Remove the unused auto-complete-config.el and auto-complete-pkg.el
-  metadata files.
+- Remove the unused auto-complete-config.el helper library and the
+  auto-complete-pkg.el metadata file.
 - Replace the bundled Helm path for Emacs 24 through 26 with Anything on
   every supported Emacs version, and move its configuration into
   anything-settings.el.
@@ -58,6 +58,9 @@ v26.08 (Release Date: TBD)
   entries in the *Warnings* buffer.
 - Treat the Cocoa ns window system like mac in global-set-key.el, so C-h is
   no longer translated to DEL there.
+- Use the historical /opt/python/current environment only when its
+  directory and interpreter exist, and bind C-c p to python-pep8 only
+  when that command is available.
 - Move the bundled cl-lib.el forward-compatibility copy into its own
   directory and add it to load-path only on GNU Emacs 23.4 through 24.2,
   so GNU Emacs 24.3+ uses its built-in cl-lib instead of shadowing it.
@@ -80,7 +83,8 @@ v26.08 (Release Date: TBD)
   cl package when cl-lib lacks lexical-let and lexical-let*, restoring
   their historical closure semantics for bundled deferred, concurrent
   and Anything callbacks that capture lexical bindings for later use.
-- Clarify the license exclusions for the bundled third-party software.
+- Clarify the license exclusions for bundled third-party software and
+  project files containing third-party-derived code.
 - Update the README overview and default behavior sections to match the
   bundled software that remains.
 - Reword the Policy header line of the project-owned files to preserve
