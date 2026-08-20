@@ -47,6 +47,8 @@ v26.08 (Release Date: TBD)
   between sessions.
 - Remove jade-mode while keeping the Stylus support of sws-mode.
 - Remove zencoding-mode, its mode hooks and its key bindings.
+- Remove the bundled Helm path for Emacs 24 through 26 and use Anything on
+  every supported Emacs version.
 
 v26.07 (2026-07-31)
 -------------------

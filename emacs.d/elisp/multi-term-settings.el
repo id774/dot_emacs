@@ -78,7 +78,6 @@
                       (,(kbd "<down>")  windmove-down)
                       (,(kbd "<left>")  windmove-left)
                       (,(kbd "<right>") windmove-right)
-                      ;; ("\C-r" helm-shell-history)
                       )))
               (loop for (keybind function) in key-and-func
                     do (define-key term-raw-map keybind function)))))
