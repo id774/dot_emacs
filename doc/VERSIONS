@@ -49,14 +49,16 @@ v26.08 (Release Date: TBD)
 - Remove zencoding-mode, its mode hooks and its key bindings.
 - Remove the bundled Helm path for Emacs 24 through 26 and use Anything on
   every supported Emacs version.
-- Remove the unused minor-mode-hack, web-mode, flymake-cursor,
-  anything-complete, highlight-unique-symbol, deferred and concurrent
-  bundled libraries.
+- Remove minor-mode-hack, web-mode, flymake-cursor, anything-complete,
+  highlight-unique-symbol, deferred and concurrent.
 - Remove the bundled ESS and its compatibility bridge; ESS is now an
   external user-managed dependency when R or S support is needed.
 - Drop the legacy Meadow and pre-Emacs-23 fallbacks, including
   wb-line-number, while retaining GNU Emacs 23.4 as the minimum
   supported version.
+- Remove legacy nxhtml, smartchr, sequential-command and bundled
+  Erlang paths, plus unused auto-complete metadata and the cl-lib
+  backport.
 
 v26.07 (2026-07-31)
 -------------------

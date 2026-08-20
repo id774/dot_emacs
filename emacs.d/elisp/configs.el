@@ -294,9 +294,6 @@
 ;; Platform-specific settings
 (when (display-graphic-p)
   (cond
-   ((eq system-type 'windows-nt)
-    nil)
-
    ((eq system-type 'gnu/linux)
     ;; Mozc
     (when (require 'mozc nil t)
