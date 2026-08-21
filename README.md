@@ -117,6 +117,9 @@ DOT_EMACS:
 - Language-specific packages not bundled with DOT_EMACS must be installed and configured separately.
 - Uses `/dev/shm` as the temporary file directory on GNU/Linux only. Other platforms, including macOS, keep the Emacs default.
 
+For a complete reference to the DOT_EMACS key bindings, mode-specific
+shortcuts and automatically enabled behavior, see [FEATURES](doc/FEATURES.md).
+
 ---
 
 ## 5. Directory Structure
@@ -144,6 +147,7 @@ are shown.
 │   └── site-lisp/            Placeholder, as are anything/, backups/, tmp/ and the other
 │                             run-time directories beside it. See the note below.
 └── doc/
+    ├── FEATURES.md           User-facing reference for key bindings and automatically enabled behavior.
     ├── GUIDELINES            Coding style and Emacs Lisp compatibility policy.
     ├── VERSIONS              Version history of the repository.
     ├── LICENSE               License notice.
