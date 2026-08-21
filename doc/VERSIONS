@@ -56,6 +56,8 @@ v26.08 (Release Date: TBD)
   aborting the installation.
 - Stop the installer when its existing target cannot be removed, so stale
   files are not mixed with the new configuration.
+- Resolve the installer directory with POSIX utilities instead of realpath
+  or GNU readlink, so relative and PATH-based invocations work portably.
 - Let find-file open nonexistent paths as editable new files instead of
   routing them through view-mode.
 - Silence the native compilation warning pop-up in init.el, keeping the

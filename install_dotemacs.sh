@@ -53,7 +53,10 @@
 #    but they do not abort the remaining installation steps.
 #
 #  Version History:
-#  v5.0 2026-08-20
+#  v5.0 2026-08-21
+#       Resolve the script directory with POSIX utilities so installation works
+#       without realpath or GNU readlink.
+#  v4.9 2026-08-20
 #       Streamline installation, selective byte compilation, and retired bundled-package handling.
 #       Compile sws-mode.el from 3rd-party root instead of the removed
 #       jade-mode directory, and compile the bundled cl-lib.el from its
@@ -489,7 +492,21 @@ uninstall() {
 # Main entry point of the script
 main() {
     # Resolve the script directory before any working directory change
-    SCRIPT_HOME=$(dirname "$(realpath "$0" 2>/dev/null || readlink -f "$0")")
+    case "$0" in
+        */*) SCRIPT_PATH=$0 ;;
+        *) SCRIPT_PATH=$(command -v "$0") || {
+            echo "[ERROR] Failed to locate the installer script: $0" >&2
+            exit 1
+        } ;;
+    esac
+    case "$SCRIPT_PATH" in
+        /*) ;;
+        *) SCRIPT_PATH=./$SCRIPT_PATH ;;
+    esac
+    SCRIPT_HOME=$(CDPATH= cd "$(dirname "$SCRIPT_PATH")" && pwd -P) || {
+        echo "[ERROR] Failed to resolve the installer directory: $SCRIPT_PATH" >&2
+        exit 1
+    }
     export SCRIPT_HOME
 
     UNINSTALL=""
