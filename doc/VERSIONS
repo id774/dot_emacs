@@ -38,6 +38,9 @@ v26.08 (Release Date: TBD)
   and selected extensionless plain-text documents, and marking the bundled
   third-party README files as vendored.
 - Add a README Directory Structure section describing each main directory.
+- Add doc/FEATURES.md as a user-facing reference for the key bindings,
+  mode-specific shortcuts and automatically enabled behavior, and link it
+  from the README.
 - Expand doc/GUIDELINES with the deliberate retirement of a legacy
   component, the scope of byte compilation, the document file naming and
   attribute recommendations, the reach of a compatibility bridge and when a
