@@ -100,8 +100,8 @@ v26.08 (Release Date: TBD)
 - Reword the Policy header line of the project-owned files to preserve
   supported behavior, and give it the terminating period of the
   doc/GUIDELINES example.
-- Record the shared version history description guidelines at the end of
-  this file.
+- Record the version history description guidelines at the end of this
+  file.
 
 v26.07 (2026-07-31)
 -------------------
