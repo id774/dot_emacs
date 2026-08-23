@@ -2,13 +2,36 @@
 
 ## 1. Core Principles
 
--   **Preserve compatibility where it has value:**\
-    Backward compatibility matters, and the GNU Emacs 23.4+ core support
-    contract is maintained.\
-    Historical bundled functionality is not preserved indefinitely: an
-    obsolete legacy component may be retired explicitly, weighing its
-    usefulness, maintenance cost, and dependencies, rather than kept
-    unchanged forever.
+Three priorities settle a design question, in this order: **Compatibility**,
+**Safety**, **Efficiency**. This is a priority order for when requirements
+compete, not an equally weighted checklist.
+
+-   **Compatibility comes first, and it means two things:** keeping normal,
+    intended, existing behavior and workflows working, and staying
+    compatible with the GNU Emacs versions this repository currently
+    supports (23.4 and later). It does not mean preserving whatever the code
+    currently does, unconditionally, forever.
+    -   A clear bug or a regression is not preserved as though it were
+        historical behavior.
+    -   Being obsolete or deprecated is not, by itself, a reason to remove a
+        legacy component, and neither is the mere existence of a built-in or
+        native replacement.
+    -   Before retiring anything, its user-visible behavior and its
+        dependents are checked, and retirement is a deliberate decision made
+        on that evidence, not an inference from age or from a warning.
+    -   Where intended behavior is unclear, history, the documented
+        interface, and maintenance intent settle it together with the
+        implementation; the implementation alone, when it shows a
+        regression, is not treated as the new specification on that basis.
+    -   Raising the GNU Emacs 23.4 floor, and any other decision to retire a
+        support commitment outright, is for the maintainer to decide
+        explicitly.
+-   **Safety comes second.** A change that is faster or smaller is not taken
+    if it weakens safety, and code kept for Compatibility is not itself
+    unsafe merely for being old.
+-   **Efficiency comes third.** It matters, but a startup-time gain that
+    breaks a normal workflow, drops support within the supported version
+    range, or weakens safety is not worth taking.
 
 -   **Retire legacy components deliberately, not by inference:**\
     Being obsolete, deprecated, or legacy is not by itself a reason to
@@ -24,14 +47,29 @@
     plain refactoring, and in long-lived configuration, proven behavior
     takes priority over code age.
 
--   **Use features conditionally:**\
-    Always verify feature existence with `fboundp`, `boundp`, or
-    `featurep` before calling functions or variables.
+-   **Detect capabilities where they genuinely vary, not by reflex:**\
+    Guard a call with `fboundp`, `boundp`, or `featurep` where API
+    availability actually differs across the supported Emacs range, where an
+    optional package's presence is not guaranteed, where build, platform, or
+    environment affects what exists, or where the target is a conditionally
+    defined function or variable. A standard API guaranteed across the whole
+    supported range, or a project-owned function that load order already
+    guarantees is defined, does not need a mechanical existence check merely
+    for its own sake. Where capability detection is genuinely the more
+    appropriate tool, prefer it to a version number; where a loader is
+    switching between feature sets that one specific Emacs version
+    introduced wholesale, a version check is the clearer tool there and is
+    not itself a violation of this principle.
 
--   **Support older versions first:**\
-    Implement a minimal, stable core that runs on GNU Emacs 23.4 through
-    24.x.\
-    Add newer capabilities only as optional enhancements.
+-   **Welcome new capabilities as version-gated enhancements:**\
+    A minimal, stable core keeps GNU Emacs 23.4 and every supported version
+    after it working normally. That does not require every new capability to
+    also run on 23.4: a feature available only from some newer Emacs version
+    may be enabled only on that version and cleanly bypassed on older ones,
+    and does not need to be reimplemented for versions that predate it.
+    Using a new, version-specific capability is not a compatibility
+    violation by itself; breaking an existing workflow on a version that is
+    still supported is.
 
 -   **Prefer compatibility layers over rewrites:**\
     When upstream APIs change, introduce compatibility bridges rather
@@ -80,7 +118,9 @@ Design rules:
 
 ## 3. Feature Detection Patterns
 
-Always detect capabilities rather than assuming version numbers.
+Detect capabilities rather than assuming version numbers wherever the
+underlying question is genuinely about capability; Section 1 covers where a
+version check is the more appropriate tool instead.
 
 ``` elisp
 (when (fboundp 'json-parse-string)
@@ -182,7 +222,13 @@ Example technologies:
 -   asynchronous JSON parsing
 -   modern process APIs
 
-Fallback behavior must always exist.
+Fallback behavior is required where introducing a new implementation path
+would otherwise take away functionality an older supported Emacs already
+has: there, the existing synchronous workflow must keep working. A purely
+new enhancement is different: it does not need to be reproduced on an Emacs
+version that predates the capability it relies on, and cleanly bypassing it
+there is enough. Preserving an existing workflow is required; reproducing
+every future feature on old Emacs is not.
 
 ------------------------------------------------------------------------
 
@@ -274,8 +320,11 @@ External dependencies must never compromise stability.
 
 Rules:
 
--   Avoid hard dependency on rapidly changing MELPA packages.
--   Prefer built-in packages whenever possible.
+-   Prefer a built-in package whenever it is enough on its own to meet the
+    need.
+-   External packages are not excluded on principle: adopt one when it
+    supplies clear functional value a built-in does not, and be cautious
+    about a hard dependency on a rapidly changing package.
 -   Optional packages must degrade gracefully if absent.
 
 Absence of an optional package should **reduce functionality, not break
@@ -637,16 +686,41 @@ Leaving no trace of the correction:
 
 ------------------------------------------------------------------------
 
+## 17. Document Roles
+
+A document's role in this repository is defined here, not inherited from a
+document of the same name in another repository. Two repositories may each
+keep a `GUIDELINES`, a `FEATURES.md`, a `VERSIONS`, or a `README.md`, and
+sharing a name does not mean sharing a role: each repository states what its
+own document is for.
+
+In this repository:
+
+-   `doc/GUIDELINES` is the coding, compatibility, and maintenance policy.
+-   `doc/FEATURES.md` is the detailed user-facing behavior reference: key
+    bindings, mode-specific behavior, shortcuts, automatically enabled
+    behavior, version-specific behavior, and the behavior DOT_EMACS adds to
+    or changes in a third-party package.
+-   `doc/VERSIONS` is the repository's release history.
+-   `README.md` is the project overview: installation, supported
+    environments, high-level behavior, structure, and versioning.
+
+------------------------------------------------------------------------
+
 ## Summary
 
 This policy favors:
 
--   historical preservation
--   strict backward compatibility
--   incremental evolution
+-   preserving normal, intended existing behavior across the supported GNU
+    Emacs range, corrected rather than kept when it is a bug
+-   deliberate, evidence-based retirement of legacy components over either
+    permanent preservation or inference from age
+-   incremental evolution, including version-gated new capabilities that are
+    not required to run on Emacs versions that predate them
 -   operational stability over stylistic modernization
 -   published paths and existing names over formal uniformity
 
 Following these principles ensures that Emacs Lisp configurations remain
-functional and maintainable across multiple decades of Emacs
-development.
+functional and maintainable across multiple decades of Emacs development,
+while still allowing the maintainer to retire what has genuinely earned
+retirement.

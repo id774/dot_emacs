@@ -46,7 +46,11 @@ v26.08 (Release Date: TBD)
   attribute recommendations, the reach of a compatibility bridge and when a
   bundled file may be edited instead, the scope and history of a pull
   request, the width a version history entry keeps, and when an executable
-  script's own version is updated.
+  script's own version is updated, then define Compatibility, Safety, and
+  Efficiency as the priority order for a design decision and clarify
+  long-term compatibility, capability detection, version-specific
+  enhancements, fallback behavior, dependencies, and document roles
+  accordingly, correcting doc/FEATURES.md's wording to match.
 - Change byte compilation to a selective policy: init.el, autoloads.el,
   configs.el, lang-mode.el, screen.el, diminish-settings.el and
   anything-settings.el are loaded from source, and the installer and the

@@ -8,8 +8,13 @@ all commands or default bindings provided by bundled third-party libraries.
 Instead, it documents the bindings, automatic behavior, and defaults that
 DOT_EMACS itself installs, enables, or changes.
 
-The Emacs Lisp implementation remains authoritative. Source file names are
-included so that each behavior can be traced back to its configuration.
+The Emacs Lisp implementation is the primary source of fact for what
+currently happens; this document records the intended user-facing behavior.
+When the two disagree, the implementation is not treated as correct by
+default: history and intended behavior are checked, and if the
+implementation shows a regression, the implementation is corrected rather
+than this document. Source file names are included so that each behavior can
+be traced back to its configuration.
 
 ## 1. Key notation
 
