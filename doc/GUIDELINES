@@ -710,13 +710,8 @@ Leaving no trace of the correction:
 
 ## 17. Document Roles
 
-A document's role in this repository is defined here, not inherited from a
-document of the same name in another repository. Two repositories may each
-keep a `GUIDELINES`, a `FEATURES.md`, a `VERSIONS`, or a `README.md`, and
-sharing a name does not mean sharing a role: each repository states what its
-own document is for.
-
-In this repository:
+The document roles below define the documentation structure of this
+repository.
 
 -   `doc/GUIDELINES` is the coding, compatibility, and maintenance policy.
 -   `doc/FEATURES.md` is the detailed user-facing behavior reference: key
