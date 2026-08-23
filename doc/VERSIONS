@@ -41,12 +41,13 @@ v26.08 (Release Date: TBD)
 - Add doc/FEATURES.md as a user-facing reference for the key bindings,
   mode-specific shortcuts and automatically enabled behavior, and link it
   from the README.
-- Expand and clarify the long-term compatibility and maintenance guidelines
-  in doc/GUIDELINES, define Compatibility, Safety, and Efficiency as the
-  priority order for a design decision, and clarify version-specific
-  enhancements, capability detection, fallback behavior, dependencies,
-  byte-compilation policy, and documentation policy accordingly,
-  correcting doc/FEATURES.md's wording to match.
+- Expand and clarify the long-term compatibility and maintenance
+  guidelines in doc/GUIDELINES, define Compatibility, Safety, and
+  Efficiency as the priority order for a design decision, establish
+  change discipline for long-lived infrastructure, and clarify
+  version-specific enhancements, capability detection, fallback behavior,
+  dependencies, byte-compilation policy, and documentation policy
+  accordingly, correcting doc/FEATURES.md's wording to match.
 - Change byte compilation to a selective policy: init.el, autoloads.el,
   configs.el, lang-mode.el, screen.el, diminish-settings.el and
   anything-settings.el are loaded from source, and the installer and the
