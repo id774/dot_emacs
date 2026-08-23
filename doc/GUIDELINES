@@ -89,6 +89,18 @@ compete, not an equally weighted checklist.
     Avoid short-lived frameworks or experimental APIs unless they can
     degrade gracefully.
 
+-   **Match wording strength to what a rule actually requires:**\
+    Reserve absolute wording -- `must`, `always`, `never` -- for an
+    invariant that admits no reasonable exception. Write a design
+    preference or a situational rule with wording that shows its actual
+    weight, such as `prefer`, `should`, or `when appropriate`. Word a rule
+    so that applying it literally does not produce a result that works
+    against Compatibility, Safety, or Efficiency. Where a rule's wording
+    and its purpose conflict, resolve it by the Core Principles above and
+    the intended behavior, not by the literal wording alone. This does not
+    introduce a formal MUST/SHOULD/MAY taxonomy; it only asks that the
+    wording already used here match its actual strength.
+
 ------------------------------------------------------------------------
 
 ## 2. File Structure Example
@@ -143,7 +155,7 @@ possible.
 
 ## 4. Coding Rules
 
-1.  Always begin files with lexical binding:
+1.  Project-owned Emacs Lisp files begin with lexical binding:
 
 ``` elisp
 ;; -*- lexical-binding: t; -*-
@@ -335,7 +347,8 @@ remain visible rather than being silently suppressed.
 
 ## 10. Compatibility Layer Strategy
 
-When upstream changes occur, implement a compatibility bridge.
+When upstream changes occur, prefer a compatibility bridge when the bridge
+can reach the problem.
 
 Examples:
 
@@ -422,6 +435,15 @@ compatibility expectations.
 ;; Extended: Emacs 30+
 ;; Policy  : Preserve supported behavior and maintain backward compatibility.
 ```
+
+-   `Support` states the minimum supported Emacs range on which the
+    file's basic functionality works normally.
+-   `Extended` states the range on which optional or enhanced behavior
+    beyond that basic functionality becomes available, when the file
+    actually has such an enhancement. It does not state a core support
+    floor, and a file that has no version-specific enhancement does not
+    need an `Extended` line, or needs one that reflects what the file
+    actually does instead of a mechanically copied range.
 
 Executable script versions:
 
