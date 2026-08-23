@@ -447,7 +447,7 @@ set_permission() {
 install() {
     cd || exit 1
 
-    check_commands cp mkdir chmod chown ln rm id dirname uname
+    check_commands cp mkdir chmod chown ln rm id dirname uname touch
     setup_environment "$@"
     setup_dotemacs
     emacs_private_settings
