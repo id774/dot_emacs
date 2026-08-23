@@ -131,6 +131,15 @@ compete, not an equally weighted checklist.
     sufficient evidence for a change whose compatibility risk extends to
     other supported versions.
 
+    Scope discipline does not mean leaving documentation inconsistent with an
+    implementation change that is already authorized. When an implementation
+    change alters behavior described by a project-owned header, FEATURES,
+    README, compatibility documentation, or release history, update the
+    directly affected documentation as part of the same change unless the
+    stated scope explicitly excludes documentation changes. Do not use that
+    requirement as permission for unrelated cleanup in the same file or
+    repository.
+
 ------------------------------------------------------------------------
 
 ## 2. File Structure Example
@@ -547,11 +556,9 @@ Recommendations:
     extension. `doc/GUIDELINES` is named in the header of many `.el` files
     and linked from outside this repository, and the references that live
     outside can be neither found nor repaired.
--   `doc/GUIDELINES` and `doc/VERSIONS` therefore keep their names. A
-    repository started later may name the same kind of document
-    differently, and that is acceptable: the recommendation applies at
-    creation, and names that agree across repositories matter less than a
-    published path staying where it is.
+-   `doc/GUIDELINES` and `doc/VERSIONS` therefore keep their current names.
+    Their established published paths are compatibility interfaces, and
+    naming uniformity does not outweigh preserving those paths.
 -   Rename only when the current name causes a failure that outweighs the
     links it breaks, and then only after examining the references to it.
     GitHub shows `doc/GUIDELINES` as plain text instead of rendering it,
