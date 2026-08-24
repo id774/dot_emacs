@@ -29,14 +29,19 @@ DOT_EMACS is designed to:
 
 ## 2. Supported Environments
 
-DOT_EMACS is confirmed to work on:
+DOT_EMACS supports GNU Emacs 23.4 and later.
 
-- GNU Emacs on Debian/Ubuntu stable (from Debian 7 Wheezy with Emacs 23.4 to Debian 13 Trixie with Emacs 30.1).
-- GNU Emacs on other Linux distributions within the same version range.
-- Emacs for macOS (from [emacsformacosx.com](http://emacsformacosx.com/)).
+The compatibility floor, the policy for changing that floor, and the
+distinction between the stable core and version-gated enhancements are
+maintained in [doc/GUIDELINES](doc/GUIDELINES).
 
-Supported Emacs versions:
-- GNU Emacs 23.4 and later (up to and including 30.1, with future releases expected to be supported).
+The project is used on Debian/Ubuntu, other Linux distributions, and macOS.
+Platform- and version-specific behavior configured by DOT_EMACS is documented
+in [doc/FEATURES.md](doc/FEATURES.md).
+
+A version named in a validation record or release history is evidence for
+that point in time, not an upper support boundary. This README therefore does
+not maintain a current newest-supported GNU Emacs or Debian release.
 
 ---
 
