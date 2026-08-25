@@ -1,8 +1,8 @@
 dot_emacs Repository Version History
 ====================================
 
-v26.08 (Release Date: TBD)
---------------------------
+v26.08 (2026-08-26)
+-------------------
 - Remove the obsolete navi2ch and Riece configuration, along with their key
   bindings, and keep the optional italk load in autoloads.el.
 - Remove jade-mode, keeping the Stylus support of sws-mode.el as a
