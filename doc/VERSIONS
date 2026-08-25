@@ -52,7 +52,8 @@ v26.08 (Release Date: TBD)
   configs.el, lang-mode.el, screen.el, diminish-settings.el and
   anything-settings.el are loaded from source, and the installer and the
   auto-async-byte-compile exclusion list agree on them.
-- Improve installer portability, prerequisite validation, target handling, and byte-compilation failure handling.
+- Improve installer portability, prerequisite validation, target handling,
+  and byte-compilation failure handling.
 - Let find-file open nonexistent paths as editable new files instead of
   routing them through view-mode.
 - Silence the native compilation warning pop-up in init.el, keeping the
