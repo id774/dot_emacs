@@ -52,13 +52,7 @@ v26.08 (Release Date: TBD)
   configs.el, lang-mode.el, screen.el, diminish-settings.el and
   anything-settings.el are loaded from source, and the installer and the
   auto-async-byte-compile exclusion list agree on them.
-- Change the installer byte compilation to a per-file best effort that
-  reports each failed file, counts the results and continues instead of
-  aborting the installation.
-- Stop the installer when its existing target cannot be removed, so stale
-  files are not mixed with the new configuration.
-- Resolve the installer directory with POSIX utilities instead of realpath
-  or GNU readlink, so relative and PATH-based invocations work portably.
+- Improve installer portability, prerequisite validation, target handling, and byte-compilation failure handling.
 - Let find-file open nonexistent paths as editable new files instead of
   routing them through view-mode.
 - Silence the native compilation warning pop-up in init.el, keeping the
