@@ -57,10 +57,8 @@
 #       Resolve the script directory with POSIX utilities so installation works
 #       without realpath or GNU readlink.
 #  v4.9 2026-08-20
-#       Streamline installation, selective byte compilation, and retired bundled-package handling.
-#       Compile sws-mode.el from 3rd-party root instead of the removed
-#       jade-mode directory, and compile the bundled cl-lib.el from its
-#       own cl-lib directory so it is not added to the shared -L path.
+#       Streamline selective byte compilation, and compile sws-mode.el and the
+#       bundled cl-lib.el from their own directories.
 #  v4.3 2026-08-19
 #       Abort installation when the existing target cannot be removed.
 #  v4.2 2026-08-18
@@ -68,15 +66,11 @@
 #  v4.1 2026-08-17
 #       Byte-compile active DOT_EMACS modules with required helpers loaded.
 #  v4.0 2026-07-30
-#       Build the bundled helm only on Emacs 24 to 26, the range where it is
-#       actually loaded, since its Makefile fails on newer Emacs.
-#       Drop the unreachable adaptive history cleanup from the uninstaller.
+#       Build the bundled helm only on Emacs 24 to 26, the range where it is actually loaded, since its
+#       Makefile fails on newer Emacs. Drop the unreachable adaptive history cleanup from the uninstaller.
 #  v3.5 2026-07-28
-#       Resolve the script directory before changing the working directory,
-#       so relative invocations such as ./install_dotemacs.sh work.
-#       Byte-compile with the elisp load path, so files requiring the
-#       compatibility bridges are compiled.
-#       Add -n and --no-sudo aliases for the legacy nosudo argument.
+#       Resolve the script directory before changing it, byte-compile with the
+#       elisp load path, and add -n/--no-sudo aliases for nosudo.
 #  v3.4 2026-07-21
 #       Allow nosudo installs and uninstalls when sudo is unavailable.
 #  v3.3 2026-07-11
