@@ -5,165 +5,163 @@ v26.08 (2026-08-26)
 -------------------
 - Remove the obsolete navi2ch and Riece configuration, along with their key
   bindings, and keep the optional italk load in autoloads.el.
-- Remove jade-mode, keeping the Stylus support of sws-mode.el as a standalone
-  third-party file, with its stale jade-mode load-path and byte-compile entries removed.
-- Remove zencoding-mode, including the copy bundled inside nXhtml, along
-  with its mode hooks and key bindings, while keeping nXhtml itself.
+- Remove jade-mode, keeping sws-mode.el's Stylus support as a standalone file, and
+  drop its stale jade-mode load-path and byte-compile entries.
+- Remove zencoding-mode, including the copy bundled inside nXhtml, along with its
+  mode hooks and key bindings, while keeping nXhtml itself.
 - Remove web-mode, flymake-cursor and anything-complete.
-- Remove the bundled ESS and its compatibility bridge; ESS is now an
-  external user-managed dependency when R or S support is needed.
-- Remove the legacy Meadow support, including dot_emacs_on_meadow, and the pre-Emacs-23 fallbacks
-  such as wb-line-number, while retaining GNU Emacs 23.4 as the minimum supported version.
+- Remove the bundled ESS and its compatibility bridge; ESS is now an external
+  user-managed dependency when R or S support is needed.
+- Remove legacy Meadow support (dot_emacs_on_meadow) and pre-Emacs-23 fallbacks
+  like wb-line-number; GNU Emacs 23.4 stays the minimum.
 - Remove the unused auto-complete-config.el helper library and the
   auto-complete-pkg.el metadata file.
 - Replace the bundled Helm path for Emacs 24 through 26 with Anything on every
   supported Emacs version, and move its configuration into anything-settings.el.
-- Replace jaspace with the standard whitespace mode, enabled globally from whitespace-settings.el,
-  and remove the bundled jaspace.el, whose display table showed an ASCII @ as a box.
+- Replace jaspace with the standard whitespace mode, enabled globally from
+  whitespace-settings.el, and remove the bundled jaspace.el.
 - Replace count-lines-region, removed in Emacs 29, with count-lines in
   sws-mode.el, so indenting a region in sws-mode works again.
 - Replace zlc with the built-in minibuffer-visible-completions navigation on GNU
   Emacs 30+, while GNU Emacs 23.4 through 29.x retain the historical zlc path.
-- Add savehist persistence for the minibuffer history and the kill ring with an explicit 300-second
-  autosave interval, while savekill keeps saving the kill ring immediately on every update.
-- Add the Apple Silicon Homebrew directory /opt/homebrew/bin to exec-path
-  and PATH when it exists.
-- Add .gitattributes, assigning the Markdown diff driver to Markdown files and selected
-  extensionless plain-text documents, and marking the bundled third-party README files as vendored.
+- Add savehist persistence for minibuffer history and the kill ring with a
+  300-second autosave, while savekill still saves it on every update.
+- Add the Apple Silicon Homebrew directory /opt/homebrew/bin to exec-path and PATH
+  when it exists.
+- Add .gitattributes, giving Markdown files and selected plain-text documents the
+  Markdown diff driver, and marking third-party READMEs vendored.
 - Add a README Directory Structure section describing each main directory.
-- Add doc/FEATURES.md as a user-facing reference for the key bindings, mode-specific
-  shortcuts and automatically enabled behavior, and link it from the README.
+- Add doc/FEATURES.md as a user-facing reference for key bindings, mode-specific
+  shortcuts and automatic behavior, linked from the README.
 - Expand and clarify doc/GUIDELINES, ordering Compatibility, Safety, and
   Efficiency as priorities, and correct doc/FEATURES.md's wording to match.
 - Change byte compilation to a selective policy: seven core files load from
   source, matching the installer's auto-async-byte-compile exclusion list.
-- Improve installer portability, prerequisite validation, target handling,
-  and byte-compilation failure handling.
-- Let find-file open nonexistent paths as editable new files instead of
-  routing them through view-mode.
-- Silence the native compilation warning pop-up in init.el, keeping the
-  entries in the *Warnings* buffer.
-- Treat the Cocoa ns window system like mac in global-set-key.el, so C-h is
-  no longer translated to DEL there.
-- Use the historical /opt/python/current environment only when its directory and
-  interpreter exist, and bind C-c p to python-pep8 only when that command is available.
-- Move the bundled cl-lib.el forward-compatibility copy into its own directory and add it to load-path only
-  on GNU Emacs 23.4 through 24.2, so GNU Emacs 24.3+ uses its built-in cl-lib instead of shadowing it.
-- Pass the bundled cl-lib directory to the dired-async child process on GNU Emacs 23.4 through 24.2,
-  where the emacs -Q child cannot require cl-lib otherwise, and add nothing there on GNU Emacs 24.3+.
-- Fix the with-eval-after-load fallback so deferred Anything key bindings
-  run correctly on GNU Emacs 23.4 through 24.3.
-- Fix the asynchronous byte compilation status so that any nonzero exit status is reported as an
-  error, through a project-owned replacement for aabc/status which recognized only status 1.
-- Require core-compat-bridge when compiling auto-save-buffers-enhanced.el,
-  so its toggle-read-only call no longer warns.
-- Declare the conditionally defined and optional functions of the bundled browse-kill-ring.el,
-  auto-save-buffers-enhanced.el and minibuf-isearch.el, so the compiler no longer reports them as unknown.
-- Absorb the obsolete cl aliases in cl-compat-bridge.el, so the bundled
-  files that still load cl stop reporting every call.
-- Fix cl-compat-bridge.el so GNU Emacs 24.3+ also requires cl when cl-lib
-  lacks lexical-let/lexical-let*, restoring closure semantics for callbacks.
-- Fix the delayed dired-async callbacks on GNU Emacs 23.4 by passing their state to named
-  functions explicitly, instead of relying on the file-local lexical binding of dired-async.el.
-- Clarify the license exclusions for bundled third-party software and
-  project files containing third-party-derived code.
-- Update the README overview and default behavior sections to match the
-  bundled software that remains.
+- Improve installer portability, prerequisite validation, target handling, and
+  byte-compilation failure handling.
+- Let find-file open nonexistent paths as editable new files instead of routing
+  them through view-mode.
+- Silence the native compilation warning pop-up in init.el, keeping the entries in
+  the *Warnings* buffer.
+- Treat the Cocoa ns window system like mac in global-set-key.el, so C-h is no
+  longer translated to DEL there.
+- Use /opt/python/current only when its directory and interpreter exist, and bind
+  C-c p to python-pep8 only when that command is available.
+- Move the bundled cl-lib.el copy into its own directory, loaded only on Emacs
+  23.4-24.2, so Emacs 24.3+ uses its built-in cl-lib instead.
+- Pass the bundled cl-lib directory to the dired-async child on Emacs 23.4-24.2,
+  where emacs -Q cannot require it otherwise; add nothing on 24.3+.
+- Fix the with-eval-after-load fallback so deferred Anything key bindings run
+  correctly on GNU Emacs 23.4 through 24.3.
+- Fix async byte compilation status reporting: replace aabc/status (which
+  recognized only status 1) so any nonzero status is an error.
+- Require core-compat-bridge when compiling auto-save-buffers-enhanced.el, so its
+  toggle-read-only call no longer warns.
+- Declare the conditionally defined functions of browse-kill-ring.el,
+  auto-save-buffers-enhanced.el and minibuf-isearch.el as known to the compiler.
+- Absorb the obsolete cl aliases in cl-compat-bridge.el, so the bundled files that
+  still load cl stop reporting every call.
+- Fix cl-compat-bridge.el so GNU Emacs 24.3+ also requires cl when cl-lib lacks
+  lexical-let/lexical-let*, restoring closure semantics for callbacks.
+- Fix delayed dired-async callbacks on Emacs 23.4 by passing state to named
+  functions explicitly, instead of relying on file-local lexical binding.
+- Clarify the license exclusions for bundled third-party software and project
+  files containing third-party-derived code.
+- Update the README overview and default behavior sections to match the bundled
+  software that remains.
 - Reword the Policy header line of the project-owned files to preserve supported
   behavior, and give it the terminating period of the doc/GUIDELINES example.
-- Record the version history description guidelines at the end of this
-  file.
+- Record the version history description guidelines at the end of this file.
 
 v26.07 (2026-07-31)
 -------------------
-- Resolve the installer script directory before changing the working
-  directory, so relative invocations work.
+- Resolve the installer script directory before changing the working directory, so
+  relative invocations work.
 - Byte-compile with the elisp load path, so bundled files requiring the
   compatibility bridges are compiled.
 - Allow nosudo installs and uninstalls to run when the sudo command is
   unavailable.
 - Add -n and --no-sudo aliases for the installer and uninstaller.
-- Replace awk {n,} interval expression in usage() with a portable
-  equivalent for mawk compatibility.
-- Build the bundled helm only on Emacs 24 through 26, where it is actually
-  loaded, since its Makefile fails on newer Emacs.
+- Replace awk {n,} interval expression in usage() with a portable equivalent for
+  mawk compatibility.
+- Build the bundled helm only on Emacs 24 through 26, where it is actually loaded,
+  since its Makefile fails on newer Emacs.
 - Drop the unreachable adaptive history cleanup from the uninstaller.
 - Declare my-load-path with defvar in init.el before assigning it.
 - Fix the dired-async loader so dired-async-mode is enabled at startup.
 - Simplify the redundant timidity autoload wrapper in autoloads.el.
-- Fix the recentf-ext-settings.el load typo and clean up two obsolete
-  autoload entries.
-- Remove the unused auto-save-buffers block from autoloads.el, which could
-  double up with auto-save-buffers-enhanced.
-- Remove the obsolete default-major-mode setting, which no longer affects
-  the major mode of new buffers.
-- Add a quiet argument to load-p and use it for the optional site-lisp
-  loader, which reported a failure on every startup.
-- Stay quiet about the italk, mic-paren, and develock loaders, which are
-  not bundled and failed on every startup.
-- Disable the blinking cursor explicitly, since a nil argument now enables
-  the mode instead of toggling it.
-- Replace the obsolete find-file-hooks alias with find-file-hook in
-  configs.el.
-- Set temporary-file-directory to /dev/shm only on GNU/Linux, since
-  platforms such as macOS have no such directory.
+- Fix the recentf-ext-settings.el load typo and clean up two obsolete autoload
+  entries.
+- Remove the unused auto-save-buffers block from autoloads.el, which could double
+  up with auto-save-buffers-enhanced.
+- Remove the obsolete default-major-mode setting, which no longer affects the
+  major mode of new buffers.
+- Add a quiet argument to load-p and use it for the optional site-lisp loader,
+  which reported a failure on every startup.
+- Stay quiet about the italk, mic-paren, and develock loaders, which are not
+  bundled and failed on every startup.
+- Disable the blinking cursor explicitly, since a nil argument now enables the
+  mode instead of toggling it.
+- Replace the obsolete find-file-hooks alias with find-file-hook in configs.el.
+- Set temporary-file-directory to /dev/shm only on GNU/Linux, since platforms such
+  as macOS have no such directory.
 - Stop redefining the built-in previous-buffer, and bind M-n to a new
   forward-buffer command instead.
 - Turn off hl-line in toggle-view-mode by calling hl-line-mode instead of
   assigning to its variable.
-- Disable the malformed view-mode "." key entry, which signalled a commandp
-  error instead of running a command.
-- Require dired in dired-settings.el, which relied on another library to
-  load dired-mode-map first.
+- Disable the malformed view-mode "." key entry, which signalled a commandp error
+  instead of running a command.
+- Require dired in dired-settings.el, which relied on another library to load
+  dired-mode-map first.
 - Apply the navi2ch proxy user and password only when the proxy is enabled.
-- Fix with-suppressed-message so message-log-max is bound at run time
-  instead of macro expansion time.
+- Fix with-suppressed-message so message-log-max is bound at run time instead of
+  macro expansion time.
 - Require cl-compat-bridge instead of the obsolete cl package in
   multi-term-settings.el.
-- Bridge the legacy CL names cl-lib provides only with a cl- prefix, such as first,
-  block, return, getf and subseq, which broke Rinari loading and C-x b on Emacs 30.
+- Bridge legacy CL names cl-lib provides only with a cl- prefix (first, block,
+  return, getf, subseq), which broke Rinari and C-x b on Emacs 30.
 - Add a lexical-let* shim next to the existing lexical-let one, which
   anything-config.el and other bundled files still use.
-- Give dolist and dotimes an implicit nil block, so legacy return calls
-  keep working without the obsolete cl package.
+- Give dolist and dotimes an implicit nil block, so legacy return calls keep
+  working without the obsolete cl package.
 - Guard set-face-bold-p calls in faces.el with fboundp to avoid breaking
   font-lock-mode-hook if the obsolete function is removed.
 - Guard screen.el against an unset TERM environment variable to avoid a
   string-match error on startup.
 - Drop the redundant .el suffix from the markdown-mode autoload-p call in
   lang-mode.el for consistency.
-- Remove the bundled shadow.el and its settings, which collided with the
-  built-in shadow.el and broke find-file.
-- Remove the unused new-file-p.el and the bundled foreign-regexp.el, which
-  are no longer loaded.
-- Remove web-mode-settings.el, whose indentation settings used web-mode 7
-  variable names that web-mode 8 ignores.
-- Require scala-mode-auto optionally in lang-mode.el, since a missing
-  scala-mode aborted the rest of the startup.
+- Remove the bundled shadow.el and its settings, which collided with the built-in
+  shadow.el and broke find-file.
+- Remove the unused new-file-p.el and the bundled foreign-regexp.el, which are no
+  longer loaded.
+- Remove web-mode-settings.el, whose indentation settings used web-mode 7 variable
+  names that web-mode 8 ignores.
+- Require scala-mode-auto optionally in lang-mode.el, since a missing scala-mode
+  aborted the rest of the startup.
 - Keep the built-in gensym in cl-compat-bridge.el instead of aliasing it to
   cl-gensym.
-- Stop calling viewer-stay-in-setup twice in view-mode-key.el, and provide
-  the feature under the file name.
-- Add to python-mode-hook and gtags-mode-hook instead of replacing them, so
-  other settings survive.
+- Stop calling viewer-stay-in-setup twice in view-mode-key.el, and provide the
+  feature under the file name.
+- Add to python-mode-hook and gtags-mode-hook instead of replacing them, so other
+  settings survive.
 - Replace quoted lambdas in hooks and timers with plain ones, which lexical
   binding turns into closures.
 - Compare emacs-major-version against plain numbers instead of quoted ones.
-- Correct the toggle-read-only comment in core-compat-bridge.el, which
-  described the shim as being for old Emacs.
+- Correct the toggle-read-only comment in core-compat-bridge.el, which described
+  the shim as being for old Emacs.
 
 v26.03 (2026-03-28)
 -------------------
-- Add IPAexGothic as explicit Japanese font for GNU/Linux and adjust
-  default frame size.
+- Add IPAexGothic as explicit Japanese font for GNU/Linux and adjust default frame
+  size.
 - Switch default font from Bitstream Vera Sans Mono to DejaVu Sans Mono.
 - Configure auto-save interval for auto-save-buffers-enhanced to stabilize
   background saving behavior.
 - Simplify GUI platform settings and remove hard-coded Java paths.
 - Adopt lexical-binding headers across all Emacs Lisp files.
 - Normalize comments and indentation across Emacs Lisp configuration files.
-- Expand Emacs Lisp design guidelines with long-term compatibility and
-  maintenance policy.
+- Expand Emacs Lisp design guidelines with long-term compatibility and maintenance
+  policy.
 
 v26.02 (2026-02-27)
 -------------------
@@ -173,8 +171,8 @@ v26.02 (2026-02-27)
 v25.11 (2025-11-28)
 -------------------
 - Document long-term Emacs Lisp compatibility policy in doc/GUIDELINES.
-- Adjust core-compat-bridge.el to use a correct with-eval-after-load
-  fallback on old Emacs.
+- Adjust core-compat-bridge.el to use a correct with-eval-after-load fallback on
+  old Emacs.
 - Align cl-compat-bridge.el with 23.4..30.1 cl/cl-lib usage policy.
 - Simplify ess-compat-bridge.el to alias old/new ESS variable names without
   overriding values.
@@ -182,8 +180,8 @@ v25.11 (2025-11-28)
 v25.10 (2025-10-24)
 -------------------
 - Normalize chmod numeric modes to four digit octal across shell scripts.
-- Standardize all shell scripts by removing trailing exit status lines
-  (exit $?) for POSIX-safe reuse.
+- Standardize all shell scripts by removing trailing exit status lines (exit $?)
+  for POSIX-safe reuse.
 - Add C-c C-k key binding for clear-kill-ring in global-set-key.el.
 
 v25.08.1 (2025-08-29)
@@ -192,8 +190,8 @@ v25.08.1 (2025-08-29)
 
 v25.08 (2025-08-20)
 -------------------
-- Official release supporting a wide range from Emacs 23.4 on Debian 7 to
-  Emacs 30.1 on Debian 13.
+- Official release supporting a wide range from Emacs 23.4 on Debian 7 to Emacs
+  30.1 on Debian 13.
 
 v11.09 (2011-09-20)
 -------------------
@@ -201,8 +199,7 @@ v11.09 (2011-09-20)
 
 First Commit (2010-08-08)
 -------------------------
-- Commemorating the first commit and push, marking the inception of the
-  project.
+- Commemorating the first commit and push, marking the inception of the project.
 
 Version History Guidelines
 ==========================
