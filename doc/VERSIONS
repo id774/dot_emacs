@@ -197,7 +197,7 @@ v25.08 (2025-08-20)
 
 v11.09 (2011-09-20)
 -------------------
-- First official release.
+- Initial release.
 
 First Commit (2010-08-08)
 -------------------------
@@ -224,3 +224,5 @@ Version History Guidelines
   same file or feature.
 - Place closely related entries near each other.
 - Append an independent new change to the end of the current version entry.
+- The first entry, at the lowest version this file reaches, reads only
+  "Initial release." and nothing else.
