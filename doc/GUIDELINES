@@ -484,6 +484,17 @@ compatibility expectations.
     need an `Extended` line, or needs one that reflects what the file
     actually does instead of a mechanically copied range.
 
+Installer command ownership:
+
+-   In `install_dotemacs.sh`, a helper owns the external-command prerequisites
+    it directly uses. The standard header-extracting `usage()` calls
+    `check_commands awk` immediately before invoking `awk`; a usage-only `awk`
+    dependency does not belong in the install or uninstall command lists.
+-   Moving a usage-only `awk` prerequisite into `usage()` is prerequisite
+    ownership normalization. By maintainer decision, that normalization alone
+    does not increment the installer version or add a `Version History`
+    entry.
+
 Executable script versions:
 
 -   An executable script that carries its own version history uses that
