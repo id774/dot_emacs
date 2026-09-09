@@ -790,7 +790,7 @@ DOT_EMACS adds or conditionally adds mode associations for:
 - `.as` -> `actionscript-mode`;
 - `.pig` -> `pig-latin-mode`;
 - `.bat` and `.cmd` -> `bat-mode`;
-- `.md` -> `markdown-mode`, when available;
+- `.md` and `.txt` -> `markdown-mode`, when available;
 - `.erl` -> `erlang-mode` only on Emacs earlier than 27.
 
 Source: `emacs.d/elisp/lang-mode.el`
