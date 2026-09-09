@@ -121,6 +121,10 @@ DOT_EMACS:
 - Persists minibuffer history and the kill ring across Emacs sessions using the built-in `savehist`, which autosaves every 300 seconds; `savekill` also saves the kill ring immediately on every update.
 - Language-specific packages not bundled with DOT_EMACS must be installed and configured separately.
 - Uses `/dev/shm` as the temporary file directory on GNU/Linux only. Other platforms, including macOS, keep the Emacs default.
+- Does not define a separate DOT_EMACS `custom-file`; user-maintained local
+  overrides belong in `~/.emacs.d/site-lisp/loader.el`.
+- Loads `~/.emacs.d/site-lisp/loader.el` after the bundled configuration when
+  that file exists, and stays quiet when it is absent.
 
 For a complete reference to the DOT_EMACS key bindings, mode-specific
 shortcuts and automatically enabled behavior, see [FEATURES](doc/FEATURES.md).
@@ -149,8 +153,8 @@ are shown.
 │   │   ├── *-settings.el     One file per package or mode (dired, mew, tramp, auto-complete, ...).
 │   │   ├── *-compat-bridge.el  Shims that keep old code loadable on current Emacs.
 │   │   └── 3rd-party/        Bundled third-party libraries, including yatex-mode.
-│   └── site-lisp/            Placeholder, as are anything/, backups/, tmp/ and the other
-│                             run-time directories beside it. See the note below.
+│   └── site-lisp/            User-local extension directory. loader.el, when present,
+│                             is loaded after the bundled DOT_EMACS configuration.
 └── doc/
     ├── FEATURES.md           User-facing reference for key bindings and automatically enabled behavior.
     ├── GUIDELINES            Coding style and Emacs Lisp compatibility policy.
@@ -161,18 +165,21 @@ are shown.
 ```
 
 Only `emacs.d/elisp/` is deployed to the installation target (by default
-`/usr/local/etc/emacs.d/elisp`, symlinked as `~/.emacs.d/elisp`). The remaining
-directories under `emacs.d/` are empty placeholders: the installer creates the
-real ones in the user's home directory, so that a system-wide configuration tree
-stays read-only while Emacs still has somewhere to write backups, temporary
-files and history.
+`/usr/local/etc/emacs.d/elisp`, symlinked as `~/.emacs.d/elisp`). The installer
+creates the other directories in the user's home directory. `site-lisp` is the
+user-local extension tree; `loader.el`, when present, is loaded after the bundled
+configuration. The other directories hold writable run-time state such as
+backups, temporary files and history, while the system-wide configuration tree
+stays read-only.
 
-Within `emacs.d/elisp/`, the loading order is `init.el` → `autoloads.el` →
-each module → `configs.el`. A new setting normally becomes a new
-`<name>-settings.el` file plus one `load` line in `autoloads.el`. Anything that
-must win over the modules belongs in `configs.el`, since it is loaded after them
-all. See [GUIDELINES](doc/GUIDELINES) for the compatibility rules these files
-follow.
+Within `emacs.d/elisp/`, the bundled loading order is `init.el` →
+`autoloads.el` → each module → `configs.el`; the optional user-local
+`~/.emacs.d/site-lisp/loader.el` is loaded after that sequence. A new bundled
+setting normally becomes a new `<name>-settings.el` file plus one `load` line in
+`autoloads.el`. Bundled settings that must win over earlier bundled modules
+belong in `configs.el`. User-maintained local overrides belong in
+`site-lisp/loader.el`. See [GUIDELINES](doc/GUIDELINES) for the compatibility
+rules these files follow.
 
 ---
 
