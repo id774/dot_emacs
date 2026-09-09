@@ -70,9 +70,6 @@ subdirectory under load-path.")
 
 (setq load-path (append my-load-path default-load-path))
 
-;; custom settings
-(setq custom-file (expand-file-name "~/.emacs.d/elisp/custom.el"))
-
 ;; user identity
 (setq user-full-name "id774")
 (setq user-mail-address "idnanashi@gmail.com")

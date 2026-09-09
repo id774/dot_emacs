@@ -754,9 +754,8 @@ Source: `emacs.d/elisp/lang-mode.el`
 
 ### 7.5 Haskell
 
-When Haskell mode is available, DOT_EMACS associates `.hs`, `.hi`, `.gs`,
-`.lhs`, and `.lgs` files with it, and enables Haskell documentation and
-indentation helpers.
+When Haskell mode is available, DOT_EMACS associates `.hs` and `.lhs` source
+files with it, and enables Haskell documentation and indentation helpers.
 
 Source: `emacs.d/elisp/lang-mode.el`
 
@@ -764,7 +763,7 @@ Source: `emacs.d/elisp/lang-mode.el`
 
 When available:
 
-- `.erb` and `.rhtml` use `rhtml-mode`;
+- `.erb` uses `rhtml-mode`;
 - entering `rhtml-mode` launches Rinari integration.
 
 Source: `emacs.d/elisp/lang-mode.el`
@@ -777,7 +776,7 @@ When the corresponding modes are available:
 - `.scss` uses `scss-mode`, with compile-on-save disabled;
 - `.sass` uses `sass-mode`, with compile-on-save disabled;
 - `.haml` uses `haml-mode` with spaces for indentation;
-- `.coffee` and `Cakefile` use `coffee-mode`;
+- `.coffee` uses `coffee-mode`;
 - `.styl` uses `sws-mode`.
 
 Source: `emacs.d/elisp/lang-mode.el`
@@ -790,8 +789,8 @@ DOT_EMACS adds or conditionally adds mode associations for:
 - `.php` and `php` interpreter scripts -> `php-mode`;
 - `.as` -> `actionscript-mode`;
 - `.pig` -> `pig-latin-mode`;
-- `.bat`, `.cmd`, `CONFIG.*`, and `AUTOEXEC.*` -> `bat-mode`;
-- `.md` and `.txt` -> `markdown-mode`, when available;
+- `.bat` and `.cmd` -> `bat-mode`;
+- `.md` -> `markdown-mode`, when available;
 - `.erl` -> `erlang-mode` only on Emacs earlier than 27.
 
 Source: `emacs.d/elisp/lang-mode.el`

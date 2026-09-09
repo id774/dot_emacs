@@ -1,6 +1,12 @@
 dot_emacs Repository Version History
 ====================================
 
+v26.09 (Release Date: TBD)
+--------------------------
+- Remove the custom.el override and document site-lisp as the user-local
+  configuration path.
+- Modernize language-mode targets and tighten retained source-file suffixes.
+
 v26.08 (2026-08-26)
 -------------------
 - Remove the obsolete navi2ch and Riece configuration, along with their key

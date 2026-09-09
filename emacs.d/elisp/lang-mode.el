@@ -23,27 +23,19 @@
 
 ;; rd-mode
 (when (autoload-p 'rd-mode "RD-mode" "RDtool" 'interactive)
-  (setq auto-mode-alist (cons '("\\.rd$" . rd-mode) auto-mode-alist)))
+  (setq auto-mode-alist (cons '("\\.rd\\'" . rd-mode) auto-mode-alist)))
 
 ;; php-mode
 (when (autoload-p 'php-mode "php-mode" "PHP" 'interactive)
-  (setq auto-mode-alist (cons '("\\.php$" . php-mode) auto-mode-alist))
+  (setq auto-mode-alist (cons '("\\.php\\'" . php-mode) auto-mode-alist))
   (setq interpreter-mode-alist (cons '("php" . php-mode) interpreter-mode-alist)))
 
 ;; haskell-mode
 (when (autoload-p 'haskell-mode "haskell-site-file" "Haskell" 'interactive)
   (setq auto-mode-alist
-        (append '(("\\.hs$" . haskell-mode)
-                  ("\\.hi$" . haskell-mode)
-                  ("\\.gs$" . haskell-mode)
-                  ("\\.lhs$" . haskell-mode)
-                  ("\\.lgs$" . haskell-mode))
+        (append '(("\\.hs\\'" . haskell-mode)
+                  ("\\.lhs\\'" . haskell-mode))
                 auto-mode-alist))
-  (setq interpreter-mode-alist
-        (append '(("ruby" . ruby-mode)
-                  ("hugs" . haskell-mode)
-                  ("php"  . php-mode))
-                interpreter-mode-alist))
   (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indent))
 
@@ -52,8 +44,7 @@
 
 ;; rhtml-mode
 (when (load-p "rhtml-mode")
-  (setq auto-mode-alist (cons '("\\.erb$" . rhtml-mode) auto-mode-alist))
-  (setq auto-mode-alist (cons '("\\.rhtml$" . rhtml-mode) auto-mode-alist))
+  (setq auto-mode-alist (cons '("\\.erb\\'" . rhtml-mode) auto-mode-alist))
   (add-hook 'rhtml-mode-hook
             (lambda () (rinari-launch))))
 
@@ -75,7 +66,7 @@
 
 ;; js2-mode
 (when (autoload-p 'js2-mode "js2" "js2" 'interactive)
-  (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   (add-hook 'js2-mode-hook
             (lambda ()
               (setq js2-basic-offset 4))))
@@ -111,8 +102,7 @@
 
 ;; coffee-mode
 (when (load-p "coffee-mode")
-  (add-to-list 'auto-mode-alist '("\\.coffee\\'" . coffee-mode))
-  (add-to-list 'auto-mode-alist '("Cakefile" . coffee-mode)))
+  (add-to-list 'auto-mode-alist '("\\.coffee\\'" . coffee-mode)))
 
 ;; sws-mode
 (when (require 'sws-mode nil t)
@@ -120,17 +110,14 @@
 
 ;; pig-mode
 (when (load-p "pig-latin-mode")
-  (add-to-list 'auto-mode-alist '("\\.pig$" . pig-latin-mode))
+  (add-to-list 'auto-mode-alist '("\\.pig\\'" . pig-latin-mode))
   (autoload-p 'pig-latin-mode "pig-latin-mode" "Pig-Latin mode" 'interactive))
 
 ;; bat-mode
 (setq auto-mode-alist
       (append
-       (list (cons "\\.[bB][aA][tT]$" 'bat-mode))
-       (list (cons "\\.[cC][mM][dD]$" 'bat-mode))
-       ;; DOS init files
-       (list (cons "CONFIG\\."   'bat-mode))
-       (list (cons "AUTOEXEC\\." 'bat-mode))
+       (list (cons "\\.[bB][aA][tT]\\'" 'bat-mode))
+       (list (cons "\\.[cC][mM][dD]\\'" 'bat-mode))
        auto-mode-alist))
 
 (autoload-p 'bat-mode "bat-mode"
@@ -138,8 +125,7 @@
 
 ;; markdown-mode
 (when (autoload-p 'markdown-mode "markdown-mode" "Major mode for editing Markdown files" 'interactive)
-  (setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
-  (setq auto-mode-alist (cons '("\\.txt" . markdown-mode) auto-mode-alist)))
+  (setq auto-mode-alist (cons '("\\.md\\'" . markdown-mode) auto-mode-alist)))
 
 ;; erlang-mode
 (when (and (< emacs-major-version 27)
