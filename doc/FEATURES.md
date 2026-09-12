@@ -44,7 +44,7 @@ such as `jk` therefore means typing the two characters almost simultaneously.
 | `C-\` | `help-command` | Opens the Emacs help prefix moved away from `C-h`. | Always | `emacs.d/elisp/global-set-key.el` |
 | `C-M-g` | `keyboard-escape-quit` | Cancels the current command or exits a recursive editing state. | Always | `emacs.d/elisp/global-set-key.el` |
 | `C-x C-c` | `confirm-save-buffers-kill-emacs` | Asks `quit emacs?` before exiting Emacs. | Always | `emacs.d/elisp/global-set-key.el` |
-| `C-c C-c 0` / `C-x 7` | `confirm-kill-all-buffers` | Asks for confirmation and then kills all open buffers. | Always | `emacs.d/elisp/global-set-key.el` |
+| `C-c C-c 0` / `C-x 7` | `confirm-kill-all-buffers` | Asks for confirmation and then attempts to kill all current buffers; buffers that refuse killing may remain. | Always | `emacs.d/elisp/global-set-key.el` |
 | `M-RET` | `toggle-fullscreen` | Toggles the current frame between normal and full-screen display. | Graphical effect depends on the frame/window system | `emacs.d/elisp/configs.el` |
 
 DOT_EMACS aliases `yes-or-no-p` to `y-or-n-p`, so many confirmation prompts
@@ -177,7 +177,14 @@ The additional interactive command `M-x tab4` toggles the current buffer's
 | --- | --- | --- | --- |
 | `C-c k` / `C-c C-k` | `clear-kill-ring` | Clears the Emacs kill ring and, when GUI selection support is available, clears the system clipboard as well. | `emacs.d/elisp/global-set-key.el`, `emacs.d/elisp/clear-kill-ring.el` |
 | `C-x x w` | `auto-save-buffers-enhanced-toggle-activity` | Temporarily enables or disables DOT_EMACS's enhanced direct-to-file automatic saving. | `emacs.d/elisp/auto-save-buffers-settings.el` |
-| `C-c M-c p` | `global-proxy-use-toggle` | Toggles the `global-proxy-use` flag used by DOT_EMACS network integration. | `emacs.d/elisp/global-set-key.el` |
+| `C-c M-c p` | `global-proxy-use-toggle` | Toggles the stored `global-proxy-use` flag; it does not reload or reconfigure network integrations already loaded. | `emacs.d/elisp/global-set-key.el` |
+
+`proxy.el` owns DOT_EMACS's shared environment-level proxy configuration:
+`global-proxy-use`, `global-proxy-server`, `global-proxy-port`,
+`global-proxy-user`, and `global-proxy-password`. Environments that require a
+proxy, such as a corporate network, set these values before the relevant
+network integrations are loaded. This is startup/environment configuration,
+not a contract for live proxy reconfiguration during an Emacs session.
 
 `autoloads.el` temporarily binds `C-c k` to `browse-kill-ring` when that package
 loads, but `configs.el` is loaded last and then loads `global-set-key.el`.

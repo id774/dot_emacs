@@ -29,14 +29,16 @@
 #  Options:
 #      -h, --help        Show this help message and exit.
 #      -v, --version     Show this script header and exit.
-#      -u, --uninstall   Remove all installed dot_emacs components.
+#      -u, --uninstall   Remove user configuration and the fixed default target.
 #      -n, --no-sudo     Run without sudo.
 #
 #  Notes:
 #  - [emacs_binary]: Path to the Emacs binary (default: emacs).
 #    macOS users can use: /Applications/Emacs.app/Contents/MacOS/Emacs
-#  - [target_path]: Path to the installation directory (default: /usr/local/etc/emacs.d).
-#    Ignored by --uninstall, but keep it as a placeholder when passing [nosudo].
+#  - [target_path]: Installation directory path (default: /usr/local/etc/emacs.d).
+#    A directory symlink used as the installation target itself is outside the
+#    supported install model. The value is ignored by --uninstall, but keep it
+#    as a placeholder when passing [nosudo].
 #  - [nosudo]: If specified, the script runs without sudo.
 #  - Fallback: When 'emacs' is not found and [emacs_binary] is not an executable path,
 #    the script tries /Applications/Emacs.app/Contents/MacOS/Emacs on macOS.
@@ -44,9 +46,11 @@
 #  - Byte-compilation is selective: libraries, compatibility modules, and
 #    safe configuration modules are compiled, while bootstrap/orchestration
 #    and load-order-sensitive configuration files are loaded from source.
-#  - The --uninstall option will remove installed files and user configuration.
+#  - The --uninstall option removes user configuration and the fixed default
+#    installation target.
 #  - Keep the uninstall target fixed at /usr/local/etc/emacs.d to prevent accidental deletion.
-#  - Do not remove custom installation targets automatically.
+#  - Custom installation targets are not tracked for later removal and are not
+#    removed automatically.
 #  - The --uninstall option shares the environment setup with install, so it still
 #    requires a usable Emacs binary. Remove the configuration before removing Emacs.
 #  - Byte-compilation failures are reported individually and summarized,
@@ -133,6 +137,8 @@ check_sudo() {
 }
 
 # Install dot_emacs files to the target directory
+# TARGET is an installation directory path. A directory symlink supplied as
+# TARGET itself is outside the supported installation model.
 setup_dotemacs() {
     echo "[INFO] Setting up dot_emacs configuration..."
 
@@ -461,6 +467,7 @@ uninstall() {
 
     echo "[INFO] Uninstalling dot_emacs configuration..."
 
+    # Ignore any custom target argument and remove only the fixed default target.
     TARGET="/usr/local/etc/emacs.d"
 
     [ -f "$HOME/.emacs" ] && rm -f "$HOME/.emacs"

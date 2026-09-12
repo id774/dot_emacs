@@ -58,15 +58,19 @@ Run the `install_dotemacs.sh` script to install DOT_EMACS:
 Arguments:
 
 - `[emacs_binary]`: Path to the Emacs binary (default: `emacs`).
-- `[target_path]`: Installation directory (default: `/usr/local/etc/emacs.d`).
-  Ignored by `--uninstall`, but keep it as a placeholder when passing `[nosudo]`.
+- `[target_path]`: Installation directory path (default:
+  `/usr/local/etc/emacs.d`). The supported install model expects a directory
+  path rather than a directory symlink used as the target itself. The value is
+  ignored by `--uninstall`, but keep it as a placeholder when passing
+  `[nosudo]`.
 - `[nosudo]`: If specified, the script runs without `sudo`.
 
 Options:
 
 - `-h`, `--help`: Show the help message and exit.
 - `-v`, `--version`: Show the script header and exit.
-- `-u`, `--uninstall`: Remove the installed dot_emacs components.
+- `-u`, `--uninstall`: Remove the user configuration and the fixed default
+  installation target. Custom installation targets are not removed.
 - `-n`, `--no-sudo`: Run without `sudo`.
 
 ### Default Installation:
@@ -85,6 +89,23 @@ This installs DOT_EMACS to the default location. Root privileges (via `sudo`) ar
 ```
 
 Both commands install DOT_EMACS to `~/.emacs.d` without using `sudo`.
+
+A custom target is an installation directory path. Using a directory symlink as
+the installation target itself is outside the supported installation model.
+
+### Environment-Specific Configuration:
+
+At install time, DOT_EMACS uses environment-specific files from
+`~/etc/config.local/` when they exist:
+
+- `dot_mew.el` replaces the installed `~/.mew.el`;
+- `proxy.el`, `emacs-w3m.el`, and `faces.el` replace their deployed files under
+  the installation target's `elisp/` directory.
+
+`proxy.el` is the shared environment-level proxy configuration for environments
+such as corporate networks that require a proxy. Its values are expected to be
+set before the relevant network integrations are loaded; this is startup
+configuration, not a live session reconfiguration interface.
 
 ### Installation on macOS:
 
@@ -106,7 +127,8 @@ if it is executable, so passing the path explicitly is optional.
 The second command removes the installed configuration without using `sudo`.
 
 For safety, `--uninstall` removes only `/usr/local/etc/emacs.d`.
-Custom installation targets are not removed automatically.
+Custom installation targets are not tracked for later removal and are not
+removed automatically.
 
 `--uninstall` shares the environment setup with the installer, so it still requires a usable Emacs binary. Remove the configuration before removing Emacs itself.
 

@@ -11,13 +11,20 @@
 
 ;;; Commentary:
 ;; Part of the DOT_EMACS configuration.
+;; This file owns shared environment-level proxy configuration for DOT_EMACS.
+;; Environments that require a proxy set these values explicitly before
+;; network integrations are loaded, normally through the install-time local
+;; configuration override.  This is not a live reconfiguration interface.
 ;; See doc/GUIDELINES for compatibility and maintenance policy.
 
 ;;; Code:
 
 ;; Proxy configuration
+;; These variables are the shared proxy configuration owned by this file.
+;; Consumers may read them during their own load/setup.  Changing them later
+;; does not by itself reload or reconfigure an already-loaded integration.
 
-;; Set `global-proxy-use' to t to enable the proxy
+;; Set `global-proxy-use' to t in environments that require the proxy
 (defvar global-proxy-use nil)
 
 (defvar global-proxy-server "proxy.hoge.co.jp")
