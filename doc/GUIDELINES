@@ -140,17 +140,6 @@ compete, not an equally weighted checklist.
     requirement as permission for unrelated cleanup in the same file or
     repository.
 
--   **Judge defects against the documented operating model:**\
-    A hypothetical input, filesystem state, or lifecycle that lies outside the
-    intended operating model is not by itself an implementation defect. Record
-    an important boundary explicitly so later reviews do not silently enlarge
-    the supported contract. For `install_dotemacs.sh`, `[target_path]` denotes
-    an installation directory path; supplying the installation target itself
-    as a directory symlink is outside the supported install model. Uninstall
-    ignores custom installation targets and removes only the fixed
-    `/usr/local/etc/emacs.d` target. This does not make arbitrary symlink
-    handling safe; it fixes the scope of this installer's supported operation.
-
 -   **Separate environment configuration from live reconfiguration:**\
     `proxy.el` owns the shared proxy settings for environments that require a
     proxy. They are startup/environment configuration and are expected to be
@@ -524,8 +513,6 @@ Installer command ownership:
 
 Installer target contract:
 
--   `[target_path]` is an installation directory path. The supported install
-    model does not use a directory symlink as the installation target itself.
 -   `--uninstall` intentionally ignores any custom target argument and removes
     only `/usr/local/etc/emacs.d`; custom installation targets are not tracked
     for later removal.
