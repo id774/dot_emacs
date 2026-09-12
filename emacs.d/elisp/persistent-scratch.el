@@ -1,4 +1,4 @@
-;;; persistent-scratch.el --- Preserve the *scratch* buffer across sessions -*- lexical-binding: t; -*-
+;;; persistent-scratch.el --- Keep the *scratch* buffer available within a session -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: https://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs
@@ -11,6 +11,9 @@
 
 ;;; Commentary:
 ;; Part of the DOT_EMACS configuration.
+;; Despite the historical file name, this file does not persist *scratch*
+;; contents across Emacs sessions.  It keeps the *scratch* buffer available
+;; during a session by refusing its kill and recreating it when necessary.
 ;; See doc/GUIDELINES for compatibility and maintenance policy.
 
 ;;; Code:

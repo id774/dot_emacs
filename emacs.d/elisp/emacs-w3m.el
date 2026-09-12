@@ -32,7 +32,10 @@
   (setq browse-url-browser-function 'w3m-browse-url)
   (global-set-key "\C-xm" 'browse-url-at-point)
 
-  ;; Use proxy settings from init.el
+  ;; Apply the proxy-use flag as startup configuration.
+  ;; `global-proxy-use' is defined by proxy.el before this file is loaded.
+  ;; This block is evaluated at load time; changing the flag later does not
+  ;; rebuild `w3m-command-arguments-alist' or imply live reconfiguration.
   (if global-proxy-use
       (setq w3m-command-arguments-alist
             '(("^http://\\([^/]*\\.\\)hoge\\.co\\.jp\\(/\\|$\\)" "-no-proxy")

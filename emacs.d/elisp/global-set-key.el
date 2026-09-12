@@ -223,7 +223,7 @@
   (if (y-or-n-p "kill all buffers?")
       (kill-all-buffers)))
 
-;; Kill all open buffers
+;; Bind the confirmed attempt to kill all current buffers
 (define-key global-map "\C-c\C-c\ 0" 'confirm-kill-all-buffers)
 (define-key global-map "\C-x\ 7" 'confirm-kill-all-buffers)
 
@@ -242,8 +242,11 @@
 ;; Delete trailing whitespace
 (define-key global-map "\C-c\C-c\ t" 'delete-trailing-whitespace)
 
-;; Toggle proxy usage
-(defun global-proxy-use-toggle () ""
+;; Toggle the stored proxy-use flag.
+;; Network integrations may consume this flag during their own load/setup;
+;; this command does not reload or reconfigure integrations already loaded.
+(defun global-proxy-use-toggle ()
+  "Toggle `global-proxy-use' without reconfiguring loaded integrations."
   (interactive)
   (setq global-proxy-use
         (not global-proxy-use))

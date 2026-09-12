@@ -104,10 +104,11 @@
 
 ;; Remaining legacy names, which cl-lib provides only with a cl- prefix.
 ;; The obsolete cl package used to define them as aliases, and bundled
-;; third-party code such as anything.el still uses the historical
-;; spelling, so keep the names available without loading cl.  A name is
-;; bridged only when it is still undefined, so built-in definitions and
-;; anything loaded earlier always win.
+;; third-party code such as anything.el still uses the historical spelling,
+;; so keep the names available through this compatibility mapping.  On newer
+;; Emacs, cl may also have been loaded above when lexical-let/lexical-let*
+;; semantics are required.  A name is bridged only when it is still undefined,
+;; so built-in definitions and anything loaded earlier always win.
 (when (featurep 'cl-lib)
   (dolist (entry '((get* . cl-get)
                    (random* . cl-random)

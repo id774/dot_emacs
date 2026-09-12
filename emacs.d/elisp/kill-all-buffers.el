@@ -1,4 +1,4 @@
-;;; kill-all-buffers.el --- Command to close all open buffers -*- lexical-binding: t; -*-
+;;; kill-all-buffers.el --- Attempt to kill all current buffers -*- lexical-binding: t; -*-
 
 ;; Author: id774 (More info: https://id774.net)
 ;; Source Code: https://github.com/id774/dot_emacs
@@ -15,7 +15,8 @@
 
 ;;; Code:
 
-;; Kill all open buffers
+;; Attempt to kill each current buffer.
+;; A buffer protected by `kill-buffer-query-functions' may remain alive.
 (defun kill-all-buffers ()
   (interactive)
   (delete-other-windows)
