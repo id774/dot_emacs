@@ -547,10 +547,15 @@ Executable script versions:
     significant change to the script's structure. Do not increment the
     version for every internal change, such as each addition or removal of
     a compile target.
--   A single day's related maintenance or cleanup work is one version, not
-    several. When the granularity of the version history is revised partway
-    through such a day's work, the entries are consolidated into that day's
-    final version rather than left as separate versions.
+-   Related maintenance or cleanup that belongs to one release unit remains one
+    version even when it spans multiple days, commits, or pull requests. Follow-up
+    work that completes, corrects, or hardens the same newest release unit is
+    consolidated into that entry; update the entry date to the date the unit
+    reached its current form and summarize the completed whole.
+-   Do not merge independent release units merely because they were made on the
+    same day or close together. If an independent version has intervened, a later
+    fix to an older change is recorded as a new release unit rather than rewriting
+    history across the intervening version.
 -   Documentation-only, comment-only, and formatting-only changes do not
     require a script version update.
 -   When the script version changes, update its own version history in the
