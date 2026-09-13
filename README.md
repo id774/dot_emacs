@@ -13,7 +13,8 @@ A curated and modular Emacs configuration with selected bundled third-party libr
 5. [Directory Structure](#5-directory-structure)
 6. [Versioning](#6-versioning)
 7. [Contribution](#7-contribution)
-8. [License](#8-license)
+8. [Branch Naming](#8-branch-naming)
+9. [License](#9-license)
 
 ---
 
@@ -234,7 +235,15 @@ see the [GUIDELINES](doc/GUIDELINES) document.
 
 ---
 
-## 8. License
+## 8. Branch Naming
+
+This repository uses `master` as its primary branch name.
+
+The name is used solely as a technical identifier, following the long-standing convention historically used by Git. It does not express or imply any association with racism, slavery, discrimination, or any political or social ideology.
+
+---
+
+## 9. License
 
 The parts of this repository copyrighted by id774 are dual licensed under the [GPL version 3](https://www.gnu.org/licenses/gpl-3.0.html) or the [LGPL version 3](https://www.gnu.org/licenses/lgpl-3.0.html), at your option.
 The third-party software bundled under `emacs.d/elisp/3rd-party/` is excluded from this dual license and follows the license conditions of each third-party software.
@@ -242,7 +251,3 @@ The same exclusion applies to the individual files that contain third-party deri
 For full details, please refer to the [LICENSE](doc/LICENSE) file.  See also [COPYING](doc/COPYING) and [COPYING.LESSER](doc/COPYING.LESSER) for the complete license texts.
 
 Thank you for using and contributing to this repository!
-
-This repository uses `master` as its primary branch name.
-
-The name is used solely as a technical identifier, following the long-standing convention historically used by Git. It does not express or imply any association with racism, slavery, discrimination, or any political or social ideology.
