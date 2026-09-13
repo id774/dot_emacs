@@ -13,7 +13,8 @@ A curated and modular Emacs configuration with selected bundled third-party libr
 5. [Directory Structure](#5-directory-structure)
 6. [Versioning](#6-versioning)
 7. [Contribution](#7-contribution)
-8. [License](#8-license)
+8. [Primary Branch](#8-primary-branch)
+9. [License](#9-license)
 
 ---
 
@@ -24,10 +25,6 @@ DOT_EMACS is designed to:
 - Simplify the setup of a powerful Emacs environment with preconfigured settings.
 - Include selected third-party libraries where they remain useful.
 - Provide a modular and customizable structure for user preferences.
-
-This repository uses `master` as its primary branch name.
-
-The name is used solely as a technical identifier, following the long-standing convention historically used by Git. It does not express or imply any association with racism, slavery, discrimination, or any political or social ideology.
 
 ---
 
@@ -238,7 +235,15 @@ see the [GUIDELINES](doc/GUIDELINES) document.
 
 ---
 
-## 8. License
+## 8. Primary Branch
+
+This repository uses `master` as its primary branch name.
+
+The name is used solely as a technical identifier, following the long-standing convention historically used by Git. It does not express or imply any association with racism, slavery, discrimination, or any political or social ideology.
+
+---
+
+## 9. License
 
 The parts of this repository copyrighted by id774 are dual licensed under the [GPL version 3](https://www.gnu.org/licenses/gpl-3.0.html) or the [LGPL version 3](https://www.gnu.org/licenses/lgpl-3.0.html), at your option.
 The third-party software bundled under `emacs.d/elisp/3rd-party/` is excluded from this dual license and follows the license conditions of each third-party software.
