@@ -1,8 +1,8 @@
 dot_emacs Repository Version History
 ====================================
 
-v26.09 (Release Date: TBD)
---------------------------
+v26.09 (2026-09-23)
+-------------------
 - Remove the custom.el override and document site-lisp as the user-local
   configuration path.
 - Modernize language-mode targets and tighten retained source-file suffixes.
