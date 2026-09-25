@@ -18,6 +18,21 @@
 ;; may require.  The project configuration is the source of truth: DOT_EMACS
 ;; defines no formatting, lint or editor rule of its own, and an integration
 ;; stays inactive when the project provides no applicable configuration.
+;;
+;; This module is intentionally loaded from source and excluded from byte
+;; compilation.  Its functionality is available only on GNU Emacs 30 and
+;; newer, while DOT_EMACS itself and its installer continue to support GNU
+;; Emacs 23.4 and later.  Adding this file to the installer's ordinary byte
+;; compilation targets would therefore make older supported Emacs versions
+;; attempt to compile code that is not intended for them.
+;;
+;; The installer could add a separate Emacs-30-only compilation branch, but
+;; this module mainly registers hooks, configures buffer-local integration,
+;; and invokes external development tools.  The expected benefit from byte
+;; compilation does not justify adding version-specific compilation control
+;; flow to the installer solely for this module.  It is therefore source-loaded
+;; only on Emacs 30+ and is also excluded from automatic asynchronous byte
+;; compilation so that the source-load decision remains consistent.
 
 ;;; Code:
 
