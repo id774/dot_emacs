@@ -64,6 +64,12 @@
 ;; yatex
 (load-p "yatex-mode")
 
+;; team development standards integration
+;; GNU Emacs 30+ uses the EditorConfig, Prettier and ESLint standards a
+;; project provides; older versions keep their existing behavior.
+(when (>= emacs-major-version 30)
+  (load-p "development-standards-settings"))
+
 ;; anything-git-files
 (when (require 'anything-git-files nil t)
   (define-key global-map "\C-c\C-c\ b" 'anything-git-files))

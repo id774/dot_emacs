@@ -143,6 +143,9 @@ DOT_EMACS:
 - Loads the installed DOT_EMACS configuration from ~/.emacs.d/elisp/, starting with init.el and its configured modules.
 - Persists minibuffer history and the kill ring across Emacs sessions using the built-in `savehist`, which autosaves every 300 seconds; `savekill` also saves the kill ring immediately on every update.
 - Language-specific packages not bundled with DOT_EMACS must be installed and configured separately.
+- On Emacs 30+, uses the EditorConfig, Prettier, and ESLint development standards a
+  project provides, only when that configuration exists; projects without it keep
+  the existing behavior.
 - Uses `/dev/shm` as the temporary file directory on GNU/Linux only. Other platforms, including macOS, keep the Emacs default.
 - Does not define a separate DOT_EMACS `custom-file`; user-maintained local
   overrides belong in `~/.emacs.d/site-lisp/loader.el`.
