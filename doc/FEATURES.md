@@ -813,6 +813,39 @@ Source: `emacs.d/elisp/lang-mode.el`
 
 Source: `emacs.d/elisp/yatex-mode.el`
 
+### 7.10 Team development standards on Emacs 30+
+
+On Emacs 30 and later, DOT_EMACS uses the development standards a project
+provides, so that Emacs follows the same EditorConfig, Prettier, and ESLint
+rules as the editor tooling a team may require. DOT_EMACS defines none of
+these rules itself.
+
+- The built-in EditorConfig support is enabled globally. A file uses the
+  settings of an applicable `.editorconfig`; a file without one is not changed
+  by this integration.
+- Prettier is looked up as the nearest `node_modules/.bin/prettier` above the
+  file, then on `PATH`. When Prettier resolves a configuration for the file,
+  and the file is supported and not ignored, the buffer is formatted with
+  Prettier before each save. `M-x development-standards-prettier-format-buffer`
+  formats on demand. Prettier options come only from the project; DOT_EMACS
+  adds none.
+- When Prettier fails, the buffer is left unchanged, a warning is shown, and
+  the file is saved as it is.
+- ESLint is looked up as the nearest `node_modules/.bin/eslint` above the
+  file, then on `PATH`. When ESLint resolves a configuration for the file,
+  Flymake is enabled in that buffer and reports the ESLint diagnostics.
+  Existing Flymake backends are kept.
+- ESLint auto-fix is not performed.
+- A project or file without the corresponding configuration, or without the
+  Prettier or ESLint executable, keeps its existing behavior; that
+  integration stays inactive.
+- Remote files are not handled by the Prettier and ESLint integrations.
+- Emacs 23.4 through 29.x keep their existing behavior; none of these
+  integrations is loaded there.
+
+Sources: `emacs.d/elisp/development-standards-settings.el`,
+`emacs.d/elisp/autoloads.el`
+
 ## 8. Remote files and external commands
 
 ### 8.1 TRAMP
@@ -911,6 +944,7 @@ project-owned configuration files:
 - `emacs.d/elisp/lang-mode.el` - language-mode associations, gtags, and per-language hooks.
 - `emacs.d/elisp/ruby-optional-load.el` - Ruby integration.
 - `emacs.d/elisp/yatex-mode.el` - YaTeX integration.
+- `emacs.d/elisp/development-standards-settings.el` - Emacs 30+ EditorConfig, Prettier, and ESLint integration.
 - `emacs.d/elisp/emacs-w3m.el` - browser integration.
 - `emacs.d/elisp/mew-settings.el` - Mew integration.
 - `emacs.d/elisp/google-this-settings.el` - Google search integration.
