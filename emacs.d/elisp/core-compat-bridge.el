@@ -29,6 +29,14 @@
     `(eval-after-load ,file
        '(progn ,@body))))
 
+;; Provide setq-local on Emacs 24.1 and 24.2 for bundled markdown-mode 2.3.
+(when (and (>= emacs-major-version 24)
+           (not core-compat--emacs-24.3+)
+           (not (fboundp 'setq-local)))
+  (defmacro setq-local (variable value)
+    "Make VARIABLE buffer-local in the current buffer and set it to VALUE."
+    `(set (make-local-variable ',variable) ,value)))
+
 ;; Emacs 29 removed toggle-read-only, so restore it on top of read-only-mode.
 ;; Older Emacs versions still define it and keep their own implementation.
 (unless (fboundp 'toggle-read-only)

@@ -80,8 +80,12 @@
   ;; Macros
   (defmacro loop (&rest body) `(cl-loop ,@body))
   (defmacro pushnew (x place &rest keys) `(cl-pushnew ,x ,place ,@keys))
-  (defmacro incf (place &optional delta) `(cl-incf ,place ,(or delta 1)))
-  (defmacro decf (place &optional delta) `(cl-decf ,place ,(or delta 1)))
+  (unless (fboundp 'incf)
+    (defmacro incf (place &optional delta)
+      `(cl-incf ,place ,(or delta 1))))
+  (unless (fboundp 'decf)
+    (defmacro decf (place &optional delta)
+      `(cl-decf ,place ,(or delta 1))))
   (defmacro assert (test &optional show-args string &rest args)
     `(cl-assert ,test ,show-args ,string ,@args))
 
@@ -209,18 +213,20 @@ The rename dropped a trailing asterisk, so both loop and sort* are covered."
                               (match-string 1 old)
                             old)))))
 
-;; with-eval-after-load runs the form at once when cl is already loaded, so
-;; the order in which a file reaches cl and this bridge does not matter.
+;; eval-after-load runs the form at once when cl is already loaded, so the
+;; order in which a file reaches cl and this bridge does not matter.  Use it
+;; directly: the with-eval-after-load shim in core-compat-bridge.el is not
+;; visible to the byte compiler while this file itself is being compiled.
 ;; Emacs before 27.1 marks none of these names, where this is a no-op.
-(when (and (featurep 'cl-lib) (fboundp 'with-eval-after-load))
-  (with-eval-after-load 'cl
-    (mapatoms
-     (lambda (name)
-       (let ((info (get name 'byte-obsolete-info)))
-         (when (and (consp info)
-                    (symbolp (car info))
-                    (eq (car info) (cl-compat--renamed-to name)))
-           (put name 'byte-obsolete-info nil)))))))
+(when (featurep 'cl-lib)
+  (eval-after-load 'cl
+    '(mapatoms
+      (lambda (name)
+        (let ((info (get name 'byte-obsolete-info)))
+          (when (and (consp info)
+                     (symbolp (car info))
+                     (eq (car info) (cl-compat--renamed-to name)))
+            (put name 'byte-obsolete-info nil)))))))
 
 (provide 'cl-compat-bridge)
 

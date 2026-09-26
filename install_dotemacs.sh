@@ -377,6 +377,7 @@ byte_compile_markdown_mode() {
         -L "$markdown_dir" \
         ${markdown_cl_lib:+-L "$markdown_cl_lib"} \
         ${markdown_elisp:+-L "$markdown_elisp"} \
+        ${markdown_elisp:+-l core-compat-bridge} \
         -f batch-byte-compile "$markdown_dir/markdown-mode.el"; then
         BYTE_COMPILE_SUCCEEDED=$((BYTE_COMPILE_SUCCEEDED + 1))
     else
