@@ -65,10 +65,11 @@
   (defun-add-hook 'c-mode-common-hook (gtags-mode 1)))
 
 ;; js2-mode
-(when (autoload-p 'js2-mode "js2" "js2" 'interactive)
+(when (autoload-p 'js2-mode "js2-mode" "js2" 'interactive)
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   (add-hook 'js2-mode-hook
             (lambda ()
+              (make-local-variable 'js2-basic-offset)
               (setq js2-basic-offset 4))))
 
 ;; actionscript-mode

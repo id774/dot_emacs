@@ -57,6 +57,10 @@
 #    but they do not abort the remaining installation steps.
 #
 #  Version History:
+#  v5.1 2026-09-26
+#       Select and byte-compile the compatible bundled js2-mode release for
+#       the active GNU Emacs generation, including the Emacs 24 indentation
+#       helper and the existing pre-24.3 cl-lib compatibility path.
 #  v5.0 2026-08-21
 #       Resolve the script directory with POSIX utilities so installation works
 #       without realpath or GNU readlink.
@@ -221,6 +225,62 @@ emacs_batch_byte_compile_with_utils() {
     done
 }
 
+# Compile only the bundled js2-mode release that init.el selects for the
+# active GNU Emacs: 1.0 on Emacs 23, 20231224 on Emacs 24+. Emacs 24 also
+# needs js2-old-indent.el, which uses cl-lib macros without requiring
+# cl-lib itself, so cl-lib is loaded before compiling on Emacs 24.
+# Emacs 24.1 / 24.2 take cl-lib from the bundled copy, which in turn
+# needs cl-compat-bridge.el from the elisp directory.
+byte_compile_js2_mode() {
+    js2_version=$($SUDO "$EMACS" --batch -Q --eval \
+        '(princ (format "%d %d" emacs-major-version emacs-minor-version))' 2>/dev/null)
+    js2_major=${js2_version% *}
+    js2_minor=${js2_version#* }
+    case "$js2_major:$js2_minor" in
+        *[!0-9:]*|:*|*:)
+            BYTE_COMPILE_FAILED=$((BYTE_COMPILE_FAILED + 1))
+            echo "[WARN] Byte compilation failed: js2-mode (cannot determine the GNU Emacs version)" >&2
+            return 0
+            ;;
+    esac
+
+    if [ "$js2_major" -lt 24 ]; then
+        js2_dir="$TARGET/elisp/3rd-party/js2-mode/1.0"
+        js2_files="js2-mode.el"
+    elif [ "$js2_major" -eq 24 ]; then
+        js2_dir="$TARGET/elisp/3rd-party/js2-mode/20231224"
+        js2_files="js2-old-indent.el js2-mode.el"
+    else
+        js2_dir="$TARGET/elisp/3rd-party/js2-mode/20231224"
+        js2_files="js2-mode.el"
+    fi
+
+    js2_cl_lib=""
+    js2_elisp=""
+    js2_require=""
+    if [ "$js2_major" -eq 24 ]; then
+        js2_require="(require 'cl-lib)"
+        if [ "$js2_minor" -lt 3 ]; then
+            js2_cl_lib="$TARGET/elisp/3rd-party/cl-lib"
+            js2_elisp="$TARGET/elisp"
+        fi
+    fi
+
+    for js2_file in $js2_files; do
+        if $SUDO "$EMACS" --batch -Q \
+            -L "$js2_dir" \
+            ${js2_cl_lib:+-L "$js2_cl_lib"} \
+            ${js2_elisp:+-L "$js2_elisp"} \
+            ${js2_require:+--eval "$js2_require"} \
+            -f batch-byte-compile "$js2_dir/$js2_file"; then
+            BYTE_COMPILE_SUCCEEDED=$((BYTE_COMPILE_SUCCEEDED + 1))
+        else
+            BYTE_COMPILE_FAILED=$((BYTE_COMPILE_FAILED + 1))
+            echo "[WARN] Byte compilation failed: $js2_dir/$js2_file" >&2
+        fi
+    done
+}
+
 # Byte-compile all necessary Emacs Lisp files
 byte_compile_all() {
     echo "[INFO] Byte-compiling Emacs Lisp files..."
@@ -248,7 +308,6 @@ byte_compile_all() {
     cd "$TARGET/elisp/3rd-party" && emacs_batch_byte_compile \
         py-autopep8.el \
         browse-kill-ring.el \
-        js2.el \
         undo-tree.el \
         viewer.el \
         ruby-block.el \
@@ -280,6 +339,8 @@ byte_compile_all() {
         sequential-command.el \
         recentf-ext.el \
         sws-mode.el
+
+    byte_compile_js2_mode
 
     # utils.el defines the load-p, autoload-p and defun-add-hook helpers the
     # other modules use, so compile it first and then load it for the rest.

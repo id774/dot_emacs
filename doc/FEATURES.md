@@ -777,16 +777,32 @@ Source: `emacs.d/elisp/lang-mode.el`
 
 ### 7.7 JavaScript, stylesheets, and templates
 
+DOT_EMACS bundles a compatible `js2-mode` release for each supported GNU Emacs
+generation:
+
+| GNU Emacs | js2-mode |
+| --- | --- |
+| 23.4 | 1.0 |
+| 24+ | 20231224 |
+
+At startup, only the directory of the selected release is added to `load-path`.
+The bundled upstream sources are kept unmodified. The 20231224 bundle also
+includes its upstream `js2-old-indent.el` compatibility file for GNU Emacs 24.
+
+Editing commands, parser capabilities, and native key bindings follow the
+selected upstream release. DOT_EMACS does not emulate the historical 2008
+`js2.el` interface across generations.
+
 When the corresponding modes are available:
 
-- `.js` uses `js2-mode` with `js2-basic-offset` set to 4;
+- `.js` uses `js2-mode` with an indentation width of 4;
 - `.scss` uses `scss-mode`, with compile-on-save disabled;
 - `.sass` uses `sass-mode`, with compile-on-save disabled;
 - `.haml` uses `haml-mode` with spaces for indentation;
 - `.coffee` uses `coffee-mode`;
 - `.styl` uses `sws-mode`.
 
-Source: `emacs.d/elisp/lang-mode.el`
+Source: `emacs.d/elisp/init.el`, `emacs.d/elisp/lang-mode.el`
 
 ### 7.8 Markdown
 

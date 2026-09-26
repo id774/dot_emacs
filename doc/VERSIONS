@@ -12,6 +12,9 @@ v26.10 (Release Date: TBD)
 - Bundle versioned markdown-mode releases for GNU Emacs 23.4 through current
   releases, selecting 2.1, 2.3, 2.5, 2.7, or 2.8 by Emacs generation, and
   expand Markdown file associations and preview documentation.
+- Bundle versioned js2-mode releases, keeping 1.0 for GNU Emacs 23.4 and
+  using 20231224 on GNU Emacs 24+, while preserving .js mode selection and
+  four-space indentation.
 
 v26.09 (2026-09-23)
 -------------------
