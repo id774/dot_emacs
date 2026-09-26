@@ -14,13 +14,14 @@
 ;; See doc/GUIDELINES for compatibility and maintenance policy.
 ;;
 ;; Make the development capabilities a team development standard requires,
-;; such as EditorConfig, Prettier, ESLint, SQL Formatter and Prisma, available
-;; from Emacs.  Reproducing another editor's extensions, user interface,
-;; command palette, operating procedure, on-save execution, background
-;; execution, continuous diagnostics, settings screens or other workflows is
-;; not a goal.  A capability may be provided through an Emacs-native explicit
-;; command or key binding, and automatic behavior is used only where the
-;; development standard itself or existing DOT_EMACS behavior requires it.
+;; such as EditorConfig, Prettier, ESLint, SQL Formatter, Prisma, Vitest and
+;; CSpell, available from Emacs.  Reproducing another editor's extensions,
+;; user interface, command palette, operating procedure, on-save execution,
+;; background execution, continuous diagnostics, settings screens or other
+;; workflows is not a goal.  A capability may be provided through an
+;; Emacs-native explicit command or key binding, and automatic behavior is
+;; used only where the development standard itself or existing DOT_EMACS
+;; behavior requires it.
 ;;
 ;; Project-provided configuration and project-local tools are the source of
 ;; truth wherever they exist.  DOT_EMACS invents no project formatting, lint
@@ -370,6 +371,139 @@ The buffer must be saved first; it is not saved automatically."
   "Bind Prisma commands in the current Prisma schema buffer."
   :keymap development-standards-prisma-bindings-mode-map)
 
+(defun development-standards--project-root (tool executable)
+  "Return the project root for running TOOL through EXECUTABLE.
+This is the directory owning a project-local node_modules/.bin/TOOL, else
+the nearest package.json directory, else the nearest .git directory, else
+the directory of the current file."
+  (let* ((local (concat "/node_modules/.bin/" tool))
+         (owner (and (string-suffix-p local executable)
+                     (file-name-as-directory
+                      (substring executable 0 (- (length local)))))))
+    (expand-file-name
+     (if (and owner (file-in-directory-p buffer-file-name owner))
+         owner
+       (or (locate-dominating-file buffer-file-name "package.json")
+           (locate-dominating-file buffer-file-name ".git")
+           (file-name-directory buffer-file-name))))))
+
+(defun development-standards--tool-context (tool &optional unsaved-message)
+  "Return (EXECUTABLE . ROOT) for running TOOL on the current file.
+Signal a user error unless the buffer visits a local file, when the buffer
+is modified and UNSAVED-MESSAGE is non-nil, or when TOOL is not found."
+  (unless (and buffer-file-name
+               (not (file-remote-p buffer-file-name)))
+    (user-error "Not visiting a local file"))
+  (when (and unsaved-message (buffer-modified-p))
+    (user-error "%s" unsaved-message))
+  (let ((executable (development-standards--require-executable tool)))
+    (cons executable
+          (development-standards--project-root tool executable))))
+
+(defun development-standards--compile (tool context &rest args)
+  "Run TOOL from CONTEXT, (EXECUTABLE . ROOT), with ARGS in `compilation-mode'."
+  (let ((default-directory (cdr context)))
+    (compilation-start
+     (mapconcat #'shell-quote-argument (cons (car context) args) " ")
+     nil
+     (lambda (_mode) (format "*development-standards-%s*" tool)))))
+
+(defun development-standards-vitest-run-project ()
+  "Run the project's Vitest tests once."
+  (interactive)
+  (development-standards--compile
+   "vitest" (development-standards--tool-context "vitest") "run"))
+
+(defun development-standards-vitest-run-file ()
+  "Run the Vitest tests in the current file once.
+The buffer must be saved first; it is not saved automatically."
+  (interactive)
+  (let ((context (development-standards--tool-context
+                  "vitest" "Save the buffer before running Vitest")))
+    (development-standards--compile
+     "vitest" context "run"
+     (file-relative-name buffer-file-name (cdr context)))))
+
+(defun development-standards-vitest-run-test-at-point ()
+  "Run the Vitest test at the current line once.
+The buffer must be saved first; it is not saved automatically."
+  (interactive)
+  (let ((context (development-standards--tool-context
+                  "vitest" "Save the buffer before running Vitest")))
+    (development-standards--compile
+     "vitest" context "run"
+     (format "%s:%d"
+             (file-relative-name buffer-file-name (cdr context))
+             (line-number-at-pos nil t)))))
+
+(defun development-standards-vitest-coverage-project ()
+  "Run the project's Vitest tests once with coverage enabled."
+  (interactive)
+  (development-standards--compile
+   "vitest" (development-standards--tool-context "vitest")
+   "run" "--coverage"))
+
+(defun development-standards-vitest-watch-project ()
+  "Run Vitest in watch mode for the project in an interactive buffer.
+An existing live watch process for the same project is reused."
+  (interactive)
+  (let* ((context (development-standards--tool-context "vitest"))
+         (buffer (get-buffer-create
+                  (format "*development-standards-vitest-watch: %s*"
+                          (abbreviate-file-name (cdr context))))))
+    (unless (process-live-p (get-buffer-process buffer))
+      (with-current-buffer buffer
+        (setq default-directory (cdr context))
+        (let ((process-connection-type t))
+          (make-comint-in-buffer "development-standards-vitest-watch" buffer
+                                 (car context) nil "watch"))))
+    (pop-to-buffer buffer)))
+
+(defconst development-standards--cspell-options
+  '("lint" "--no-progress" "--no-color" "--show-suggestions"
+    "--issue-template"
+    "$filename:$row:$col: $message ($text) Suggestions: [$suggestions]")
+  "CSpell arguments that print issues as navigable file:line:column lines.")
+
+(defun development-standards-cspell-check-file ()
+  "Check the spelling of the current file with CSpell.
+The buffer must be saved first; it is not saved automatically."
+  (interactive)
+  (let ((context (development-standards--tool-context
+                  "cspell" "Save the buffer before checking spelling")))
+    (apply #'development-standards--compile "cspell" context
+           (append development-standards--cspell-options
+                   (list (file-relative-name buffer-file-name
+                                             (cdr context)))))))
+
+(defun development-standards-cspell-check-project ()
+  "Check the spelling of the saved files in the project with CSpell."
+  (interactive)
+  (apply #'development-standards--compile "cspell"
+         (development-standards--tool-context "cspell")
+         (append development-standards--cspell-options '("."))))
+
+(defvar development-standards-vitest-bindings-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c T") 'development-standards-vitest-run-file)
+    (define-key map (kbd "C-c t") 'development-standards-vitest-run-test-at-point)
+    map)
+  "Key bindings for files in projects with Vitest.")
+
+(define-minor-mode development-standards-vitest-bindings-mode
+  "Bind Vitest commands in the current buffer."
+  :keymap development-standards-vitest-bindings-mode-map)
+
+(defvar development-standards-cspell-bindings-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c S") 'development-standards-cspell-check-file)
+    map)
+  "Key bindings for files in projects with CSpell.")
+
+(define-minor-mode development-standards-cspell-bindings-mode
+  "Bind CSpell commands in the current buffer."
+  :keymap development-standards-cspell-bindings-mode-map)
+
 (defun development-standards-setup ()
   "Enable the development standards the visited file's project provides."
   (when (and buffer-file-name
@@ -390,7 +524,11 @@ The buffer must be saved first; it is not saved automatically."
     (cond ((string-match-p "\\.\\(sql\\|q\\)\\'" buffer-file-name)
            (development-standards-sql-bindings-mode 1))
           ((string-match-p "\\.prisma\\'" buffer-file-name)
-           (development-standards-prisma-bindings-mode 1)))))
+           (development-standards-prisma-bindings-mode 1)))
+    (when (development-standards--find-executable "vitest")
+      (development-standards-vitest-bindings-mode 1))
+    (when (development-standards--find-executable "cspell")
+      (development-standards-cspell-bindings-mode 1))))
 
 (add-hook 'find-file-hook 'development-standards-setup)
 
