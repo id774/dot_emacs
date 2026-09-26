@@ -66,8 +66,10 @@ warning from a normal completion."
    (t
     'normal)))
 
-(with-eval-after-load 'auto-async-byte-compile
-  (defalias 'aabc/status 'dot-emacs-aabc-status))
+;; Use eval-after-load directly: the with-eval-after-load shim above is not
+;; visible to the byte compiler while this file itself is being compiled.
+(eval-after-load 'auto-async-byte-compile
+  '(defalias 'aabc/status 'dot-emacs-aabc-status))
 
 (provide 'core-compat-bridge)
 
