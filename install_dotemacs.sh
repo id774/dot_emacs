@@ -334,6 +334,57 @@ byte_compile_auto_complete_popup() {
     done
 }
 
+# Compile only the bundled markdown-mode release that init.el selects for the
+# active GNU Emacs: 2.3 on Emacs 24, 2.5 on Emacs 25-26, 2.7 on Emacs 27, and
+# 2.8 on Emacs 28+. On Emacs 23, 2.1 stays source-loaded and is not compiled.
+# Before 24.3, markdown-mode requires the bundled cl-lib, which in turn
+# requires cl-compat-bridge.el from the project elisp directory.
+byte_compile_markdown_mode() {
+    markdown_version=$($SUDO "$EMACS" --batch -Q --eval \
+        '(princ (format "%d %d" emacs-major-version emacs-minor-version))' 2>/dev/null)
+    markdown_major=${markdown_version% *}
+    markdown_minor=${markdown_version#* }
+    case "$markdown_major:$markdown_minor" in
+        *[!0-9:]*|:*|*:)
+            BYTE_COMPILE_FAILED=$((BYTE_COMPILE_FAILED + 1))
+            echo "[WARN] Byte compilation failed: markdown-mode (cannot determine the GNU Emacs version)" >&2
+            return 0
+            ;;
+    esac
+
+    if [ "$markdown_major" -lt 24 ]; then
+        return 0
+    fi
+
+    if [ "$markdown_major" -ge 28 ]; then
+        markdown_dir="$TARGET/elisp/3rd-party/markdown-mode/2.8"
+    elif [ "$markdown_major" -ge 27 ]; then
+        markdown_dir="$TARGET/elisp/3rd-party/markdown-mode/2.7"
+    elif [ "$markdown_major" -ge 25 ]; then
+        markdown_dir="$TARGET/elisp/3rd-party/markdown-mode/2.5"
+    else
+        markdown_dir="$TARGET/elisp/3rd-party/markdown-mode/2.3"
+    fi
+
+    markdown_cl_lib=""
+    markdown_elisp=""
+    if [ "$markdown_major" -eq 24 ] && [ "$markdown_minor" -lt 3 ]; then
+        markdown_cl_lib="$TARGET/elisp/3rd-party/cl-lib"
+        markdown_elisp="$TARGET/elisp"
+    fi
+
+    if $SUDO "$EMACS" --batch -Q \
+        -L "$markdown_dir" \
+        ${markdown_cl_lib:+-L "$markdown_cl_lib"} \
+        ${markdown_elisp:+-L "$markdown_elisp"} \
+        -f batch-byte-compile "$markdown_dir/markdown-mode.el"; then
+        BYTE_COMPILE_SUCCEEDED=$((BYTE_COMPILE_SUCCEEDED + 1))
+    else
+        BYTE_COMPILE_FAILED=$((BYTE_COMPILE_FAILED + 1))
+        echo "[WARN] Byte compilation failed: $markdown_dir/markdown-mode.el" >&2
+    fi
+}
+
 # Byte-compile all necessary Emacs Lisp files
 byte_compile_all() {
     echo "[INFO] Byte-compiling Emacs Lisp files..."
@@ -395,6 +446,8 @@ byte_compile_all() {
     byte_compile_js2_mode
 
     byte_compile_auto_complete_popup
+
+    byte_compile_markdown_mode
 
     # utils.el defines the load-p, autoload-p and defun-add-hook helpers the
     # other modules use, so compile it first and then load it for the rest.
