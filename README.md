@@ -143,6 +143,10 @@ DOT_EMACS:
 - Loads the installed DOT_EMACS configuration from ~/.emacs.d/elisp/, starting with init.el and its configured modules.
 - Persists minibuffer history and the kill ring across Emacs sessions using the built-in `savehist`, which autosaves every 300 seconds; `savekill` also saves the kill ring immediately on every update.
 - Language-specific packages not bundled with DOT_EMACS must be installed and configured separately.
+- Selects a bundled `markdown-mode` version by GNU Emacs generation so
+  Markdown editing and preview remain available across the supported Emacs
+  range; preview and export still require a Markdown processor usable by the
+  selected `markdown-mode`.
 - On Emacs 30+, provides project development-standard capabilities through
   EditorConfig, Prettier, ESLint, SQL Formatter, Prisma, Vitest, and CSpell
   while preserving the existing behavior on older Emacs versions.

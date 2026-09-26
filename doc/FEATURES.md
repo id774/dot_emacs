@@ -788,7 +788,52 @@ When the corresponding modes are available:
 
 Source: `emacs.d/elisp/lang-mode.el`
 
-### 7.8 Other file associations
+### 7.8 Markdown
+
+DOT_EMACS bundles a compatible `markdown-mode` release for each GNU Emacs
+generation:
+
+| GNU Emacs | markdown-mode |
+| --- | --- |
+| 23.4 | 2.1 |
+| 24.x | 2.3 |
+| 25.x-26.x | 2.5 |
+| 27.x | 2.7 |
+| 28+ | 2.8 |
+
+At startup, only the directory of the selected release is added to
+`load-path`. The bundled upstream sources are kept unmodified.
+
+The following suffixes open in `markdown-mode`:
+
+- `.md`, `.markdown`, `.mkd`, `.mdown`, `.mkdn`, `.mdwn`, and `.txt`.
+
+The `.md` and `.txt` associations are existing behavior.
+
+Editing commands and key bindings are the native interface of the selected
+upstream release. Native editing bindings differ by selected `markdown-mode`
+generation; for example, link insertion is `C-c C-l` from 2.3 onward, while
+2.1 uses `C-c C-a l`. DOT_EMACS does not add key bindings of its own to unify
+them. Command names such as `M-x markdown-insert-link` are common to all
+selected releases.
+
+All selected releases provide the same preview interface:
+
+| Key | Action |
+| --- | --- |
+| `C-c C-c p` | Preview in a browser (`markdown-preview`) |
+| `C-c C-c e` | Export to HTML (`markdown-export`) |
+| `C-c C-c v` | Export and preview (`markdown-export-and-preview`) |
+| `C-c C-c l` | Toggle live preview (`markdown-live-preview-mode`) |
+
+Preview and export require a Markdown processor usable by the selected
+`markdown-mode` to be available separately. DOT_EMACS does not install, force,
+or automatically select a Markdown processor, and does not set
+`markdown-command`.
+
+Source: `emacs.d/elisp/init.el`, `emacs.d/elisp/lang-mode.el`
+
+### 7.9 Other file associations
 
 DOT_EMACS adds or conditionally adds mode associations for:
 
@@ -797,12 +842,11 @@ DOT_EMACS adds or conditionally adds mode associations for:
 - `.as` -> `actionscript-mode`;
 - `.pig` -> `pig-latin-mode`;
 - `.bat` and `.cmd` -> `bat-mode`;
-- `.md` and `.txt` -> `markdown-mode`, when available;
 - `.erl` -> `erlang-mode` only on Emacs earlier than 27.
 
 Source: `emacs.d/elisp/lang-mode.el`
 
-### 7.9 YaTeX / LaTeX
+### 7.10 YaTeX / LaTeX
 
 `.tex` files use YaTeX. DOT_EMACS sets:
 
@@ -813,7 +857,7 @@ Source: `emacs.d/elisp/lang-mode.el`
 
 Source: `emacs.d/elisp/yatex-mode.el`
 
-### 7.10 Team development standards on Emacs 30+
+### 7.11 Team development standards on Emacs 30+
 
 On Emacs 30 and later, the development capabilities a team development
 standard uses are available from Emacs. DOT_EMACS does not reproduce another

@@ -58,6 +58,19 @@ subdirectory under load-path.")
             (expand-file-name "~/.emacs.d/elisp/3rd-party/rinari")
             (expand-file-name "~/.emacs.d/elisp/3rd-party/emacs-async")))
 
+;; markdown-mode is bundled as unmodified upstream releases, one per GNU
+;; Emacs generation, so each Emacs gets the newest release it supports.
+;; Add only the selected release directory to load-path.
+(setq my-load-path
+      (append my-load-path
+              (list (expand-file-name
+                     (concat "~/.emacs.d/elisp/3rd-party/markdown-mode/"
+                             (cond ((>= emacs-major-version 28) "2.8")
+                                   ((>= emacs-major-version 27) "2.7")
+                                   ((>= emacs-major-version 25) "2.5")
+                                   ((>= emacs-major-version 24) "2.3")
+                                   (t "2.1")))))))
+
 ;; The bundled cl-lib.el is a forward-compatibility copy for GNU Emacs
 ;; versions that predate the built-in cl-lib (24.3).  Keep it out of
 ;; load-path on 24.3+ so `(require 'cl-lib)' finds the built-in library
