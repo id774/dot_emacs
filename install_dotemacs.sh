@@ -58,9 +58,8 @@
 #
 #  Version History:
 #  v5.1 2026-09-26
-#       Select and byte-compile the compatible bundled js2-mode release for
-#       the active GNU Emacs generation, including the Emacs 24 indentation
-#       helper and the existing pre-24.3 cl-lib compatibility path.
+#       Select and byte-compile compatible bundled js2-mode, auto-complete, and
+#       popup releases for the active GNU Emacs generation.
 #  v5.0 2026-08-21
 #       Resolve the script directory with POSIX utilities so installation works
 #       without realpath or GNU readlink.
@@ -281,6 +280,60 @@ byte_compile_js2_mode() {
     done
 }
 
+# Compile only the bundled popup and auto-complete releases that init.el
+# selects for the active GNU Emacs, popup first because auto-complete
+# requires it: popup 0.5.2 / auto-complete 1.5.0 on Emacs 23, popup 0.5.8 /
+# auto-complete 1.5.1 on Emacs 24.1 / 24.2, and popup 0.5.9 / auto-complete
+# 1.5.1 on Emacs 24.3+. Before 24.3 both take cl-lib from the bundled copy,
+# which in turn needs cl-compat-bridge.el from the elisp directory.
+byte_compile_auto_complete_popup() {
+    ac_version=$($SUDO "$EMACS" --batch -Q --eval \
+        '(princ (format "%d %d" emacs-major-version emacs-minor-version))' 2>/dev/null)
+    ac_major=${ac_version% *}
+    ac_minor=${ac_version#* }
+    case "$ac_major:$ac_minor" in
+        *[!0-9:]*|:*|*:)
+            BYTE_COMPILE_FAILED=$((BYTE_COMPILE_FAILED + 1))
+            echo "[WARN] Byte compilation failed: auto-complete and popup (cannot determine the GNU Emacs version)" >&2
+            return 0
+            ;;
+    esac
+
+    if [ "$ac_major" -gt 24 ] || { [ "$ac_major" -eq 24 ] && [ "$ac_minor" -ge 3 ]; }; then
+        popup_dir="$TARGET/elisp/3rd-party/popup/0.5.9"
+    elif [ "$ac_major" -ge 24 ]; then
+        popup_dir="$TARGET/elisp/3rd-party/popup/0.5.8"
+    else
+        popup_dir="$TARGET/elisp/3rd-party/popup/0.5.2"
+    fi
+    if [ "$ac_major" -ge 24 ]; then
+        ac_dir="$TARGET/elisp/3rd-party/auto-complete/1.5.1"
+    else
+        ac_dir="$TARGET/elisp/3rd-party/auto-complete/1.5.0"
+    fi
+
+    ac_cl_lib=""
+    ac_elisp=""
+    if [ "$ac_major" -lt 24 ] || { [ "$ac_major" -eq 24 ] && [ "$ac_minor" -lt 3 ]; }; then
+        ac_cl_lib="$TARGET/elisp/3rd-party/cl-lib"
+        ac_elisp="$TARGET/elisp"
+    fi
+
+    for ac_file in "$popup_dir/popup.el" "$ac_dir/auto-complete.el"; do
+        if $SUDO "$EMACS" --batch -Q \
+            -L "$popup_dir" \
+            -L "$ac_dir" \
+            ${ac_cl_lib:+-L "$ac_cl_lib"} \
+            ${ac_elisp:+-L "$ac_elisp"} \
+            -f batch-byte-compile "$ac_file"; then
+            BYTE_COMPILE_SUCCEEDED=$((BYTE_COMPILE_SUCCEEDED + 1))
+        else
+            BYTE_COMPILE_FAILED=$((BYTE_COMPILE_FAILED + 1))
+            echo "[WARN] Byte compilation failed: $ac_file" >&2
+        fi
+    done
+}
+
 # Byte-compile all necessary Emacs Lisp files
 byte_compile_all() {
     echo "[INFO] Byte-compiling Emacs Lisp files..."
@@ -315,7 +368,6 @@ byte_compile_all() {
         auto-save-buffers-enhanced.el \
         actionscript-mode.el \
         fuzzy.el \
-        popup.el \
         key-chord.el \
         anything.el \
         bat-mode.el \
@@ -341,6 +393,8 @@ byte_compile_all() {
         sws-mode.el
 
     byte_compile_js2_mode
+
+    byte_compile_auto_complete_popup
 
     # utils.el defines the load-p, autoload-p and defun-add-hook helpers the
     # other modules use, so compile it first and then load it for the rest.
