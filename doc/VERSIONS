@@ -9,8 +9,8 @@ v26.10 (Release Date: TBD)
 - Keep development-standard integration capability-oriented and project/tool
   driven without reproducing editor-specific workflows or adding
   DOT_EMACS-owned project rules.
-- Bundle versioned markdown-mode releases for GNU Emacs 23.4 through current releases, selecting 2.1, 2.3, 2.5, 2.7, or 2.8 by Emacs generation,
-  expand Markdown associations, and keep table text on the normal buffer font.
+- Bundle versioned markdown-mode releases by Emacs generation, expand Markdown
+  associations, and keep code, preformatted text, and tables on the normal font.
 - Bundle versioned js2-mode releases, keeping 1.0 for GNU Emacs 23.4 and
   using 20231224 on GNU Emacs 24+, while preserving .js mode selection and
   four-space indentation.
