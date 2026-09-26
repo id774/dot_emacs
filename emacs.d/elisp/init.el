@@ -71,6 +71,16 @@ subdirectory under load-path.")
                                    ((>= emacs-major-version 24) "2.3")
                                    (t "2.1")))))))
 
+;; js2-mode is bundled as unmodified upstream releases, one for GNU Emacs
+;; 23.4 and one for GNU Emacs 24+.  Add only the selected release directory
+;; to load-path.
+(setq my-load-path
+      (append my-load-path
+              (list (expand-file-name
+                     (concat "~/.emacs.d/elisp/3rd-party/js2-mode/"
+                             (cond ((>= emacs-major-version 24) "20231224")
+                                   (t "1.0")))))))
+
 ;; The bundled cl-lib.el is a forward-compatibility copy for GNU Emacs
 ;; versions that predate the built-in cl-lib (24.3).  Keep it out of
 ;; load-path on 24.3+ so `(require 'cl-lib)' finds the built-in library
