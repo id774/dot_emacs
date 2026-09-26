@@ -582,6 +582,57 @@ Minibuffer completion is independently version-dependent:
 - GNU Emacs 30+: `minibuffer-visible-completions` is enabled;
 - GNU Emacs 23.4 through 29.x: the historical zlc completion UI is loaded.
 
+#### User-facing completion controls
+
+The DOT_EMACS entry points below are the same bindings documented in
+sections 2.9 and 3; they are repeated here for discoverability only.
+
+| Key | Command | Behavior |
+| --- | --- | --- |
+| `C-x C-y` / `C-x y` | `auto-complete-mode` | Toggle auto-complete in the current buffer |
+| key chord `yu` | `auto-complete-mode` | Toggle auto-complete in the current buffer |
+
+While completion is in progress, the bundled auto-complete 1.5.0 and 1.5.1
+releases share the following native key bindings:
+
+| Key | Command | Behavior |
+| --- | --- | --- |
+| `TAB` | `ac-expand` | Expand the common part / advance completion |
+| `RET` | `ac-complete` | Accept the selected candidate |
+| `M-TAB` | `auto-complete` | Start auto-completion explicitly |
+| `M-n` / `<down>` | `ac-next` | Select the next candidate |
+| `M-p` / `<up>` | `ac-previous` | Select the previous candidate |
+| `C-n` / `C-p` | `ac-next` / `ac-previous` | Move through candidates while the popup menu is active |
+| `C-s` | `ac-isearch` | Incrementally search completion candidates |
+| `F1` / `C-?` | `ac-help` | Show help for the selected candidate |
+| `M-F1` / `C-M-?` | `ac-persist-help` | Show persistent help |
+| `M-1` ... `M-9` | `ac-complete-select-1` ... `ac-complete-select-9` | Select a candidate by its displayed position |
+
+Major auto-complete commands available through `M-x` in both releases:
+
+| Command | Behavior |
+| --- | --- |
+| `M-x auto-complete-mode` | Toggle auto-complete in the current buffer |
+| `M-x global-auto-complete-mode` | Toggle global auto-complete mode |
+| `M-x auto-complete` | Start completion explicitly |
+| `M-x ac-fuzzy-complete` | Start fuzzy completion |
+| `M-x ac-next` | Select the next candidate |
+| `M-x ac-previous` | Select the previous candidate |
+| `M-x ac-expand` | Expand the current completion |
+| `M-x ac-expand-previous` | Move to the previous expansion |
+| `M-x ac-expand-common` | Expand the common candidate prefix |
+| `M-x ac-complete` | Accept the selected candidate |
+| `M-x ac-stop` | Stop completion |
+| `M-x ac-isearch` | Search completion candidates |
+| `M-x ac-help` | Show candidate help |
+| `M-x ac-persist-help` | Show persistent candidate help |
+| `M-x ac-clear-dictionary-cache` | Clear auto-complete's dictionary cache |
+
+`popup` is the display and menu backend used by `auto-complete`. DOT_EMACS
+does not expose a separate popup-specific key binding, and the bundled popup
+releases do not provide a normal user-facing `M-x popup-*` workflow in this
+configuration.
+
 Sources: `emacs.d/elisp/init.el`,
 `emacs.d/elisp/auto-complete-settings.el`,
 `emacs.d/elisp/autoloads.el`,
@@ -811,6 +862,65 @@ Editing commands, parser capabilities, and native key bindings follow the
 selected upstream release. DOT_EMACS does not emulate the historical 2008
 `js2.el` interface across generations.
 
+#### js2-mode commands and key bindings
+
+js2-mode 1.0 and 20231224 share the following native key bindings in
+`js2-mode` buffers:
+
+| Key | Command | Behavior |
+| --- | --- | --- |
+| `C-c C-e` | `js2-mode-hide-element` | Hide the element at point |
+| `C-c C-s` | `js2-mode-show-element` | Show the element at point |
+| `C-c C-a` | `js2-mode-show-all` | Show all hidden elements |
+| `C-c C-f` | `js2-mode-toggle-hide-functions` | Toggle function-body folding |
+| `C-c C-t` | `js2-mode-toggle-hide-comments` | Toggle comment folding |
+| `C-c C-o` | `js2-mode-toggle-element` | Toggle the element at point |
+| `C-c C-w` | `js2-mode-toggle-warnings-and-errors` | Toggle warning/error display |
+
+In js2-mode 1.0, `` C-c C-` `` runs `js2-next-error` to move to the next js2
+warning/error. js2-mode 20231224 binds `` C-c C-` `` only in
+`js2-minor-mode`, not in `js2-mode`; both releases also install
+`js2-next-error` as the buffer's `next-error-function`.
+
+Major js2-mode commands available through `M-x` in both releases:
+
+| Command | Behavior |
+| --- | --- |
+| `M-x js2-mode` | Enter js2-mode |
+| `M-x js2-mode-reset` | Reparse / refresh the current js2 buffer |
+| `M-x js2-mode-customize` | Open js2-mode customization |
+| `M-x js2-mode-hide-element` | Hide the element at point |
+| `M-x js2-mode-show-element` | Show the element at point |
+| `M-x js2-mode-show-all` | Show all hidden elements |
+| `M-x js2-mode-toggle-hide-functions` | Toggle hidden function bodies |
+| `M-x js2-mode-toggle-hide-comments` | Toggle hidden comments |
+| `M-x js2-mode-toggle-element` | Toggle the element at point |
+| `M-x js2-mode-toggle-warnings-and-errors` | Toggle warning/error display |
+| `M-x js2-mode-display-warnings-and-errors` | Show warnings/errors |
+| `M-x js2-mode-hide-warnings-and-errors` | Hide warnings/errors |
+| `M-x js2-next-error` | Move to the next js2 warning/error |
+| `M-x js2-mark-defun` | Mark the current function |
+| `M-x js2-narrow-to-defun` | Narrow to the current function |
+| `M-x js2-mode-forward-sexp` | Move across JavaScript expressions/statements |
+
+On GNU Emacs 24+, js2-mode 20231224 additionally provides:
+
+| Command | Behavior |
+| --- | --- |
+| `M-x js2-jump-to-definition` | Jump to the definition of the symbol/property/function at point |
+| `M-x js2-print-json-path` | Print the JSON path at point and copy it to the kill ring |
+| `M-x js2-display-error-list` | Open the navigable js2 diagnostics buffer |
+
+Inside the diagnostics buffer opened by `js2-display-error-list`:
+
+| Key | Behavior |
+| --- | --- |
+| `n` | Move to and view the next diagnostic |
+| `p` | Move to and view the previous diagnostic |
+| `RET` | Jump to the diagnostic in the source buffer |
+| `o` | View the diagnostic location in the source buffer |
+| `q` | Close the diagnostics buffer |
+
 When the corresponding modes are available:
 
 - `.js` uses `js2-mode` with an indentation width of 4;
@@ -854,10 +964,19 @@ The `.md` and `.txt` associations are existing behavior.
 
 Editing commands and key bindings are the native interface of the selected
 upstream release. Native editing bindings differ by selected `markdown-mode`
-generation; for example, link insertion is `C-c C-l` from 2.3 onward, while
-2.1 uses `C-c C-a l`. DOT_EMACS does not add key bindings of its own to unify
-them. Command names such as `M-x markdown-insert-link` are common to all
-selected releases.
+generation. The primary bindings for the main editing operations are:
+
+| Operation | markdown-mode 2.1 | markdown-mode 2.3+ | Command |
+| --- | --- | --- | --- |
+| Insert link | `C-c C-a l` | `C-c C-l` | `markdown-insert-link` |
+| Insert image | `C-c C-i i` | `C-c C-i` | `markdown-insert-image` |
+| Insert heading DWIM | `C-c C-t h` | `C-c C-s h` | `markdown-insert-header-dwim` |
+| Bold | `C-c C-s s` | `C-c C-s b` | `markdown-insert-bold` |
+| Italic | `C-c C-s e` | `C-c C-s i` | `markdown-insert-italic` |
+| Inline code | `C-c C-s c` | `C-c C-s c` | `markdown-insert-code` |
+
+DOT_EMACS does not add key bindings of its own to unify them. Command names
+such as `M-x markdown-insert-link` are common to all selected releases.
 
 All selected releases provide the same preview interface:
 
@@ -872,6 +991,65 @@ Preview and export require a Markdown processor usable by the selected
 `markdown-mode` to be available separately. DOT_EMACS does not install, force,
 or automatically select a Markdown processor, and does not set
 `markdown-command`.
+
+#### Markdown commands and key bindings
+
+All selected releases also provide these representative key bindings:
+
+| Key | Command | Behavior |
+| --- | --- | --- |
+| `C-c C-o` | `markdown-follow-thing-at-point` | Follow the Markdown object/link at point |
+| `M-RET` | `markdown-insert-list-item` | Insert a list item |
+| `C-c C-c c` | `markdown-check-refs` | Check references in the current buffer |
+
+markdown-mode 2.1 and 2.3 bind the list-item key as `M-<return>`, which is
+what a graphical frame sends for Meta+Return; 2.5 and newer bind `M-RET`.
+
+Major Markdown commands available through `M-x` in all selected releases:
+
+| Command | Behavior |
+| --- | --- |
+| `M-x markdown-mode` | Enter Markdown mode |
+| `M-x gfm-mode` | Enter GitHub Flavored Markdown mode explicitly |
+| `M-x markdown-insert-link` | Insert/edit a link |
+| `M-x markdown-insert-image` | Insert/edit an image |
+| `M-x markdown-insert-header-dwim` | Insert or adjust a heading |
+| `M-x markdown-insert-bold` | Insert bold markup |
+| `M-x markdown-insert-italic` | Insert italic markup |
+| `M-x markdown-insert-code` | Insert inline code markup |
+| `M-x markdown-insert-list-item` | Insert a list item |
+| `M-x markdown-follow-thing-at-point` | Follow the Markdown object at point |
+| `M-x markdown-check-refs` | Check references |
+| `M-x markdown-preview` | Preview in a browser |
+| `M-x markdown-export` | Export to HTML |
+| `M-x markdown-export-and-preview` | Export and preview |
+| `M-x markdown-live-preview-mode` | Toggle live preview |
+
+`gfm-mode` is available as a command only; the suffix associations above
+continue to use `markdown-mode`.
+
+markdown-mode 2.3 and newer add the following capabilities:
+
+| Key | Command | Behavior |
+| --- | --- | --- |
+| `C-c '` | `markdown-edit-code-block` | Edit a fenced code block in a dedicated buffer |
+| `C-c C-x C-i` | `markdown-toggle-inline-images` | Toggle inline image display |
+| `C-c C-x C-m` | `markdown-toggle-markup-hiding` | Toggle markup hiding |
+| `C-c C-x C-l` | `markdown-toggle-url-hiding` | Toggle URL hiding |
+| `C-c C-x C-e` | `markdown-toggle-math` | Toggle math support/display behavior |
+
+The same commands can also be invoked with `M-x`, for example
+`M-x markdown-edit-code-block`.
+
+markdown-mode 2.5 and newer add the following editing capabilities:
+
+| Key | Command | Behavior |
+| --- | --- | --- |
+| `C-c C-s t` | `markdown-insert-table` | Insert a Markdown table |
+| `C-c C-s [` | `markdown-insert-gfm-checkbox` | Insert a GFM checkbox |
+
+These are also available as `M-x markdown-insert-table` and
+`M-x markdown-insert-gfm-checkbox`.
 
 Source: `emacs.d/elisp/init.el`, `emacs.d/elisp/lang-mode.el`
 
