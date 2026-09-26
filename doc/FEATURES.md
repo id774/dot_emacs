@@ -815,10 +815,11 @@ Source: `emacs.d/elisp/yatex-mode.el`
 
 ### 7.10 Team development standards on Emacs 30+
 
-On Emacs 30 and later, DOT_EMACS uses the development standards a project
-provides, so that Emacs follows the same EditorConfig, Prettier, and ESLint
-rules as the editor tooling a team may require. DOT_EMACS defines none of
-these rules itself.
+On Emacs 30 and later, the development capabilities a team development
+standard uses are available from Emacs. DOT_EMACS does not reproduce another
+editor's user interface or workflow; it provides each capability through an
+Emacs-native entry point, such as a command or a key binding. DOT_EMACS adds
+no project rules of its own.
 
 - The built-in EditorConfig support is enabled globally. A file uses the
   settings of an applicable `.editorconfig`; a file without one is not changed
@@ -839,7 +840,26 @@ these rules itself.
 - A project or file without the corresponding configuration, or without the
   Prettier or ESLint executable, keeps its existing behavior; that
   integration stays inactive.
-- Remote files are not handled by the Prettier and ESLint integrations.
+- SQL Formatter is available in local `.sql` and `.q` files through `C-c F`
+  or `M-x development-standards-sql-format-buffer`. It is looked up as the
+  nearest `node_modules/.bin/sql-formatter` above the file, then on `PATH`.
+  The current buffer is formatted through stdin and stdout, using the
+  configuration and defaults SQL Formatter itself resolves. It runs only when
+  invoked and never on save, and the buffer is not saved by the command. When
+  SQL Formatter fails, the buffer is left unchanged and a warning is shown.
+- Prisma is available in local `.prisma` files: `C-c F` or
+  `M-x development-standards-prisma-format-file` formats the schema file, and
+  `C-c V` or `M-x development-standards-prisma-validate-file` validates it.
+  Prisma is looked up as the nearest `node_modules/.bin/prisma` above the
+  file, then on `PATH`. The buffer must be saved before formatting or
+  validation; DOT_EMACS does not save it automatically. After a successful
+  format, the buffer is reloaded from the file. No save hook, Flymake, or
+  language-server integration is added, and a failure shows a warning without
+  fixing anything automatically.
+- When the SQL Formatter or Prisma executable is not found, invoking its
+  command reports an error; opening files is not affected.
+- Remote files are not handled by the Prettier, ESLint, SQL Formatter, and
+  Prisma integrations.
 - Emacs 23.4 through 29.x keep their existing behavior; none of these
   integrations is loaded there.
 
@@ -944,7 +964,7 @@ project-owned configuration files:
 - `emacs.d/elisp/lang-mode.el` - language-mode associations, gtags, and per-language hooks.
 - `emacs.d/elisp/ruby-optional-load.el` - Ruby integration.
 - `emacs.d/elisp/yatex-mode.el` - YaTeX integration.
-- `emacs.d/elisp/development-standards-settings.el` - Emacs 30+ EditorConfig, Prettier, and ESLint integration.
+- `emacs.d/elisp/development-standards-settings.el` - Emacs 30+ EditorConfig, Prettier, ESLint, SQL Formatter, and Prisma integration.
 - `emacs.d/elisp/emacs-w3m.el` - browser integration.
 - `emacs.d/elisp/mew-settings.el` - Mew integration.
 - `emacs.d/elisp/google-this-settings.el` - Google search integration.
