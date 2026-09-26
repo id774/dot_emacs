@@ -4,7 +4,8 @@ dot_emacs Repository Version History
 v26.10 (Release Date: TBD)
 --------------------------
 - Add Emacs 30+ integration for EditorConfig, Prettier, ESLint, SQL Formatter,
-  and Prisma development capabilities while preserving older Emacs behavior.
+  Prisma, Vitest, and CSpell development capabilities while preserving older
+  Emacs behavior.
 - Keep development-standard integration capability-oriented and project/tool
   driven without reproducing editor-specific workflows or adding
   DOT_EMACS-owned project rules.

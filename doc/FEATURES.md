@@ -856,10 +856,40 @@ no project rules of its own.
   format, the buffer is reloaded from the file. No save hook, Flymake, or
   language-server integration is added, and a failure shows a warning without
   fixing anything automatically.
-- When the SQL Formatter or Prisma executable is not found, invoking its
+- Vitest is available in local files whose project provides it, looked up as
+  the nearest `node_modules/.bin/vitest` above the file, then on `PATH`.
+  Commands run from the project root and show their output in a compilation
+  buffer:
+  - `C-c T` or `M-x development-standards-vitest-run-file` runs the tests in
+    the current file once;
+  - `C-c t` or `M-x development-standards-vitest-run-test-at-point` runs the
+    test at the current line once;
+  - `M-x development-standards-vitest-run-project` runs the whole project
+    once;
+  - `M-x development-standards-vitest-coverage-project` runs the whole
+    project once with coverage enabled;
+  - `M-x development-standards-vitest-watch-project` starts Vitest watch mode
+    in an interactive terminal-backed buffer that accepts Vitest's own watch
+    keys; invoking it again while that watch is running shows the existing
+    buffer.
+  The file and current-line commands require the buffer to be saved;
+  DOT_EMACS does not save it automatically. Configuration, test selection and
+  defaults are left to Vitest itself. Tests never run automatically: no save
+  hook or Flymake integration is added, and no package is installed.
+- CSpell is available in local files whose project provides it, looked up as
+  the nearest `node_modules/.bin/cspell` above the file, then on `PATH`.
+  `C-c S` or `M-x development-standards-cspell-check-file` checks the current
+  file, which must be saved first; DOT_EMACS does not save it automatically.
+  `M-x development-standards-cspell-check-project` checks the saved files of
+  the whole project on disk and does not save a modified buffer. Issues are
+  listed in a compilation buffer as `file:line:column:` lines that lead to
+  the source position. Configuration, dictionaries, ignores and defaults are
+  left to CSpell itself. Spelling is never checked or corrected
+  automatically: no save hook or Flymake integration is added.
+- When the executable of an on-demand integration is not found, invoking its
   command reports an error; opening files is not affected.
-- Remote files are not handled by the Prettier, ESLint, SQL Formatter, and
-  Prisma integrations.
+- Remote files are not handled by the Prettier, ESLint, SQL Formatter,
+  Prisma, Vitest, and CSpell integrations.
 - Emacs 23.4 through 29.x keep their existing behavior; none of these
   integrations is loaded there.
 
@@ -964,7 +994,7 @@ project-owned configuration files:
 - `emacs.d/elisp/lang-mode.el` - language-mode associations, gtags, and per-language hooks.
 - `emacs.d/elisp/ruby-optional-load.el` - Ruby integration.
 - `emacs.d/elisp/yatex-mode.el` - YaTeX integration.
-- `emacs.d/elisp/development-standards-settings.el` - Emacs 30+ EditorConfig, Prettier, ESLint, SQL Formatter, and Prisma integration.
+- `emacs.d/elisp/development-standards-settings.el` - Emacs 30+ EditorConfig, Prettier, ESLint, SQL Formatter, Prisma, Vitest, and CSpell integration.
 - `emacs.d/elisp/emacs-w3m.el` - browser integration.
 - `emacs.d/elisp/mew-settings.el` - Mew integration.
 - `emacs.d/elisp/google-this-settings.el` - Google search integration.
