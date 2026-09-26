@@ -593,39 +593,24 @@ sections 2.9 and 3; they are repeated here for discoverability only.
 | key chord `yu` | `auto-complete-mode` | Toggle auto-complete in the current buffer |
 
 While completion is in progress, the bundled auto-complete 1.5.0 and 1.5.1
-releases share the following native key bindings:
+releases share native key bindings; the representative ones are:
 
 | Key | Command | Behavior |
 | --- | --- | --- |
 | `TAB` | `ac-expand` | Expand the common part / advance completion |
 | `RET` | `ac-complete` | Accept the selected candidate |
 | `M-TAB` | `auto-complete` | Start auto-completion explicitly |
-| `M-n` / `<down>` | `ac-next` | Select the next candidate |
-| `M-p` / `<up>` | `ac-previous` | Select the previous candidate |
-| `C-n` / `C-p` | `ac-next` / `ac-previous` | Move through candidates while the popup menu is active |
+| `M-n` / `M-p` | `ac-next` / `ac-previous` | Move through completion candidates |
 | `C-s` | `ac-isearch` | Incrementally search completion candidates |
 | `F1` / `C-?` | `ac-help` | Show help for the selected candidate |
-| `M-F1` / `C-M-?` | `ac-persist-help` | Show persistent help |
-| `M-1` ... `M-9` | `ac-complete-select-1` ... `ac-complete-select-9` | Select a candidate by its displayed position |
 
-Major auto-complete commands available through `M-x` in both releases:
+The commands in these tables can also be invoked by name with `M-x`. Major
+commands without a key binding that are worth knowing are:
 
 | Command | Behavior |
 | --- | --- |
-| `M-x auto-complete-mode` | Toggle auto-complete in the current buffer |
 | `M-x global-auto-complete-mode` | Toggle global auto-complete mode |
-| `M-x auto-complete` | Start completion explicitly |
 | `M-x ac-fuzzy-complete` | Start fuzzy completion |
-| `M-x ac-next` | Select the next candidate |
-| `M-x ac-previous` | Select the previous candidate |
-| `M-x ac-expand` | Expand the current completion |
-| `M-x ac-expand-previous` | Move to the previous expansion |
-| `M-x ac-expand-common` | Expand the common candidate prefix |
-| `M-x ac-complete` | Accept the selected candidate |
-| `M-x ac-stop` | Stop completion |
-| `M-x ac-isearch` | Search completion candidates |
-| `M-x ac-help` | Show candidate help |
-| `M-x ac-persist-help` | Show persistent candidate help |
 | `M-x ac-clear-dictionary-cache` | Clear auto-complete's dictionary cache |
 
 `popup` is the display and menu backend used by `auto-complete`. DOT_EMACS
@@ -750,9 +735,9 @@ When their libraries are available, DOT_EMACS also enables or initializes:
 | `highlight-unique-symbol` | Enables unique-symbol highlighting. | `emacs.d/elisp/autoloads.el` |
 | `dired-async` | Enables asynchronous Dired operations. | `emacs.d/elisp/autoloads.el` |
 | `minibuf-isearch` | Loads minibuffer incremental-search extensions. | `emacs.d/elisp/autoloads.el` |
-| `git` / `git-blame` | Loads the bundled/available Git integration. | `emacs.d/elisp/autoloads.el` |
-| `open-junk-file` | Loads the available scratch/junk-file command package. | `emacs.d/elisp/autoloads.el` |
-| `timidity` | Registers the TiMidity++ command for autoloading. | `emacs.d/elisp/autoloads.el` |
+| `git` / `git-blame` | Loads the bundled Git integration. `M-x git-status` opens the repository status interface; `M-x git-blame-mode` toggles incremental blame for the current file; `M-x git-reblame` refreshes active blame information. | `emacs.d/elisp/autoloads.el` |
+| `open-junk-file` | `M-x open-junk-file` prompts for the file extension, then opens a timestamped junk file named by the default format `~/junk/%Y/%m/%d-%H%M%S.`. | `emacs.d/elisp/autoloads.el` |
+| `timidity` | When available, registers `M-x timidity` (TiMidity++) for autoloading. | `emacs.d/elisp/autoloads.el` |
 | `italk` | Loads it quietly when available. | `emacs.d/elisp/autoloads.el` |
 
 ## 6. Editing defaults
@@ -795,6 +780,20 @@ On GNU/Linux, DOT_EMACS additionally attempts to enable:
 - `ruby-block-mode` with matching-block highlighting;
 - the `rubydb` debugger autoload.
 
+The representative inferior Ruby key bindings that `inf-ruby-keys` installs in
+Ruby buffers are:
+
+| Key | Command | Behavior |
+| --- | --- | --- |
+| `C-c C-s` | `run-ruby` | Start or switch to the inferior Ruby process |
+| `C-c C-r` | `ruby-send-region` | Send the active region to inferior Ruby |
+| `C-c C-x` | `ruby-send-definition` | Send the current definition to inferior Ruby |
+| `C-c C-z` | `switch-to-ruby` | Switch to the inferior Ruby process buffer |
+| `C-c C-l` | `ruby-load-file` | Load a Ruby file into the inferior process |
+
+On GNU/Linux, `M-x rubydb` starts the bundled GUD-based Ruby debugger
+integration once the optional Ruby setup has registered its autoload.
+
 Sources: `emacs.d/elisp/ruby-optional-load.el`,
 `emacs.d/elisp/auto-complete-settings.el`
 
@@ -806,6 +805,9 @@ If `/opt/python/current/bin` exists, it is added to `exec-path`. If
 `/opt/python/current/bin/python` is executable, it becomes
 `python-shell-interpreter`; otherwise DOT_EMACS leaves Emacs's normal Python
 interpreter selection unchanged.
+
+Python-specific PEP 8 checking and autopep8 key bindings are documented in
+section 4.5.
 
 Source: `emacs.d/elisp/python-mode-settings.el`
 
@@ -882,26 +884,14 @@ warning/error. js2-mode 20231224 binds `` C-c C-` `` only in
 `js2-minor-mode`, not in `js2-mode`; both releases also install
 `js2-next-error` as the buffer's `next-error-function`.
 
-Major js2-mode commands available through `M-x` in both releases:
+The commands in the key table can also be invoked by name with `M-x`. Other
+major js2-mode commands available through `M-x` in both releases include:
 
 | Command | Behavior |
 | --- | --- |
-| `M-x js2-mode` | Enter js2-mode |
 | `M-x js2-mode-reset` | Reparse / refresh the current js2 buffer |
-| `M-x js2-mode-customize` | Open js2-mode customization |
-| `M-x js2-mode-hide-element` | Hide the element at point |
-| `M-x js2-mode-show-element` | Show the element at point |
-| `M-x js2-mode-show-all` | Show all hidden elements |
-| `M-x js2-mode-toggle-hide-functions` | Toggle hidden function bodies |
-| `M-x js2-mode-toggle-hide-comments` | Toggle hidden comments |
-| `M-x js2-mode-toggle-element` | Toggle the element at point |
-| `M-x js2-mode-toggle-warnings-and-errors` | Toggle warning/error display |
-| `M-x js2-mode-display-warnings-and-errors` | Show warnings/errors |
-| `M-x js2-mode-hide-warnings-and-errors` | Hide warnings/errors |
-| `M-x js2-next-error` | Move to the next js2 warning/error |
 | `M-x js2-mark-defun` | Mark the current function |
 | `M-x js2-narrow-to-defun` | Narrow to the current function |
-| `M-x js2-mode-forward-sexp` | Move across JavaScript expressions/statements |
 
 On GNU Emacs 24+, js2-mode 20231224 additionally provides:
 
@@ -1005,28 +995,10 @@ All selected releases also provide these representative key bindings:
 markdown-mode 2.1 and 2.3 bind the list-item key as `M-<return>`, which is
 what a graphical frame sends for Meta+Return; 2.5 and newer bind `M-RET`.
 
-Major Markdown commands available through `M-x` in all selected releases:
-
-| Command | Behavior |
-| --- | --- |
-| `M-x markdown-mode` | Enter Markdown mode |
-| `M-x gfm-mode` | Enter GitHub Flavored Markdown mode explicitly |
-| `M-x markdown-insert-link` | Insert/edit a link |
-| `M-x markdown-insert-image` | Insert/edit an image |
-| `M-x markdown-insert-header-dwim` | Insert or adjust a heading |
-| `M-x markdown-insert-bold` | Insert bold markup |
-| `M-x markdown-insert-italic` | Insert italic markup |
-| `M-x markdown-insert-code` | Insert inline code markup |
-| `M-x markdown-insert-list-item` | Insert a list item |
-| `M-x markdown-follow-thing-at-point` | Follow the Markdown object at point |
-| `M-x markdown-check-refs` | Check references |
-| `M-x markdown-preview` | Preview in a browser |
-| `M-x markdown-export` | Export to HTML |
-| `M-x markdown-export-and-preview` | Export and preview |
-| `M-x markdown-live-preview-mode` | Toggle live preview |
-
-`gfm-mode` is available as a command only; the suffix associations above
-continue to use `markdown-mode`.
+The commands in these Markdown tables can also be invoked by name with
+`M-x`. `M-x markdown-mode` enters Markdown mode explicitly. `M-x gfm-mode` is
+also available, but the suffix associations above continue to use
+`markdown-mode`; DOT_EMACS does not make `gfm-mode` the default association.
 
 markdown-mode 2.3 and newer add the following capabilities:
 
@@ -1172,7 +1144,16 @@ When TRAMP loads, DOT_EMACS sets:
 - TRAMP verbosity: 3;
 - TRAMP debug buffer support on.
 
-Source: `emacs.d/elisp/tramp-settings.el`
+DOT_EMACS also provides an explicit sudo entry point:
+
+| Command | Behavior |
+| --- | --- |
+| `M-x th-find-file-sudo` | Open a local file through TRAMP's `/sudo::` method |
+
+Section 5.3 documents the automatic prompt offered when opening a root-owned,
+non-writable file; `M-x th-find-file-sudo` is the explicit, user-invoked path.
+
+Sources: `emacs.d/elisp/tramp-settings.el`, `emacs.d/elisp/configs.el`
 
 ### 8.2 Executable search path
 
