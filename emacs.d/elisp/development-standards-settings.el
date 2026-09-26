@@ -13,11 +13,24 @@
 ;; Part of the DOT_EMACS configuration.
 ;; See doc/GUIDELINES for compatibility and maintenance policy.
 ;;
-;; Use the development standards a project provides, through EditorConfig,
-;; Prettier and ESLint, with the same effect as the editor extensions a team
-;; may require.  The project configuration is the source of truth: DOT_EMACS
-;; defines no formatting, lint or editor rule of its own, and an integration
-;; stays inactive when the project provides no applicable configuration.
+;; Make the development capabilities a team development standard requires,
+;; such as EditorConfig, Prettier, ESLint, SQL Formatter and Prisma, available
+;; from Emacs.  Reproducing another editor's extensions, user interface,
+;; command palette, operating procedure, on-save execution, background
+;; execution, continuous diagnostics, settings screens or other workflows is
+;; not a goal.  A capability may be provided through an Emacs-native explicit
+;; command or key binding, and automatic behavior is used only where the
+;; development standard itself or existing DOT_EMACS behavior requires it.
+;;
+;; Project-provided configuration and project-local tools are the source of
+;; truth wherever they exist.  DOT_EMACS invents no project formatting, lint
+;; or schema rule of its own.  A command that the user runs explicitly to
+;; invoke an external tool may rely on the default behavior that tool itself
+;; defines.  The absence of an optional external tool is never a startup
+;; failure.  No priority, fallback, mutual exclusion or other coordination
+;; rule is added between unrelated existing integrations.  This module is a
+;; version-gated enhancement for GNU Emacs 30+ and does not change the
+;; behavior of GNU Emacs 23.4 through 29.x.
 ;;
 ;; This module is intentionally loaded from source and excluded from byte
 ;; compilation.  Its functionality is available only on GNU Emacs 30 and
@@ -237,6 +250,126 @@ A Prettier failure leaves the buffer unchanged and shows a warning."
       (process-send-region proc (point-min) (point-max)))
     (process-send-eof proc)))
 
+(defun development-standards--check-local-file (regexp kind)
+  "Signal a user error unless the buffer visits a local KIND file.
+The file name must match REGEXP."
+  (unless (and buffer-file-name
+               (not (file-remote-p buffer-file-name))
+               (string-match-p regexp buffer-file-name))
+    (user-error "Not visiting a local %s file" kind)))
+
+(defun development-standards--require-executable (tool)
+  "Return the executable for TOOL, or signal a user error when none exists."
+  (or (development-standards--find-executable tool)
+      (user-error "%s executable not found" tool)))
+
+(defun development-standards-sql-format-buffer ()
+  "Format the current SQL buffer with SQL Formatter.
+SQL Formatter resolves its own configuration and defaults.  A failure
+leaves the buffer unchanged and shows a warning.  The buffer is not saved."
+  (interactive)
+  (development-standards--check-local-file "\\.\\(sql\\|q\\)\\'" "SQL")
+  (let ((sql-formatter
+         (development-standards--require-executable "sql-formatter"))
+        (default-directory (file-name-directory buffer-file-name))
+        (output (generate-new-buffer " *development-standards-sql-formatter*"))
+        (stderr (make-temp-file "development-standards-sql-formatter")))
+    (unwind-protect
+        (condition-case err
+            (let* ((coding-system-for-read 'utf-8)
+                   (coding-system-for-write 'utf-8)
+                   (status (save-restriction
+                             (widen)
+                             (call-process-region
+                              (point-min) (point-max) sql-formatter
+                              nil (list output stderr) nil))))
+              (if (eq status 0)
+                  (save-restriction
+                    (widen)
+                    (replace-buffer-contents output))
+                (display-warning
+                 'development-standards
+                 (format "SQL Formatter failed (%s) for %s; the buffer is unchanged:\n%s"
+                         status buffer-file-name
+                         (with-temp-buffer
+                           (insert-file-contents stderr)
+                           (string-trim (buffer-string)))))))
+          (error
+           (display-warning
+            'development-standards
+            (format "SQL Formatter failed for %s; the buffer is unchanged: %s"
+                    buffer-file-name (error-message-string err)))))
+      (kill-buffer output)
+      (delete-file stderr))))
+
+(defun development-standards--prisma-run (command unsaved-message)
+  "Run Prisma COMMAND on the current schema file.
+Signal a user error with UNSAVED-MESSAGE when the buffer is modified.
+Return non-nil on success; on failure show a warning and return nil."
+  (development-standards--check-local-file "\\.prisma\\'" "Prisma")
+  (when (buffer-modified-p)
+    (user-error "%s" unsaved-message))
+  (let* ((prisma (development-standards--require-executable "prisma"))
+         (root (and (string-suffix-p "/node_modules/.bin/prisma" prisma)
+                    (file-name-directory
+                     (substring prisma 0 (- (length "node_modules/.bin/prisma"))))))
+         (default-directory
+          (if (and root (file-in-directory-p buffer-file-name root))
+              root
+            (file-name-directory buffer-file-name)))
+         (file buffer-file-name))
+    (with-temp-buffer
+      (let ((status (condition-case err
+                        (let ((coding-system-for-read 'utf-8))
+                          (call-process prisma nil t nil
+                                        command "--schema" file))
+                      (error (error-message-string err)))))
+        (or (eq status 0)
+            (progn
+              (display-warning
+               'development-standards
+               (format "Prisma %s failed (%s) for %s:\n%s"
+                       command status file (string-trim (buffer-string))))
+              nil))))))
+
+(defun development-standards-prisma-format-file ()
+  "Format the current Prisma schema file with Prisma and reload it.
+The buffer must be saved first; it is not saved automatically."
+  (interactive)
+  (when (development-standards--prisma-run
+         "format" "Save the Prisma buffer before formatting")
+    (revert-buffer t t t)
+    (message "Prisma formatted %s" buffer-file-name)))
+
+(defun development-standards-prisma-validate-file ()
+  "Validate the current Prisma schema file with Prisma.
+The buffer must be saved first; it is not saved automatically."
+  (interactive)
+  (when (development-standards--prisma-run
+         "validate" "Save the Prisma buffer before validation")
+    (message "Prisma schema is valid: %s" buffer-file-name)))
+
+(defvar development-standards-sql-bindings-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c F") 'development-standards-sql-format-buffer)
+    map)
+  "Key bindings for local SQL files.")
+
+(define-minor-mode development-standards-sql-bindings-mode
+  "Bind SQL Formatter commands in the current SQL buffer."
+  :keymap development-standards-sql-bindings-mode-map)
+
+(defvar development-standards-prisma-bindings-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c F") 'development-standards-prisma-format-file)
+    (define-key map (kbd "C-c V") 'development-standards-prisma-validate-file)
+    map)
+  "Key bindings for local Prisma schema files.")
+
+(define-minor-mode development-standards-prisma-bindings-mode
+  "Bind Prisma commands in the current Prisma schema buffer."
+  :keymap development-standards-prisma-bindings-mode-map)
+
 (defun development-standards-setup ()
   "Enable the development standards the visited file's project provides."
   (when (and buffer-file-name
@@ -253,7 +386,11 @@ A Prettier failure leaves the buffer unchanged and shows a warning."
         (setq development-standards--eslint-executable eslint)
         (add-hook 'flymake-diagnostic-functions
                   #'development-standards-eslint-flymake nil t)
-        (flymake-mode 1)))))
+        (flymake-mode 1)))
+    (cond ((string-match-p "\\.\\(sql\\|q\\)\\'" buffer-file-name)
+           (development-standards-sql-bindings-mode 1))
+          ((string-match-p "\\.prisma\\'" buffer-file-name)
+           (development-standards-prisma-bindings-mode 1)))))
 
 (add-hook 'find-file-hook 'development-standards-setup)
 

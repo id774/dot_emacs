@@ -182,29 +182,6 @@ compete, not an equally weighted checklist.
     this lifecycle rule is not permission for consumers to invent independent
     configuration ownership.
 
-### 1.6 Team Development Standards Integration
-
--   **Integrate the standard, not the extension:**\
-    DOT_EMACS may provide Emacs-side integration for a development standard
-    that a team presents through a VS Code extension or equivalent editor
-    tooling. The goal is behavioral equivalence with the team development
-    standard, not a reimplementation of the VS Code extension itself.
--   **The project is the source of truth:**\
-    Project-provided configuration and project-local tools are the source of
-    truth for formatting, lint, and editor rules. DOT_EMACS does not invent
-    substitute formatting, lint, or editor rules when the project provides no
-    configuration.
--   **Inactive without applicable configuration:**\
-    An integration for which no applicable project configuration exists stays
-    inactive, and the existing DOT_EMACS behavior is kept.
--   **Optional external tools:**\
-    The absence of an optional external tool is not a startup failure; it is
-    a functionality reduction limited to the corresponding integration.
--   **Version-gated enhancement:**\
-    A modern integration may be a version-gated enhancement. A new capability
-    does not need to be backported to the whole range of older supported
-    Emacs versions.
-
 ------------------------------------------------------------------------
 
 ## 2. File Structure Example
