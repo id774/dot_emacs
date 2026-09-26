@@ -132,7 +132,14 @@
   (setq auto-mode-alist (cons '("\\.mdown\\'" . markdown-mode) auto-mode-alist))
   (setq auto-mode-alist (cons '("\\.mkdn\\'" . markdown-mode) auto-mode-alist))
   (setq auto-mode-alist (cons '("\\.mdwn\\'" . markdown-mode) auto-mode-alist))
-  (setq auto-mode-alist (cons '("\\.txt\\'" . markdown-mode) auto-mode-alist)))
+  (setq auto-mode-alist (cons '("\\.txt\\'" . markdown-mode) auto-mode-alist))
+
+  ;; markdown-mode 2.5+ makes table faces inherit fixed-pitch through
+  ;; markdown-code-face. Keep tables visually consistent with surrounding
+  ;; text while leaving inline and preformatted code on fixed-pitch.
+  (eval-after-load "markdown-mode"
+    '(when (facep 'markdown-table-face)
+       (set-face-attribute 'markdown-table-face nil :inherit 'default))))
 
 ;; erlang-mode
 (when (and (< emacs-major-version 27)

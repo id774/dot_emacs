@@ -838,6 +838,12 @@ generation:
 At startup, only the directory of the selected release is added to
 `load-path`. The bundled upstream sources are kept unmodified.
 
+On releases that define `markdown-table-face` (2.5 and newer), DOT_EMACS makes
+that face inherit `default` instead of the upstream `markdown-code-face`.
+This keeps Markdown tables on the normal buffer font while leaving inline code,
+preformatted text, and fenced code blocks on their upstream fixed-pitch face.
+Releases without `markdown-table-face` are unchanged.
+
 The following suffixes open in `markdown-mode`:
 
 - `.md`, `.markdown`, `.mkd`, `.mdown`, `.mkdn`, `.mdwn`, and `.txt`.
