@@ -81,6 +81,29 @@ subdirectory under load-path.")
                              (cond ((>= emacs-major-version 24) "20231224")
                                    (t "1.0")))))))
 
+;; auto-complete and popup are bundled as unmodified tagged upstream
+;; releases and selected by GNU Emacs generation.  They are a dependency
+;; pair, but their compatibility boundaries differ, so each package is
+;; selected separately.  Add only the selected release directories to
+;; load-path.
+(setq my-load-path
+      (append my-load-path
+              (list (expand-file-name
+                     (concat "~/.emacs.d/elisp/3rd-party/auto-complete/"
+                             (cond ((>= emacs-major-version 24) "1.5.1")
+                                   (t "1.5.0"))))
+                    (expand-file-name
+                     (concat "~/.emacs.d/elisp/3rd-party/popup/"
+                             (cond
+                              ((or (> emacs-major-version 24)
+                                   (and (= emacs-major-version 24)
+                                        (>= emacs-minor-version 3)))
+                               "0.5.9")
+                              ((>= emacs-major-version 24)
+                               "0.5.8")
+                              (t
+                               "0.5.2")))))))
+
 ;; The bundled cl-lib.el is a forward-compatibility copy for GNU Emacs
 ;; versions that predate the built-in cl-lib (24.3).  Keep it out of
 ;; load-path on 24.3+ so `(require 'cl-lib)' finds the built-in library

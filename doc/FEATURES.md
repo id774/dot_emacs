@@ -555,17 +555,35 @@ Sources: `emacs.d/elisp/auto-async-settings.el`,
 
 ### 5.11 Completion
 
+DOT_EMACS bundles compatible `auto-complete` and `popup` releases by GNU Emacs
+generation:
+
+| GNU Emacs | auto-complete | popup |
+| --- | --- | --- |
+| 23.4 | 1.5.0 | 0.5.2 |
+| 24.1-24.2 | 1.5.1 | 0.5.8 |
+| 24.3+ | 1.5.1 | 0.5.9 |
+
+At startup, only the selected release directory for each package is added to
+`load-path`. The bundled upstream sources are kept unmodified.
+
 When the bundled `auto-complete` library loads, DOT_EMACS enables
 `global-auto-complete-mode`.
 
-Ruby buffers use case-sensitive auto-complete matching.
+Ruby buffers use case-sensitive auto-complete matching. The existing bundled
+`fuzzy.el` remains available to auto-complete; DOT_EMACS does not change or
+version-split it as part of this selection.
 
-Minibuffer completion is version-dependent:
+GNU Emacs 23.4 through 24.2 use the existing bundled `cl-lib` compatibility
+copy. GNU Emacs 24.3 and newer use Emacs's built-in `cl-lib`.
+
+Minibuffer completion is independently version-dependent:
 
 - GNU Emacs 30+: `minibuffer-visible-completions` is enabled;
 - GNU Emacs 23.4 through 29.x: the historical zlc completion UI is loaded.
 
-Sources: `emacs.d/elisp/auto-complete-settings.el`,
+Sources: `emacs.d/elisp/init.el`,
+`emacs.d/elisp/auto-complete-settings.el`,
 `emacs.d/elisp/autoloads.el`,
 `emacs.d/elisp/zlc-settings.el`
 
