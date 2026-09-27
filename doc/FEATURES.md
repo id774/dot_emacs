@@ -1089,9 +1089,13 @@ no project rules of its own.
   Prisma is looked up as the nearest `node_modules/.bin/prisma` above the
   file, then on `PATH`. The buffer must be saved before formatting or
   validation; DOT_EMACS does not save it automatically. After a successful
-  format, the buffer is reloaded from the file. No save hook, Flymake, or
-  language-server integration is added, and a failure shows a warning without
-  fixing anything automatically.
+  format, the buffer is reloaded from the file. No save hook is added, and a
+  failure shows a warning without fixing anything automatically. These Prisma
+  CLI commands are independent of the Prisma language server below.
+- `.prisma` files open in `development-standards-prisma-mode`, a minimal major
+  mode that only gives Prisma schemas a language identity for Eglot. It adds
+  no highlighting, indentation, parsing, completion, navigation or formatting
+  of its own.
 - Vitest is available in local files whose project provides it, looked up as
   the nearest `node_modules/.bin/vitest` above the file, then on `PATH`.
   Commands run from the project root and show their output in a compilation
@@ -1122,12 +1126,60 @@ no project rules of its own.
   the source position. Configuration, dictionaries, ignores and defaults are
   left to CSpell itself. Spelling is never checked or corrected
   automatically: no save hook or Flymake integration is added.
-- When the executable of an on-demand integration is not found, invoking its
-  command reports an error; opening files is not affected.
+- Language servers for XML, Tailwind CSS, and Prisma are available through the
+  built-in Eglot. A server starts only when its command is invoked explicitly;
+  opening or saving a file never starts one, and no server is installed
+  automatically. The servers are provided by the user or the project. Once a
+  server runs, Eglot provides its completion, diagnostics, hover
+  documentation, definition navigation, rename, document symbols, and other
+  standard LSP capabilities through Emacs facilities such as
+  `completion-at-point`, Flymake, ElDoc, Xref, Imenu, and `M-x eglot-rename`,
+  according to what the server supports.
+  - XML: `M-x development-standards-xml-language-server` starts Eclipse
+    LemMinX for local `nxml-mode` and `xml-mode` files. By default it expects
+    `lemminx` on `PATH`. The command list is held in
+    `development-standards-lemminx-command` and can be overridden from
+    `~/.emacs.d/site-lisp/loader.el` for another executable form, such as
+    `("java" "-jar" "/path/to/org.eclipse.lemminx-uber.jar")` for the
+    official uber JAR.
+  - Tailwind CSS: `M-x development-standards-tailwind-language-server` starts
+    `tailwindcss-language-server --stdio`, looked up as the nearest
+    `node_modules/.bin/tailwindcss-language-server` above the file, then on
+    `PATH`. Eglot's normal HTML and CSS server associations are not replaced
+    globally; the Tailwind CSS server is chosen only by this command. It
+    applies to these major modes:
+
+    | Major mode | Language ID |
+    | --- | --- |
+    | `html-mode` | `html` |
+    | `rhtml-mode` | `erb` |
+    | `haml-mode` | `haml` |
+    | `php-mode` | `php` |
+    | `css-mode` | `css` |
+    | `scss-mode` | `scss` |
+    | `sass-mode` | `sass` |
+    | `sws-mode` | `stylus` |
+    | `js2-mode` | `javascript` |
+
+  - Prisma: `M-x development-standards-prisma-language-server` starts
+    `prisma-language-server --stdio` for local `.prisma` files, looked up as
+    the nearest `node_modules/.bin/prisma-language-server` above the file,
+    then on `PATH`. It is separate from the `prisma` executable, so `C-c F` and
+    `C-c V` keep working without the language server. `M-x eglot-format` can
+    be used in a managed buffer but does not replace `C-c F`.
+- No key binding is added for starting a language server. A buffer that Eglot
+  already manages is left as it is: the language-server commands report an
+  error instead of replacing its connection. A buffer uses one language
+  server; no multiplexer is added. Existing Flymake backends, such as the
+  ESLint backend, are kept when Eglot starts managing a buffer.
+- When the executable of an on-demand integration, including a language
+  server, is not found, invoking its command reports an error; opening files
+  is not affected.
 - Remote files are not handled by the Prettier, ESLint, SQL Formatter,
-  Prisma, Vitest, and CSpell integrations.
+  Prisma, Vitest, and CSpell integrations or by the language-server commands.
 - Emacs 23.4 through 29.x keep their existing behavior; none of these
-  integrations is loaded there.
+  integrations, including the Prisma major mode and the language-server
+  commands, is loaded there.
 
 Sources: `emacs.d/elisp/development-standards-settings.el`,
 `emacs.d/elisp/autoloads.el`
@@ -1239,7 +1291,7 @@ project-owned configuration files:
 - `emacs.d/elisp/lang-mode.el` - language-mode associations, gtags, and per-language hooks.
 - `emacs.d/elisp/ruby-optional-load.el` - Ruby integration.
 - `emacs.d/elisp/yatex-mode.el` - YaTeX integration.
-- `emacs.d/elisp/development-standards-settings.el` - Emacs 30+ EditorConfig, Prettier, ESLint, SQL Formatter, Prisma, Vitest, and CSpell integration.
+- `emacs.d/elisp/development-standards-settings.el` - Emacs 30+ EditorConfig, Prettier, ESLint, SQL Formatter, Prisma, Vitest, and CSpell integration, and explicit Eglot language-server integration for XML, Tailwind CSS, and Prisma.
 - `emacs.d/elisp/emacs-w3m.el` - browser integration.
 - `emacs.d/elisp/mew-settings.el` - Mew integration.
 - `emacs.d/elisp/google-this-settings.el` - Google search integration.

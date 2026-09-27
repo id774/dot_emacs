@@ -148,8 +148,9 @@ DOT_EMACS:
   range; preview and export still require a Markdown processor usable by the
   selected `markdown-mode`.
 - On Emacs 30+, provides project development-standard capabilities through
-  EditorConfig, Prettier, ESLint, SQL Formatter, Prisma, Vitest, and CSpell
-  while preserving the existing behavior on older Emacs versions.
+  EditorConfig, Prettier, ESLint, SQL Formatter, Prisma, Vitest, and CSpell,
+  with explicit Eglot language-server integration for XML, Tailwind CSS, and
+  Prisma while preserving the existing behavior on older Emacs versions.
 - Uses `/dev/shm` as the temporary file directory on GNU/Linux only. Other platforms, including macOS, keep the Emacs default.
 - Does not define a separate DOT_EMACS `custom-file`; user-maintained local
   overrides belong in `~/.emacs.d/site-lisp/loader.el`.

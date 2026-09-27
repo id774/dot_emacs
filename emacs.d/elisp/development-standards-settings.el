@@ -15,23 +15,33 @@
 ;;
 ;; Make the development capabilities a team development standard requires,
 ;; such as EditorConfig, Prettier, ESLint, SQL Formatter, Prisma, Vitest and
-;; CSpell, available from Emacs.  Reproducing another editor's extensions,
-;; user interface, command palette, operating procedure, on-save execution,
-;; background execution, continuous diagnostics, settings screens or other
-;; workflows is not a goal.  A capability may be provided through an
-;; Emacs-native explicit command or key binding, and automatic behavior is
-;; used only where the development standard itself or existing DOT_EMACS
-;; behavior requires it.
+;; CSpell, available from Emacs, together with the language intelligence of
+;; the XML, Tailwind CSS and Prisma language servers through the built-in
+;; Eglot.  Reproducing another editor's extensions, user interface, command
+;; palette, operating procedure, on-save execution, background execution,
+;; continuous diagnostics, settings screens or other workflows is not a goal.
+;; A capability may be provided through an Emacs-native explicit command or
+;; key binding, and automatic behavior of the formatter, linter, test and
+;; spelling integrations is used only where the development standard itself
+;; or existing DOT_EMACS behavior requires it.
+;;
+;; A language server is started only by its explicit command.  Once started,
+;; its long-running process and the completion, diagnostics, hover and
+;; navigation it provides are the execution model of LSP and Eglot
+;; themselves, not a reproduction of another editor's workflow.  Existing
+;; Flymake backends are kept when Eglot starts managing a buffer.
 ;;
 ;; Project-provided configuration and project-local tools are the source of
 ;; truth wherever they exist.  DOT_EMACS invents no project formatting, lint
 ;; or schema rule of its own.  A command that the user runs explicitly to
 ;; invoke an external tool may rely on the default behavior that tool itself
-;; defines.  The absence of an optional external tool is never a startup
-;; failure.  No priority, fallback, mutual exclusion or other coordination
-;; rule is added between unrelated existing integrations.  This module is a
-;; version-gated enhancement for GNU Emacs 30+ and does not change the
-;; behavior of GNU Emacs 23.4 through 29.x.
+;; defines.  External tools, language servers included, are provided by the
+;; user or the project and are never installed automatically.  The absence
+;; of an optional external tool is never a startup failure.  No priority,
+;; fallback, mutual exclusion or other coordination rule is added between
+;; unrelated existing integrations.  This module is a version-gated
+;; enhancement for GNU Emacs 30+ and does not change the behavior of GNU
+;; Emacs 23.4 through 29.x.
 ;;
 ;; This module is intentionally loaded from source and excluded from byte
 ;; compilation.  Its functionality is available only on GNU Emacs 30 and
@@ -371,6 +381,15 @@ The buffer must be saved first; it is not saved automatically."
   "Bind Prisma commands in the current Prisma schema buffer."
   :keymap development-standards-prisma-bindings-mode-map)
 
+(define-derived-mode development-standards-prisma-mode fundamental-mode "Prisma"
+  "Major mode giving Prisma schema files a language identity for Eglot.
+It adds no editing behavior of its own."
+  :syntax-table nil
+  :abbrev-table nil)
+
+(add-to-list 'auto-mode-alist
+             '("\\.prisma\\'" . development-standards-prisma-mode))
+
 (defun development-standards--project-root (tool executable)
   "Return the project root for running TOOL through EXECUTABLE.
 This is the directory owning a project-local node_modules/.bin/TOOL, else
@@ -503,6 +522,106 @@ The buffer must be saved first; it is not saved automatically."
 (define-minor-mode development-standards-cspell-bindings-mode
   "Bind CSpell commands in the current buffer."
   :keymap development-standards-cspell-bindings-mode-map)
+
+(defvar development-standards-lemminx-command '("lemminx")
+  "Command list that starts the LemMinX XML language server over stdio.
+The first element is the program, looked up on `PATH' unless it is an
+absolute file name; the remaining elements are passed unchanged, for
+example (\"java\" \"-jar\" \"/path/to/org.eclipse.lemminx-uber.jar\").")
+
+(defconst development-standards--xml-modes
+  '((nxml-mode . "xml")
+    (xml-mode . "xml"))
+  "Major modes handled by the XML language server and their language IDs.")
+
+(defconst development-standards--tailwind-modes
+  '((html-mode . "html")
+    (rhtml-mode . "erb")
+    (haml-mode . "haml")
+    (php-mode . "php")
+    (css-mode . "css")
+    (scss-mode . "scss")
+    (sass-mode . "sass")
+    (sws-mode . "stylus")
+    (js2-mode . "javascript"))
+  "Major modes handled by the Tailwind CSS language server and their IDs.")
+
+(defvar-local development-standards--flymake-backends nil
+  "Flymake backends of this buffer from before its language server started.")
+
+(defun development-standards--eglot-managed ()
+  "Keep the saved Flymake backends while Eglot manages the current buffer."
+  (if (eglot-managed-p)
+      (when development-standards--flymake-backends
+        (setq-local flymake-diagnostic-functions
+                    (append flymake-diagnostic-functions
+                            (seq-difference
+                             development-standards--flymake-backends
+                             flymake-diagnostic-functions)))
+        (when flymake-mode
+          (flymake-start)))
+    (setq development-standards--flymake-backends nil)))
+
+(with-eval-after-load 'eglot
+  (add-hook 'eglot-managed-mode-hook #'development-standards--eglot-managed))
+
+(defun development-standards--start-language-server (modes contact)
+  "Start an Eglot language server for the current local file buffer.
+MODES is an alist of (MAJOR-MODE . LANGUAGE-ID) the server handles, and
+CONTACT is a function returning the server command list.  A buffer that
+Eglot already serves is left as it is."
+  (unless (and buffer-file-name
+               (not (file-remote-p buffer-file-name)))
+    (user-error "Not visiting a local file"))
+  (let ((language-id (cdr (assq major-mode modes))))
+    (unless language-id
+      (user-error "No language server for %s" major-mode))
+    (require 'eglot)
+    (when (or (eglot-managed-p) (eglot-current-server))
+      (user-error "Eglot already serves this buffer"))
+    (let ((eglot-server-programs
+           (list (cons (list (list major-mode :language-id language-id))
+                       (funcall contact))))
+          (current-prefix-arg nil))
+      (setq development-standards--flymake-backends
+            flymake-diagnostic-functions)
+      (call-interactively #'eglot))))
+
+(defun development-standards-xml-language-server ()
+  "Start the LemMinX XML language server for the current buffer."
+  (interactive)
+  (development-standards--start-language-server
+   development-standards--xml-modes
+   (lambda ()
+     (let ((command development-standards-lemminx-command))
+       (unless (and (consp command) (seq-every-p #'stringp command))
+         (user-error "%s is not a list of strings"
+                     'development-standards-lemminx-command))
+       (cons (if (file-name-absolute-p (car command))
+                 (car command)
+               (or (executable-find (car command))
+                   (user-error "%s executable not found" (car command))))
+             (cdr command))))))
+
+(defun development-standards-tailwind-language-server ()
+  "Start the Tailwind CSS language server for the current buffer."
+  (interactive)
+  (development-standards--start-language-server
+   development-standards--tailwind-modes
+   (lambda ()
+     (list (development-standards--require-executable
+            "tailwindcss-language-server")
+           "--stdio"))))
+
+(defun development-standards-prisma-language-server ()
+  "Start the Prisma language server for the current schema buffer."
+  (interactive)
+  (development-standards--check-local-file "\\.prisma\\'" "Prisma")
+  (development-standards--start-language-server
+   '((development-standards-prisma-mode . "prisma"))
+   (lambda ()
+     (list (development-standards--require-executable "prisma-language-server")
+           "--stdio"))))
 
 (defun development-standards-setup ()
   "Enable the development standards the visited file's project provides."
