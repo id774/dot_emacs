@@ -3,8 +3,9 @@ dot_emacs Repository Version History
 
 v26.10 (Release Date: TBD)
 --------------------------
-- Add Emacs 30+ integration with project-provided development standards while
-  keeping project configuration authoritative and older Emacs behavior unchanged.
+- Add Emacs 30+ integration with project-provided development standards,
+  including explicit Eglot language-server support, while keeping project
+  configuration authoritative and older Emacs behavior unchanged.
 - Expand Markdown support across GNU Emacs generations, including file
   associations and consistent font behavior.
 - Update bundled JavaScript support for compatibility across GNU Emacs
