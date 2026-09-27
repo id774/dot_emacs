@@ -16,8 +16,8 @@
 ;;; Code:
 
 ;; multi-term
-;; `lexical-let' and `loop' below come from the cl compatibility bridge,
-;; not from the obsolete cl package.
+;; `loop' below comes from the cl compatibility bridge, not from the
+;; obsolete cl package.
 (require 'cl-compat-bridge)
 
 (require 'multi-term)
@@ -25,20 +25,20 @@
 (setq term-default-fg-color "Green"
       term-default-bg-color "Black")
 
-(lexical-let ((emacs24
-               [term term-color-black
-                     term-color-red
-                     term-color-green
-                     term-color-yellow
-                     term-color-blue
-                     term-color-magenta
-                     term-color-cyan
-                     term-color-white])
-              (emacs23
-               [unspecified
-                "black" "red3" "green3" "yellow3"
-                "DeepSkyBlue" ; directory
-                "magenta1" "cyan3" "white"]))
+(let ((emacs24
+       [term term-color-black
+             term-color-red
+             term-color-green
+             term-color-yellow
+             term-color-blue
+             term-color-magenta
+             term-color-cyan
+             term-color-white])
+      (emacs23
+       [unspecified
+        "black" "red3" "green3" "yellow3"
+        "DeepSkyBlue" ; directory
+        "magenta1" "cyan3" "white"]))
   (setq ansi-term-color-vector
         (if (version< "24.0.0" emacs-version)
             emacs24
