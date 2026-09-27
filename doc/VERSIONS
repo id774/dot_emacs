@@ -3,22 +3,16 @@ dot_emacs Repository Version History
 
 v26.10 (Release Date: TBD)
 --------------------------
-- Add Emacs 30+ integration for EditorConfig, Prettier, ESLint, SQL Formatter,
-  Prisma, Vitest, and CSpell development capabilities while preserving older
-  Emacs behavior.
-- Keep development-standard integration capability-oriented and project/tool
-  driven without reproducing editor-specific workflows or adding
-  DOT_EMACS-owned project rules.
-- Bundle versioned markdown-mode releases by Emacs generation, expand Markdown
-  associations, and keep code, preformatted text, and tables on the normal font.
-- Bundle versioned js2-mode releases, keeping 1.0 for GNU Emacs 23.4 and
-  using 20231224 on GNU Emacs 24+, while preserving .js mode selection and
-  four-space indentation.
-- Bundle versioned auto-complete and popup releases by GNU Emacs generation
-  while preserving global completion behavior and the existing cl-lib boundary.
-- Restore normal startup on GNU Emacs 24.1-24.3 and 31.1 by removing
-  byte-compiled CL compatibility traps, and make bundled markdown-mode 2.3
-  initialize fully on GNU Emacs 24.1-24.2.
+- Add Emacs 30+ integration with project-provided development standards while
+  keeping project configuration authoritative and older Emacs behavior unchanged.
+- Expand Markdown support across GNU Emacs generations, including file
+  associations and consistent font behavior.
+- Update bundled JavaScript support for compatibility across GNU Emacs
+  generations while preserving existing editing behavior.
+- Update bundled completion support for compatibility across GNU Emacs
+  generations while preserving existing global completion behavior.
+- Restore runtime compatibility across supported GNU Emacs generations,
+  including startup and bundled mode initialization.
 
 v26.09 (2026-09-23)
 -------------------
