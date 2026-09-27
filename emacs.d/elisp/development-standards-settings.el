@@ -31,6 +31,16 @@
 ;; themselves, not a reproduction of another editor's workflow.  Existing
 ;; Flymake backends are kept when Eglot starts managing a buffer.
 ;;
+;; An upstream compatibility issue of a particular language server is
+;; handled by a bridge limited to that server.  The Prisma server receives a
+;; fallback workspace configuration only where no user or project
+;; configuration exists.  On GNU Emacs 30.x, the Tailwind CSS server is told
+;; that watched-file registration is unavailable, so it uses its own file
+;; watcher.  Emacs file locking stays enabled for Prisma schemas, with lock
+;; files placed where the schema scanner does not find them.  Unrelated
+;; Eglot sessions and the formatter, linter and test integrations keep their
+;; behavior.
+;;
 ;; Project-provided configuration and project-local tools are the source of
 ;; truth wherever they exist.  DOT_EMACS invents no project formatting, lint
 ;; or schema rule of its own.  A command that the user runs explicitly to
@@ -383,9 +393,19 @@ The buffer must be saved first; it is not saved automatically."
 
 (define-derived-mode development-standards-prisma-mode fundamental-mode "Prisma"
   "Major mode giving Prisma schema files a language identity for Eglot.
-It adds no editing behavior of its own."
+It adds no editing behavior of its own.  Its Emacs lock file is kept outside
+the schema directory by default so Prisma language servers do not scan it."
   :syntax-table nil
-  :abbrev-table nil)
+  :abbrev-table nil
+  ;; Existing transforms come first; unmatched lock files go to the temp dir.
+  (when buffer-file-name
+    (setq-local lock-file-name-transforms
+                (append lock-file-name-transforms
+                        (list (list "\\`.*\\'"
+                                    (expand-file-name
+                                     (file-name-nondirectory buffer-file-name)
+                                     temporary-file-directory)
+                                    t))))))
 
 (add-to-list 'auto-mode-alist
              '("\\.prisma\\'" . development-standards-prisma-mode))
@@ -536,6 +556,7 @@ example (\"java\" \"-jar\" \"/path/to/org.eclipse.lemminx-uber.jar\").")
 
 (defconst development-standards--tailwind-modes
   '((html-mode . "html")
+    (mhtml-mode . "html")
     (rhtml-mode . "erb")
     (haml-mode . "haml")
     (php-mode . "php")
@@ -563,6 +584,38 @@ example (\"java\" \"-jar\" \"/path/to/org.eclipse.lemminx-uber.jar\").")
     (setq development-standards--flymake-backends nil)))
 
 (with-eval-after-load 'eglot
+  (defclass development-standards-tailwind-eglot-server (eglot-lsp-server) ()
+    :documentation "Eglot server class for the Tailwind CSS language server.")
+
+  (cl-defmethod eglot-client-capabilities :around
+    ((_server development-standards-tailwind-eglot-server))
+    "Report no dynamic watched-file registration to Tailwind CSS.
+GNU Emacs 30.x Eglot cannot parse the nested-brace globs Tailwind CSS
+registers, so the server falls back to its own file watcher instead."
+    (let* ((capabilities (cl-call-next-method))
+           (workspace (plist-get capabilities :workspace))
+           (watched (plist-get workspace :didChangeWatchedFiles)))
+      (plist-put (copy-sequence capabilities) :workspace
+                 (plist-put (copy-sequence workspace) :didChangeWatchedFiles
+                            (plist-put (copy-sequence watched)
+                                       :dynamicRegistration :json-false)))))
+
+  (defclass development-standards-prisma-eglot-server (eglot-lsp-server) ()
+    :documentation "Eglot server class for the Prisma language server.")
+
+  (cl-defmethod eglot-handle-request :around
+    ((_server development-standards-prisma-eglot-server)
+     (_method (eql workspace/configuration)) &key items)
+    "Answer a missing `prisma' configuration section with a default.
+The Prisma language server fails on a null section, so enable diagnostics
+there; configuration that Eglot resolved is returned unchanged."
+    (let ((response (cl-call-next-method)))
+      (dotimes (i (length items))
+        (when (and (equal (plist-get (aref items i) :section) "prisma")
+                   (null (aref response i)))
+          (aset response i (list :enableDiagnostics t))))
+      response))
+
   (add-hook 'eglot-managed-mode-hook #'development-standards--eglot-managed))
 
 (defun development-standards--start-language-server (modes contact)
@@ -609,9 +662,13 @@ Eglot already serves is left as it is."
   (development-standards--start-language-server
    development-standards--tailwind-modes
    (lambda ()
-     (list (development-standards--require-executable
-            "tailwindcss-language-server")
-           "--stdio"))))
+     (let ((command (list (development-standards--require-executable
+                           "tailwindcss-language-server")
+                          "--stdio")))
+       ;; GNU Emacs 30.x only; newer Eglot handles Tailwind's watcher globs.
+       (if (= emacs-major-version 30)
+           (cons 'development-standards-tailwind-eglot-server command)
+         command)))))
 
 (defun development-standards-prisma-language-server ()
   "Start the Prisma language server for the current schema buffer."
@@ -620,7 +677,8 @@ Eglot already serves is left as it is."
   (development-standards--start-language-server
    '((development-standards-prisma-mode . "prisma"))
    (lambda ()
-     (list (development-standards--require-executable "prisma-language-server")
+     (list 'development-standards-prisma-eglot-server
+           (development-standards--require-executable "prisma-language-server")
            "--stdio"))))
 
 (defun development-standards-setup ()
