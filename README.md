@@ -216,11 +216,13 @@ rules these files follow.
 
 ## 6. Versioning
 
-DOT_EMACS uses the `<year>.<month>` versioning format starting from version `11.09`.
-Example: `24.12`
+DOT_EMACS uses the `<year>.<month>` versioning format for the first release in
+a calendar month, starting from version `11.09`. Example: `24.12`
 
-A third `<patch>` level is appended when a release only corrects an earlier one
-in the same month. Example: `25.08.1`
+When more than one release is made in the same calendar month, each subsequent
+release appends a third release sequence number starting at `1`. Thus `.1` is
+the second release of the month, `.2` is the third, and so on. Example:
+`25.08.1`
 
 Release versions are independent of the versions recorded in the header of each
 executable script, which use a two-level `<major>.<minor>` format.
