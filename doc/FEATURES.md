@@ -1093,9 +1093,14 @@ no project rules of its own.
   failure shows a warning without fixing anything automatically. These Prisma
   CLI commands are independent of the Prisma language server below.
 - `.prisma` files open in `development-standards-prisma-mode`, a minimal major
-  mode that only gives Prisma schemas a language identity for Eglot. It adds
-  no highlighting, indentation, parsing, completion, navigation or formatting
-  of its own.
+  mode that gives Prisma schemas a language identity for Eglot. It adds no
+  highlighting, indentation, parsing, completion, navigation or formatting of
+  its own. Emacs file locking stays enabled. Existing user or project
+  `lock-file-name-transforms` take precedence; when none of them applies, the
+  lock file of a Prisma schema buffer is placed under
+  `temporary-file-directory` instead of next to the schema, so the Prisma
+  language server does not scan a `.#*.prisma` lock link in the project as a
+  schema.
 - Vitest is available in local files whose project provides it, looked up as
   the nearest `node_modules/.bin/vitest` above the file, then on `PATH`.
   Commands run from the project root and show their output in a compilation
@@ -1152,6 +1157,7 @@ no project rules of its own.
     | Major mode | Language ID |
     | --- | --- |
     | `html-mode` | `html` |
+    | `mhtml-mode` | `html` |
     | `rhtml-mode` | `erb` |
     | `haml-mode` | `haml` |
     | `php-mode` | `php` |
@@ -1161,12 +1167,25 @@ no project rules of its own.
     | `sws-mode` | `stylus` |
     | `js2-mode` | `javascript` |
 
+    The Eglot bundled with GNU Emacs 30.x cannot process the nested-brace
+    watched-file globs that the Tailwind CSS server registers. On GNU Emacs
+    30.x, DOT_EMACS therefore starts the server with a Tailwind-specific Eglot
+    class that reports only watched-file dynamic registration as `false`, and
+    the server uses its own file-watcher fallback instead. GNU Emacs 31 and
+    newer use Eglot's normal watched-file registration. Completion,
+    diagnostics, hover, and the other LSP capabilities are not disabled.
   - Prisma: `M-x development-standards-prisma-language-server` starts
     `prisma-language-server --stdio` for local `.prisma` files, looked up as
     the nearest `node_modules/.bin/prisma-language-server` above the file,
     then on `PATH`. It is separate from the `prisma` executable, so `C-c F` and
     `C-c V` keep working without the language server. `M-x eglot-format` can
-    be used in a managed buffer but does not replace `C-c F`.
+    be used in a managed buffer but does not replace `C-c F`. When Eglot has
+    no `prisma` workspace configuration for a requested scope, DOT_EMACS
+    answers with `enableDiagnostics: true` as a fallback. This compatibility
+    bridge keeps the current Prisma language server from failing on a `null`
+    configuration. An explicit project, directory-local, or user Prisma
+    configuration is passed through unchanged and is never overridden by the
+    fallback.
 - No key binding is added for starting a language server. A buffer that Eglot
   already manages is left as it is: the language-server commands report an
   error instead of replacing its connection. A buffer uses one language
