@@ -544,9 +544,22 @@ Installer command ownership:
 
 Installer target contract:
 
--   `--uninstall` intentionally ignores any custom target argument and removes
-    only `/usr/local/etc/emacs.d`; custom installation targets are not tracked
-    for later removal.
+-   The installer owns `$TARGET/elisp` as the DOT_EMACS deployed subtree, not
+    the whole target. `~/.emacs` and `~/.mew.el` are DOT_EMACS-managed entry
+    files.
+-   `~/.emacs.d/site-lisp` and all other user-local and run-time data are
+    preserved by install, update, and uninstall.
+-   When `$TARGET` is not `$HOME/.emacs.d`, `~/.emacs.d/elisp` is the reserved
+    path for the DOT_EMACS symlink. If an existing path is not a managed
+    symlink to this `$TARGET/elisp`, the installer stops without destroying it.
+-   When `$TARGET` is `$HOME/.emacs.d`, `$TARGET/elisp` is the explicitly
+    managed subtree and is replaced.
+-   `--uninstall` intentionally ignores any custom target argument; custom
+    installation targets are not tracked for later removal.
+-   The default uninstall removes only `/usr/local/etc/emacs.d/elisp` and a
+    `~/.emacs.d/elisp` symlink confirmed to point to it, as target-side cleanup.
+-   User-local `~/.emacs.d` content and sibling content under
+    `/usr/local/etc/emacs.d` are not removed.
 
 Executable script versions:
 

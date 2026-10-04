@@ -70,8 +70,10 @@ Options:
 
 - `-h`, `--help`: Show the help message and exit.
 - `-v`, `--version`: Show the script header and exit.
-- `-u`, `--uninstall`: Remove the user configuration and the fixed default
-  installation target. Custom installation targets are not removed.
+- `-u`, `--uninstall`: Remove the DOT_EMACS-managed entry points (`~/.emacs`
+  and `~/.mew.el`) and the `elisp` tree of the fixed default installation
+  target. User-local `~/.emacs.d` content is preserved, and custom
+  installation targets are not removed.
 - `-n`, `--no-sudo`: Run without `sudo`.
 
 ### Default Installation:
@@ -82,6 +84,16 @@ Options:
 
 This installs DOT_EMACS to the default location. Root privileges (via `sudo`) are required.
 
+Install and reinstall do not own `~/.emacs.d`. Only `~/.emacs`, `~/.mew.el` and
+`$TARGET/elisp` are replaced; `site-lisp`, `elpa`, `snippets`, run-time data and
+any other user-local content under `~/.emacs.d` are preserved. Because `~/.emacs`
+and `~/.mew.el` are managed by DOT_EMACS and overwritten on update, put
+user-specific Emacs configuration in `~/.emacs.d/site-lisp/loader.el`.
+
+`~/.emacs.d/elisp` is reserved for the symlink to `$TARGET/elisp`. When the
+target is not `~/.emacs.d`, the installer stops before changing anything if that
+path exists and is not already a symlink to `$TARGET/elisp`; it never deletes it.
+
 ### Custom Installation:
 
 ```bash
@@ -90,6 +102,10 @@ This installs DOT_EMACS to the default location. Root privileges (via `sudo`) ar
 ```
 
 Both commands install DOT_EMACS to `~/.emacs.d` without using `sudo`.
+
+With `~/.emacs.d` as the target, only `~/.emacs.d/elisp` is replaced as the
+DOT_EMACS-managed directory. `site-lisp` and the other sibling user data are
+preserved.
 
 A custom target is an installation directory path. Using a directory symlink as
 the installation target itself is outside the supported installation model.
@@ -127,7 +143,14 @@ if it is executable, so passing the path explicitly is optional.
 
 The second command removes the installed configuration without using `sudo`.
 
-For safety, `--uninstall` removes only `/usr/local/etc/emacs.d`.
+For safety, `--uninstall` removes only the following:
+
+- `~/.emacs` and `~/.mew.el`;
+- `/usr/local/etc/emacs.d/elisp`, the only part of the default target it removes;
+- `~/.emacs.d/elisp`, only when it is a symlink to `/usr/local/etc/emacs.d/elisp`.
+
+`site-lisp`, run-time data and all other user-local content under `~/.emacs.d`
+are preserved, as is any other content under `/usr/local/etc/emacs.d`.
 Custom installation targets are not tracked for later removal and are not
 removed automatically.
 
@@ -197,7 +220,8 @@ are shown.
 
 Only `emacs.d/elisp/` is deployed to the installation target (by default
 `/usr/local/etc/emacs.d/elisp`, symlinked as `~/.emacs.d/elisp`). The installer
-creates the other directories in the user's home directory. `site-lisp` is the
+creates the other directories in the user's home directory when they are missing
+and preserves their existing content on reinstall. `site-lisp` is the
 user-local extension tree; `loader.el`, when present, is loaded after the bundled
 configuration. The other directories hold writable run-time state such as
 backups, temporary files and history, while the system-wide configuration tree

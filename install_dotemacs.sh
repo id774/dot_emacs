@@ -5,8 +5,9 @@
 #
 #  Description:
 #  This script installs the dot_emacs configuration files to the specified
-#  target directory. It compiles Emacs Lisp scripts, sets the appropriate
-#  permissions, and optionally removes existing configurations.
+#  target directory. It compiles Emacs Lisp scripts and sets the appropriate
+#  permissions. Only DOT_EMACS-managed paths are changed; user-local content
+#  under ~/.emacs.d is preserved.
 #  If the emacs command is not found, the script falls back to
 #  /Applications/Emacs.app/Contents/MacOS/Emacs when executable on macOS.
 #
@@ -29,7 +30,7 @@
 #  Options:
 #      -h, --help        Show this help message and exit.
 #      -v, --version     Show this script header and exit.
-#      -u, --uninstall   Remove user configuration and the fixed default target.
+#      -u, --uninstall   Remove DOT_EMACS-managed files and the default target's elisp.
 #      -n, --no-sudo     Run without sudo.
 #
 #  Notes:
@@ -42,12 +43,20 @@
 #  - [nosudo]: If specified, the script runs without sudo.
 #  - Fallback: When 'emacs' is not found and [emacs_binary] is not an executable path,
 #    the script tries /Applications/Emacs.app/Contents/MacOS/Emacs on macOS.
-#  - The script will remove existing Emacs configurations before installation.
+#  - Install and update replace ~/.emacs, ~/.mew.el and $TARGET/elisp, the
+#    DOT_EMACS-managed paths. User-local content under ~/.emacs.d, such as
+#    site-lisp, elpa, snippets and run-time data, is preserved.
+#  - ~/.emacs.d/elisp is a DOT_EMACS reserved path. When [target_path] is not
+#    ~/.emacs.d, installation stops before any change unless that path is
+#    absent or already a symlink to $TARGET/elisp. It is never removed to
+#    make way for the installation.
 #  - Byte-compilation is selective: libraries, compatibility modules, and
 #    safe configuration modules are compiled, while bootstrap/orchestration
 #    and load-order-sensitive configuration files are loaded from source.
-#  - The --uninstall option removes user configuration and the fixed default
-#    installation target.
+#  - The --uninstall option removes ~/.emacs, ~/.mew.el, the elisp tree of the
+#    fixed default target, and ~/.emacs.d/elisp only when it is a symlink to
+#    that tree. User-local ~/.emacs.d content and the other content of the
+#    default target are preserved.
 #  - Keep the uninstall target fixed at /usr/local/etc/emacs.d to prevent accidental deletion.
 #  - Custom installation targets are not tracked for later removal and are not
 #    removed automatically.
@@ -57,6 +66,9 @@
 #    but they do not abort the remaining installation steps.
 #
 #  Version History:
+#  v5.2 2026-10-04
+#       Preserve user-local Emacs files by limiting install and uninstall
+#       changes to DOT_EMACS-managed paths.
 #  v5.1 2026-09-26
 #       Select and byte-compile compatible bundled js2-mode, auto-complete, and
 #       popup releases for the active GNU Emacs generation.
@@ -139,18 +151,40 @@ check_sudo() {
     fi
 }
 
+# Set LINK_DEST to the link text of the symbolic link $1; fail if it is not one
+read_symlink() {
+    LINK_DEST=""
+    [ -L "$1" ] || return 1
+    check_commands ls
+    link_line=$(ls -ld "$1") || return 1
+    LINK_DEST=${link_line#* -> }
+}
+
+# Stop before any change when ~/.emacs.d/elisp cannot be safely managed.
+# ~/.emacs.d/elisp is reserved for the symlink to $TARGET/elisp; anything else
+# there is user data and is never removed.
+check_elisp_link_collision() {
+    [ "$TARGET" = "$HOME/.emacs.d" ] && return 0
+
+    elisp_link="$HOME/.emacs.d/elisp"
+    if [ -L "$elisp_link" ]; then
+        read_symlink "$elisp_link" && [ "$LINK_DEST" = "$TARGET/elisp" ] && return 0
+    elif [ ! -e "$elisp_link" ]; then
+        return 0
+    fi
+
+    echo "[ERROR] $elisp_link already exists and is not a DOT_EMACS symlink to $TARGET/elisp." >&2
+    echo "[ERROR] It cannot be safely replaced as a DOT_EMACS-managed path, so installation is stopped. Nothing was changed." >&2
+    exit 1
+}
+
 # Install dot_emacs files to the target directory
 # TARGET is an installation directory path. A directory symlink supplied as
 # TARGET itself is outside the supported installation model.
 setup_dotemacs() {
     echo "[INFO] Setting up dot_emacs configuration..."
 
-    if [ -d "$TARGET" ] && ! $SUDO rm -rf "$TARGET/"; then
-        echo "[ERROR] Failed to remove existing target directory $TARGET." >&2
-        exit 1
-    fi
     [ -f "$HOME/.emacs" ] && rm -f "$HOME/.emacs"
-    [ -d "$HOME/.emacs.d" ] && rm -rf "$HOME/.emacs.d"
 
     if ! cp $OPTIONS "$SCRIPT_HOME/dot_emacs" "$HOME/.emacs"; then
         echo "[ERROR] Failed to copy dot_emacs to $HOME/.emacs." >&2
@@ -166,6 +200,12 @@ setup_dotemacs() {
         echo "[ERROR] Failed to create target directory $TARGET." >&2
         exit 1
     }
+
+    # Only $TARGET/elisp is managed by DOT_EMACS; the rest of $TARGET is kept.
+    if { [ -e "$TARGET/elisp" ] || [ -L "$TARGET/elisp" ]; } && ! $SUDO rm -rf "$TARGET/elisp"; then
+        echo "[ERROR] Failed to remove existing $TARGET/elisp." >&2
+        exit 1
+    fi
 
     if ! $SUDO cp $OPTIONS "$SCRIPT_HOME/emacs.d/elisp" "$TARGET/"; then
         echo "[ERROR] Failed to copy elisp directory to $TARGET/." >&2
@@ -541,19 +581,21 @@ slink_elisp() {
                 echo "[ERROR] Failed to create $HOME/.emacs.d/$dir." >&2
                 exit 1
             fi
-        fi
-        if ! $SUDO chmod 0750 "$HOME/.emacs.d/$dir"; then
-            echo "[ERROR] Failed to set permission for $HOME/.emacs.d/$dir." >&2
-            exit 1
+            if ! $SUDO chmod 0750 "$HOME/.emacs.d/$dir"; then
+                echo "[ERROR] Failed to set permission for $HOME/.emacs.d/$dir." >&2
+                exit 1
+            fi
         fi
     done
 
-    echo "[INFO] Creating adaptive history file: $HOME/.emacs.d/anything/anything-c-adaptive-history"
-    if ! $SUDO touch "$HOME/.emacs.d/anything/anything-c-adaptive-history"; then
-        echo "[ERROR] Failed to create anything-c-adaptive-history file." >&2
-        exit 1
+    if [ ! -e "$HOME/.emacs.d/anything/anything-c-adaptive-history" ]; then
+        echo "[INFO] Creating adaptive history file: $HOME/.emacs.d/anything/anything-c-adaptive-history"
+        if ! $SUDO touch "$HOME/.emacs.d/anything/anything-c-adaptive-history"; then
+            echo "[ERROR] Failed to create anything-c-adaptive-history file." >&2
+            exit 1
+        fi
+        $SUDO chown "$(id -un):$(id -gn)" "$HOME/.emacs.d/anything/anything-c-adaptive-history"
     fi
-    $SUDO chown "$(id -un):$(id -gn)" "$HOME/.emacs.d/anything/anything-c-adaptive-history"
 
     echo "[INFO] Symlink setup for Emacs configuration completed successfully."
 }
@@ -597,9 +639,9 @@ setup_environment() {
 
 # Set file permissions
 set_permission() {
-    echo "[INFO] Setting ownership for $TARGET"
-    if ! $SUDO chown -R "$OWNER" "$TARGET"; then
-        echo "[ERROR] Failed to change ownership for $TARGET." >&2
+    echo "[INFO] Setting ownership for $TARGET/elisp"
+    if ! $SUDO chown -R "$OWNER" "$TARGET/elisp"; then
+        echo "[ERROR] Failed to change ownership for $TARGET/elisp." >&2
         exit 1
     fi
 
@@ -620,6 +662,7 @@ install() {
 
     check_commands cp mkdir chmod chown ln rm id dirname uname touch
     setup_environment "$@"
+    check_elisp_link_collision
     setup_dotemacs
     emacs_private_settings
     byte_compile_all
@@ -631,7 +674,7 @@ install() {
 
 # Uninstall dot_emacs configuration
 uninstall() {
-    check_commands rm rmdir id dirname uname
+    check_commands rm id dirname uname
     setup_environment "$@"
 
     echo "[INFO] Uninstalling dot_emacs configuration..."
@@ -641,19 +684,17 @@ uninstall() {
 
     [ -f "$HOME/.emacs" ] && rm -f "$HOME/.emacs"
     [ -f "$HOME/.mew.el" ] && rm -f "$HOME/.mew.el"
-    [ -L "$HOME/.emacs.d/elisp" ] && rm -f "$HOME/.emacs.d/elisp"
 
-    # Removing the anything directory also removes the adaptive history file
-    for dir in site-lisp anything backups tmp tramp-auto-save auto-save-list; do
-        [ -d "$HOME/.emacs.d/$dir" ] && rm -rf "$HOME/.emacs.d/$dir"
-    done
+    # Remove ~/.emacs.d/elisp only when it is the DOT_EMACS symlink; any other
+    # ~/.emacs.d/elisp, and all other ~/.emacs.d content, belongs to the user.
+    if read_symlink "$HOME/.emacs.d/elisp" && [ "$LINK_DEST" = "$TARGET/elisp" ]; then
+        rm -f "$HOME/.emacs.d/elisp"
+    fi
 
-    [ -d "$HOME/.emacs.d" ] && rmdir "$HOME/.emacs.d" 2>/dev/null
-
-    if [ -d "$TARGET" ]; then
-        echo "[INFO] Removing installed target directory: $TARGET"
-        if ! $SUDO rm -rf "$TARGET"; then
-            echo "[ERROR] Failed to remove target directory $TARGET." >&2
+    if [ -e "$TARGET/elisp" ] || [ -L "$TARGET/elisp" ]; then
+        echo "[INFO] Removing installed elisp directory: $TARGET/elisp"
+        if ! $SUDO rm -rf "$TARGET/elisp"; then
+            echo "[ERROR] Failed to remove elisp directory $TARGET/elisp." >&2
             exit 1
         fi
     fi

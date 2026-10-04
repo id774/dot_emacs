@@ -1,6 +1,11 @@
 dot_emacs Repository Version History
 ====================================
 
+v26.10 (Release Date: TBD)
+--------------------------
+- Preserve user-local Emacs configuration and run-time data across install,
+  update, and uninstall operations by limiting DOT_EMACS-managed paths.
+
 v26.09.1 (2026-09-27)
 ---------------------
 - Add Emacs 30+ integration with project-provided development standards,
