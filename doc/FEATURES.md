@@ -98,6 +98,9 @@ installing the standard Windmove key set supplied by the running Emacs version.
 
 When Anything is available, its configured sources include buffers, bookmarks,
 recent files, file-name history, and `locate` results.
+Anything adaptive sorting is enabled for buffer, file, and bookmark sources.
+Selection history is persisted in
+`~/.emacs.d/anything/anything-c-adaptive-history` and reused across sessions.
 
 ### 2.5 File operations
 
