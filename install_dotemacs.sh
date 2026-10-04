@@ -68,8 +68,8 @@
 #
 #  Version History:
 #  v5.2 2026-10-04
-#       Preserve user-local files and normalize trailing-slash custom targets
-#       before managed-path comparisons and symlink setup.
+#       Preserve user-local files and safely reuse managed elisp symlinks
+#       across repeated installs, including trailing-slash custom targets.
 #  v5.1 2026-09-26
 #       Select and byte-compile compatible bundled js2-mode, auto-complete, and
 #       popup releases for the active GNU Emacs generation.
@@ -559,19 +559,12 @@ slink_elisp() {
         fi
     fi
 
-    if [ "$TARGET" != "$HOME/.emacs.d" ]; then
+    if [ "$TARGET" != "$HOME/.emacs.d" ] \
+       && [ ! -L "$HOME/.emacs.d/elisp" ]; then
         echo "[INFO] Creating symlink: $HOME/.emacs.d/elisp -> $TARGET/elisp"
-        if ! ln -fs "$TARGET/elisp" "$HOME/.emacs.d/elisp"; then
+        if ! ln -s "$TARGET/elisp" "$HOME/.emacs.d/elisp"; then
             echo "[ERROR] Failed to create symlink for elisp" >&2
             exit 1
-        fi
-
-        if [ -L "$TARGET/elisp/elisp" ]; then
-            echo "[INFO] Removing redundant symlink: $TARGET/elisp/elisp"
-            if ! $SUDO rm -f "$TARGET/elisp/elisp"; then
-                echo "[ERROR] Failed to remove redundant symlink $TARGET/elisp/elisp." >&2
-                exit 1
-            fi
         fi
     fi
 
