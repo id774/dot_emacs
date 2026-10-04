@@ -107,6 +107,10 @@ With `~/.emacs.d` as the target, only `~/.emacs.d/elisp` is replaced as the
 DOT_EMACS-managed directory. `site-lisp` and the other sibling user data are
 preserved.
 
+A trailing slash on a custom target does not change its installation
+semantics. For example, `~/.emacs.d` and `~/.emacs.d/` are treated as the
+same target.
+
 A custom target is an installation directory path. Using a directory symlink as
 the installation target itself is outside the supported installation model.
 
@@ -179,6 +183,25 @@ DOT_EMACS:
   overrides belong in `~/.emacs.d/site-lisp/loader.el`.
 - Loads `~/.emacs.d/site-lisp/loader.el` after the bundled configuration when
   that file exists, and stays quiet when it is absent.
+
+Only `~/.emacs.d/site-lisp/loader.el` is loaded automatically. Other `.el`
+files placed under `~/.emacs.d/site-lisp` are available through `load-path` but
+are not evaluated unless `loader.el` loads them explicitly. For example, with:
+
+```text
+~/.emacs.d/site-lisp/
+├── loader.el
+└── local-faces.el
+```
+
+`loader.el` loads the additional file with:
+
+```elisp
+(load "local-faces")
+```
+
+`local-faces` is only an example name; `loader.el` can load any file under
+`site-lisp` this way, such as `(load "my-keybindings")`.
 
 For a complete reference to the DOT_EMACS key bindings, mode-specific
 shortcuts and automatically enabled behavior, see [FEATURES](doc/FEATURES.md).
