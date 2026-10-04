@@ -39,7 +39,8 @@
 #  - [target_path]: Installation directory path (default: /usr/local/etc/emacs.d).
 #    A directory symlink used as the installation target itself is outside the
 #    supported install model. The value is ignored by --uninstall, but keep it
-#    as a placeholder when passing [nosudo].
+#    as a placeholder when passing [nosudo]. Trailing slashes are removed from
+#    target_path before managed-path comparison, except that / remains /.
 #  - [nosudo]: If specified, the script runs without sudo.
 #  - Fallback: When 'emacs' is not found and [emacs_binary] is not an executable path,
 #    the script tries /Applications/Emacs.app/Contents/MacOS/Emacs on macOS.
@@ -67,8 +68,8 @@
 #
 #  Version History:
 #  v5.2 2026-10-04
-#       Preserve user-local Emacs files by limiting install and uninstall
-#       changes to DOT_EMACS-managed paths.
+#       Preserve user-local files and normalize trailing-slash custom targets
+#       before managed-path comparisons and symlink setup.
 #  v5.1 2026-09-26
 #       Select and byte-compile compatible bundled js2-mode, auto-complete, and
 #       popup releases for the active GNU Emacs generation.
@@ -620,6 +621,9 @@ setup_environment() {
     echo "[INFO] Using Emacs binary: $EMACS"
 
     TARGET=${2:-/usr/local/etc/emacs.d}
+    while [ "$TARGET" != "/" ] && [ "${TARGET%/}" != "$TARGET" ]; do
+        TARGET=${TARGET%/}
+    done
     if [ -n "$3" ]; then
         SUDO=""
     else
