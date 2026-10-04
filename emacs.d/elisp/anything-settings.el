@@ -17,6 +17,18 @@
 
 (cond
  ((load-p "anything-config")
+  (setq anything-c-use-adaptative-sorting t
+        anything-c-adaptive-history-file
+        (expand-file-name
+         "~/.emacs.d/anything/anything-c-adaptive-history"))
+
+  (dolist (type '(buffer file bookmark))
+    (anything-c-arrange-type-attribute
+     type
+     '((filtered-candidate-transformer
+        anything-c-adaptive-sort
+        REST))))
+
   (setq anything-sources
         (list anything-c-source-buffers
               anything-c-source-bookmarks
