@@ -6,6 +6,7 @@ v26.10 (Release Date: TBD)
 - Preserve `site-lisp`, `elpa`, `.recentf`, and other user-local data across
   install, reinstall, update, and uninstall.
 - Restore persistent Anything adaptive history across Emacs sessions.
+- Compile bundled Erlang mode only on GNU Emacs versions that use it.
 
 v26.09.1 (2026-09-27)
 ---------------------

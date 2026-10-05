@@ -67,9 +67,10 @@
 #    but they do not abort the remaining installation steps.
 #
 #  Version History:
-#  v5.2 2026-10-04
+#  v5.2 2026-10-05
 #       Preserve user-local files and safely reuse managed elisp symlinks
-#       across repeated installs, including trailing-slash custom targets.
+#       across repeated installs, and limit bundled Erlang compilation to
+#       GNU Emacs versions that use it.
 #  v5.1 2026-09-26
 #       Select and byte-compile compatible bundled js2-mode, auto-complete, and
 #       popup releases for the active GNU Emacs generation.
@@ -427,6 +428,26 @@ byte_compile_markdown_mode() {
     fi
 }
 
+# Compile the bundled Erlang mode only on GNU Emacs 26 and earlier, the
+# versions on which lang-mode.el uses it.
+byte_compile_erlang_mode() {
+    erlang_major=$($SUDO "$EMACS" --batch -Q --eval \
+        '(princ (format "%d" emacs-major-version))' 2>/dev/null)
+    case "$erlang_major" in
+        ''|*[!0-9]*)
+            BYTE_COMPILE_FAILED=$((BYTE_COMPILE_FAILED + 1))
+            echo "[WARN] Byte compilation failed: erlang-mode (cannot determine the GNU Emacs version)" >&2
+            return 0
+            ;;
+    esac
+
+    if [ "$erlang_major" -ge 27 ]; then
+        return 0
+    fi
+
+    emacs_batch_byte_compile "$TARGET/elisp/3rd-party/erlang.el"
+}
+
 # Byte-compile all necessary Emacs Lisp files
 byte_compile_all() {
     echo "[INFO] Byte-compiling Emacs Lisp files..."
@@ -464,7 +485,6 @@ byte_compile_all() {
         key-chord.el \
         anything.el \
         bat-mode.el \
-        erlang.el \
         findr.el \
         inflections.el \
         git.el \
@@ -490,6 +510,8 @@ byte_compile_all() {
     byte_compile_auto_complete_popup
 
     byte_compile_markdown_mode
+
+    byte_compile_erlang_mode
 
     # utils.el defines the load-p, autoload-p and defun-add-hook helpers the
     # other modules use, so compile it first and then load it for the rest.
