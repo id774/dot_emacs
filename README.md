@@ -128,6 +128,20 @@ such as corporate networks that require a proxy. Its values are expected to be
 set before the relevant network integrations are loaded; this is startup
 configuration, not a live session reconfiguration interface.
 
+### External Packages:
+
+When the running GNU Emacs provides `package.el`, external Emacs Lisp packages
+can be browsed with `M-x package-list-packages` and installed with
+`M-x package-install`. Packages installed for the current user are normally
+stored under `~/.emacs.d/elpa/`.
+
+DOT_EMACS does not manage or replace `~/.emacs.d/elpa`, so packages installed
+there are preserved across install, reinstall, update, and uninstall. Keep
+package-specific user configuration in `~/.emacs.d/site-lisp/loader.el`
+instead of modifying DOT_EMACS-managed files. Do not add
+`~/.emacs.d/elpa` itself to `load-path`; `package.el` manages the installed
+package directories.
+
 ### Installation on macOS:
 
 ```bash
