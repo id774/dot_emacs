@@ -142,6 +142,19 @@ instead of modifying DOT_EMACS-managed files. Do not add
 `~/.emacs.d/elpa` itself to `load-path`; `package.el` manages the installed
 package directories.
 
+To use an installed package, `require` it from `loader.el` and write the
+package-specific configuration after it:
+
+```elisp
+(require 'package-feature)
+
+;; Package-specific configuration follows here.
+```
+
+`package-feature` is a placeholder; replace it with the feature name the
+package provides. The package itself stays under `~/.emacs.d/elpa/` and is
+not copied into `site-lisp`.
+
 ### Installation on macOS:
 
 ```bash
