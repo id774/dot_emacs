@@ -15,6 +15,15 @@
 
 ;;; Code:
 
+;; GNU Emacs 24-26 activate installed packages after the user init file.
+;; Activate them here so site-lisp/loader.el can configure those packages.
+(when (and (>= emacs-major-version 24)
+           (< emacs-major-version 27))
+  (require 'package)
+  (let ((user-init-file nil))
+    (package-initialize))
+  (setq package-enable-at-startup nil))
+
 ;; Set up basic paths and load autoloads.el
 
 ;; proxy
