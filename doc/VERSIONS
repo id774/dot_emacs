@@ -9,6 +9,8 @@ v26.10 (Release Date: TBD)
 - Compile bundled Erlang mode only on GNU Emacs versions that use it.
 - Restore external package loading from site-lisp/loader.el on GNU Emacs 24
   through 26.
+- Update bundled cl-lib to GNU ELPA 0.7.1 for GNU Emacs 23.4-24.2,
+  while GNU Emacs 24.3+ continues using its built-in cl-lib.
 
 v26.09.1 (2026-09-27)
 ---------------------
