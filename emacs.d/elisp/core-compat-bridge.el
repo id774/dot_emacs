@@ -50,6 +50,15 @@ With prefix ARG, enable if ARG > 0, otherwise disable."
                        (if (> n 0) 1 -1))))
       (read-only-mode mode-arg))))
 
+;; Provide file-in-directory-p on Emacs 23.4, where bundled dired-async uses it.
+(unless (fboundp 'file-in-directory-p)
+  (defun file-in-directory-p (file dir)
+    "Return non-nil if FILE is in existing DIR or DIR itself."
+    (when (file-directory-p dir)
+      (let ((directory (file-name-as-directory (file-truename dir)))
+            (filename (file-name-as-directory (file-truename file))))
+        (string-prefix-p directory filename)))))
+
 ;; Alias which-func-mode on older Emacs.
 (unless (fboundp 'which-func-mode)
   (defalias 'which-func-mode 'which-function-mode))
