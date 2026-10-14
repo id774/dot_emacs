@@ -328,21 +328,33 @@ returns nil.  It can still be useful, however, as an argument to
 	;; Subordinate Emacs will send text encoded in UTF-8.
 	(coding-system-for-read 'utf-8-auto))
     (setq async--procvar
-          (async-start-process
+          (apply
+           #'async-start-process
            "emacs" (file-truename
                     (expand-file-name invocation-name
                                       invocation-directory))
            finish-func
-           async-quiet-switch "-l"
-           ;; Using `locate-library' ensure we use the right file
-           ;; when the .elc have been deleted.
-           (locate-library "async")
-           "-batch" "-f" "async-batch-invoke"
-           (if async-send-over-pipe
-               "<none>"
-               (with-temp-buffer
-                 (async--insert-sexp (list 'quote sexp))
-                 (buffer-string)))))
+           (append
+            (list async-quiet-switch)
+            ;; Emacs before 24.3 has no built-in cl-lib and the child
+            ;; does not inherit `load-path', so pass the bundled cl-lib
+            ;; directory before loading async.
+            (let ((cl-lib-file (and (or (< emacs-major-version 24)
+                                        (and (= emacs-major-version 24)
+                                             (< emacs-minor-version 3)))
+                                    (locate-library "cl-lib"))))
+              (and cl-lib-file
+                   (list "-L" (file-name-directory cl-lib-file))))
+            (list "-l"
+                  ;; Using `locate-library' ensure we use the right file
+                  ;; when the .elc have been deleted.
+                  (locate-library "async")
+                  "-batch" "-f" "async-batch-invoke"
+                  (if async-send-over-pipe
+                      "<none>"
+                      (with-temp-buffer
+                        (async--insert-sexp (list 'quote sexp))
+                        (buffer-string)))))))
     (if async-send-over-pipe
         (async--transmit-sexp async--procvar (list 'quote sexp)))
     async--procvar))
