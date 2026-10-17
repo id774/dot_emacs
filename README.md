@@ -230,6 +230,9 @@ are not evaluated unless `loader.el` loads them explicitly. For example, with:
 `local-faces` is only an example name; `loader.el` can load any file under
 `site-lisp` this way, such as `(load "my-keybindings")`.
 
+For guidance on organizing and troubleshooting user-local configuration,
+see [Local Emacs Customization](emacs.d/site-lisp/README.md).
+
 For a complete reference to the DOT_EMACS key bindings, mode-specific
 shortcuts and automatically enabled behavior, see [FEATURES](doc/FEATURES.md).
 
