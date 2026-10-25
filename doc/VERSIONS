@@ -1,8 +1,8 @@
 dot_emacs Repository Version History
 ====================================
 
-v26.10 (Release Date: TBD)
---------------------------
+v26.10 (2026-10-25)
+-------------------
 - Preserve `site-lisp`, `elpa`, `.recentf`, and other user-local data across
   install, reinstall, update, and uninstall.
 - Restore persistent Anything adaptive history across Emacs sessions.
