@@ -11,7 +11,7 @@ automatically into a user's home directory.
 ## 1. Files and Loading
 
 User configuration belongs under `~/.emacs.d/site-lisp/`. Only `loader.el` is
-loaded automatically by DOT_EMACS; other files in that directory must be loaded
+loaded automatically by DOT_EMACS. Other files in that directory must be loaded
 explicitly. For example, `loader.el` may contain:
 
 ```elisp
@@ -60,7 +60,7 @@ available screen area.
 
 A font applied while loading initialization files can be affected by later
 frame initialization. In a tested GNU/Linux setup, manual reloading applied a
-font customization that did not take effect at startup under Xfce; applying the
+font customization that did not take effect at startup under Xfce. Applying the
 font from `window-setup-hook` resolved that case. The same customization worked
 at startup under GNOME. This observation does not identify a specific Xfce
 component as the cause, nor establish the same problem on macOS.
@@ -87,8 +87,8 @@ Emacs graphical-frame settings.
 ## 5. Packages and Key Bindings
 
 Keep user-installed package configuration in local files. For packages managed
-by `package.el`, allow that package manager to handle `~/.emacs.d/elpa/`;
-do not add the `elpa` directory itself to `load-path`.
+by `package.el`, allow that package manager to handle `~/.emacs.d/elpa/`.
+Do not add the `elpa` directory itself to `load-path`.
 
 Load a package before using its configuration, and use mode hooks for settings
 that require a particular mode to be initialized. Local key bindings may
@@ -111,7 +111,7 @@ When a local setting does not take effect:
 
 1. Confirm that `loader.el` explicitly loads the intended file. Use
    `(locate-library "my-settings")` to check whether an example library name
-   resolves; locating a file alone does not prove that it was evaluated.
+   resolves. Locating a file alone does not prove that it was evaluated.
 2. Compare behavior at startup with manually evaluating the local file. If
    manual evaluation works, investigate startup timing and later overrides.
 3. For graphical frame settings, inspect `(frame-parameter nil 'font)`,

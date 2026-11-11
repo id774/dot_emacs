@@ -65,7 +65,7 @@
 (load-p "yatex-mode")
 
 ;; team development standards integration
-;; GNU Emacs 30+ loads team development-standard integrations; older
+;; GNU Emacs 30+ loads team development-standard integrations. Older
 ;; versions keep their existing behavior.
 (when (>= emacs-major-version 30)
   (load-p "development-standards-settings"))

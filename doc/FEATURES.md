@@ -9,7 +9,7 @@ Instead, it documents the bindings, automatic behavior, and defaults that
 DOT_EMACS itself installs, enables, or changes.
 
 The Emacs Lisp implementation is the primary source of fact for what
-currently happens; this document records the intended user-facing behavior.
+currently happens. This document records the intended user-facing behavior.
 When the two disagree, the implementation is not treated as correct by
 default: history and intended behavior are checked, and if the
 implementation shows a regression, the implementation is corrected rather
@@ -383,27 +383,27 @@ Source: `emacs.d/elisp/smartchr-settings.el`
 
 DOT_EMACS changes the default Emacs presentation at startup:
 
-- hides the startup/splash message;
-- disables cursor blinking;
-- hides the menu bar;
-- hides the tool bar and scroll bar in graphical frames;
-- disables xterm mouse mode;
-- displays the current time;
-- shows line and column numbers in the mode line;
-- enables `which-func-mode` so the current function can appear in the mode line;
-- enables matching-parenthesis highlighting;
-- highlights the current line;
-- hides the cursor in non-selected windows;
-- marks empty lines;
-- enables transient region highlighting;
-- enables automatic image-file display;
-- enables automatic decompression of compressed files;
-- suppresses the bell by setting `ring-bell-function` to `ignore`;
+- hides the startup/splash message
+- disables cursor blinking
+- hides the menu bar
+- hides the tool bar and scroll bar in graphical frames
+- disables xterm mouse mode
+- displays the current time
+- shows line and column numbers in the mode line
+- enables `which-func-mode` so the current function can appear in the mode line
+- enables matching-parenthesis highlighting
+- highlights the current line
+- hides the cursor in non-selected windows
+- marks empty lines
+- enables transient region highlighting
+- enables automatic image-file display
+- enables automatic decompression of compressed files
+- suppresses the bell by setting `ring-bell-function` to `ignore`
 - suppresses automatic native-compilation warning pop-up windows while keeping
-  the warnings in `*Warnings*`;
-- wraps text at the window edge, including partially-width windows;
-- sets graphical frame transparency to 90% active / 75% inactive;
-- limits `*Messages*` history to 200 entries.
+  the warnings in `*Warnings*`
+- wraps text at the window edge, including partially-width windows
+- sets graphical frame transparency to 90% active / 75% inactive
+- limits `*Messages*` history to 200 entries
 
 Sources: `emacs.d/elisp/init.el`, `emacs.d/elisp/configs.el`
 
@@ -419,11 +419,11 @@ file-size limit.
 Platform-specific defaults include:
 
 - GNU/Linux: DejaVu Sans Mono for ASCII, IPAexGothic for Japanese, and a
-  150x50 default frame;
+  150x50 default frame
 - macOS: Menlo for ASCII, Hiragino Kaku Gothic ProN W3 for Japanese, a
   230x65 default frame, and italics disabled for the main italic/comment/string
-  faces;
-- Windows: VL Gothic is configured as the expected font.
+  faces
+- Windows: VL Gothic is configured as the expected font
 
 On macOS, Command is mapped to Meta and Option/Alt to Super.
 
@@ -433,14 +433,14 @@ Source: `emacs.d/elisp/faces.el`
 
 Opening a file triggers DOT_EMACS-specific behavior:
 
-- `find-file-hook` enables `view-mode` when it is not already active;
-- line-number display is enabled for visited files;
-- non-writable existing files are routed through `view-file`;
-- `view-read-only` is enabled, integrating read-only files with view mode;
+- `find-file-hook` enables `view-mode` when it is not already active
+- line-number display is enabled for visited files
+- non-writable existing files are routed through `view-file`
+- `view-read-only` is enabled, integrating read-only files with view mode
 - a root-owned, non-writable file causes DOT_EMACS to ask whether to reopen it
-  through TRAMP's sudo method;
+  through TRAMP's sudo method
 - TRAMP file buffers are renamed with the remote method as a prefix, for
-  example `sudo:...`.
+  example `sudo:...`
 
 The `C-x C-j` / `C-x j` binding is the intended way to move between the
 view/read-only workflow and editing.
@@ -473,10 +473,10 @@ Although native auto-save is disabled, normal Emacs backup files remain enabled.
 
 DOT_EMACS:
 
-- stores backups under `~/.emacs.d/backups`;
+- stores backups under `~/.emacs.d/backups`
 - uses `backup-by-copying`, preserving the original file's inode instead of
-  renaming the original file into the backup;
-- requires a final newline when saving files.
+  renaming the original file into the backup
+- requires a final newline when saving files
 
 Source: `emacs.d/elisp/configs.el`
 
@@ -496,10 +496,10 @@ Source: `emacs.d/elisp/delete-empty-file.el`
 DOT_EMACS persists minibuffer history and the kill ring with two mechanisms:
 
 - built-in `savehist-mode` is enabled, saves every 300 seconds, and explicitly
-  includes `kill-ring`;
+  includes `kill-ring`
 - bundled `savekill` writes the kill ring to
   `~/.emacs.d/kill-ring-saved.el` every time `kill-new` changes it, and reloads
-  that file after initialization.
+  that file after initialization
 
 This gives the kill ring both periodic `savehist` persistence and immediate
 per-update persistence.
@@ -511,13 +511,13 @@ Sources: `emacs.d/elisp/autoloads.el`,
 
 `recentf-ext` enables `recentf-mode` and DOT_EMACS configures it to:
 
-- store its data in `~/.emacs.d/.recentf`;
-- retain up to 9,999 entries;
-- exclude the `.recentf` file itself;
-- disable automatic recent-file cleanup;
-- save the recent-file list every 3,600 seconds of idle time;
-- treat displayed file buffers as recently used;
-- include Dired directories in recent history.
+- store its data in `~/.emacs.d/.recentf`
+- retain up to 9,999 entries
+- exclude the `.recentf` file itself
+- disable automatic recent-file cleanup
+- save the recent-file list every 3,600 seconds of idle time
+- treat displayed file buffers as recently used
+- include Dired directories in recent history
 
 Sources: `emacs.d/elisp/recentf-ext-settings.el`,
 `emacs.d/elisp/3rd-party/recentf-ext.el`
@@ -529,8 +529,8 @@ Emacs sessions.
 
 Its actual behavior is to prevent the `*scratch*` buffer from disappearing:
 
-- attempts to kill `*scratch*` recreate/clear it and reject the kill;
-- after any save, DOT_EMACS recreates `*scratch*` if it is unexpectedly absent.
+- attempts to kill `*scratch*` recreate/clear it and reject the kill
+- after any save, DOT_EMACS recreates `*scratch*` if it is unexpectedly absent
 
 Source: `emacs.d/elisp/persistent-scratch.el`
 
@@ -542,14 +542,14 @@ batch Emacs process to byte-compile it.
 
 DOT_EMACS deliberately excludes:
 
-- files under `/junk/`;
-- `init.el`;
-- `autoloads.el`;
-- `configs.el`;
-- `lang-mode.el`;
-- `screen.el`;
-- `diminish-settings.el`;
-- `anything-settings.el`.
+- files under `/junk/`
+- `init.el`
+- `autoloads.el`
+- `configs.el`
+- `lang-mode.el`
+- `screen.el`
+- `diminish-settings.el`
+- `anything-settings.el`
 
 These exclusions match the repository's selective byte-compilation policy.
 
@@ -574,7 +574,7 @@ When the bundled `auto-complete` library loads, DOT_EMACS enables
 `global-auto-complete-mode`.
 
 Ruby buffers use case-sensitive auto-complete matching. The existing bundled
-`fuzzy.el` remains available to auto-complete; DOT_EMACS does not change or
+`fuzzy.el` remains available to auto-complete. DOT_EMACS does not change or
 version-split it as part of this selection.
 
 GNU Emacs 23.4 through 24.2 use the existing bundled `cl-lib` compatibility
@@ -582,13 +582,13 @@ copy. GNU Emacs 24.3 and newer use Emacs's built-in `cl-lib`.
 
 Minibuffer completion is independently version-dependent:
 
-- GNU Emacs 30+: `minibuffer-visible-completions` is enabled;
-- GNU Emacs 23.4 through 29.x: the historical zlc completion UI is loaded.
+- GNU Emacs 30+: `minibuffer-visible-completions` is enabled
+- GNU Emacs 23.4 through 29.x: the historical zlc completion UI is loaded
 
 #### User-facing completion controls
 
 The DOT_EMACS entry points below are the same bindings documented in
-sections 2.9 and 3; they are repeated here for discoverability only.
+sections 2.9 and 3. They are repeated here for discoverability only.
 
 | Key | Command | Behavior |
 | --- | --- | --- |
@@ -596,7 +596,7 @@ sections 2.9 and 3; they are repeated here for discoverability only.
 | key chord `yu` | `auto-complete-mode` | Toggle auto-complete in the current buffer |
 
 While completion is in progress, the bundled auto-complete 1.5.0 and 1.5.1
-releases share native key bindings; the representative ones are:
+releases share native key bindings. The representative ones are:
 
 | Key | Command | Behavior |
 | --- | --- | --- |
@@ -648,10 +648,10 @@ DOT_EMACS enables `global-whitespace-mode`.
 
 It marks:
 
-- full-width Japanese spaces;
-- tabs;
-- trailing whitespace;
-- newline/end-of-line positions.
+- full-width Japanese spaces
+- tabs
+- trailing whitespace
+- newline/end-of-line positions
 
 Ordinary ASCII spaces are deliberately not marked.
 
@@ -661,10 +661,10 @@ Source: `emacs.d/elisp/whitespace-settings.el`
 
 When Paredit is available, it is enabled automatically in:
 
-- Emacs Lisp mode;
-- Lisp Interaction mode;
-- Lisp mode;
-- IELM mode.
+- Emacs Lisp mode
+- Lisp Interaction mode
+- Lisp mode
+- IELM mode
 
 Eldoc is also enabled automatically in Emacs Lisp, Lisp Interaction, and IELM
 buffers with a 0.2-second idle delay.
@@ -686,12 +686,12 @@ In addition to the Dired-specific keys listed earlier, DOT_EMACS changes Dired
 defaults:
 
 - when two Dired windows are visible, the other Dired directory is preferred as
-  the destination for copy/move operations (`dired-dwim-target`);
+  the destination for copy/move operations (`dired-dwim-target`)
 - recursive directory copies are allowed without asking for recursive-copy
-  policy each time;
-- incremental search in Dired is limited to file names;
-- `dired-find-alternate-file` is enabled;
-- `dired-async-mode` is enabled when the bundled async Dired integration loads.
+  policy each time
+- incremental search in Dired is limited to file names
+- `dired-find-alternate-file` is enabled
+- `dired-async-mode` is enabled when the bundled async Dired integration loads
 
 Sources: `emacs.d/elisp/dired-settings.el`,
 `emacs.d/elisp/autoloads.el`
@@ -703,10 +703,10 @@ popwin's display function and uses a popup height of 40% of the frame.
 
 Special handling is configured for:
 
-- `*anything*`;
-- Dired buffers;
-- VC-related buffers;
-- `*git-*` buffers.
+- `*anything*`
+- Dired buffers
+- VC-related buffers
+- `*git-*` buffers
 
 Source: `emacs.d/elisp/popwin-el.el`
 
@@ -773,15 +773,15 @@ Source: `emacs.d/elisp/configs.el`
 
 When Ruby support is available:
 
-- `.rb` files and `ruby` interpreter scripts use `ruby-mode`;
-- `inf-ruby` keys are installed in Ruby buffers;
-- auto-complete matching is case-sensitive.
+- `.rb` files and `ruby` interpreter scripts use `ruby-mode`
+- `inf-ruby` keys are installed in Ruby buffers
+- auto-complete matching is case-sensitive
 
 On GNU/Linux, DOT_EMACS additionally attempts to enable:
 
-- `ruby-electric-mode` for automatic matching delimiters;
-- `ruby-block-mode` with matching-block highlighting;
-- the `rubydb` debugger autoload.
+- `ruby-electric-mode` for automatic matching delimiters
+- `ruby-block-mode` with matching-block highlighting
+- the `rubydb` debugger autoload
 
 The representative inferior Ruby key bindings that `inf-ruby-keys` installs in
 Ruby buffers are:
@@ -806,7 +806,7 @@ DOT_EMACS loads Python formatting/checking integration.
 
 If `/opt/python/current/bin` exists, it is added to `exec-path`. If
 `/opt/python/current/bin/python` is executable, it becomes
-`python-shell-interpreter`; otherwise DOT_EMACS leaves Emacs's normal Python
+`python-shell-interpreter`. Otherwise DOT_EMACS leaves Emacs's normal Python
 interpreter selection unchanged.
 
 Python-specific PEP 8 checking and autopep8 key bindings are documented in
@@ -818,11 +818,11 @@ Source: `emacs.d/elisp/python-mode-settings.el`
 
 C-derived modes:
 
-- use the Stroustrup style;
-- use four-space indentation;
-- disable indentation tabs;
-- enable hungry deletion;
-- automatically enable gtags mode when GNU GLOBAL support is available.
+- use the Stroustrup style
+- use four-space indentation
+- disable indentation tabs
+- enable hungry deletion
+- automatically enable gtags mode when GNU GLOBAL support is available
 
 Source: `emacs.d/elisp/configs.el`,
 `emacs.d/elisp/lang-mode.el`
@@ -844,8 +844,8 @@ Source: `emacs.d/elisp/lang-mode.el`
 
 When available:
 
-- `.erb` uses `rhtml-mode`;
-- entering `rhtml-mode` launches Rinari integration.
+- `.erb` uses `rhtml-mode`
+- entering `rhtml-mode` launches Rinari integration
 
 Source: `emacs.d/elisp/lang-mode.el`
 
@@ -884,7 +884,7 @@ js2-mode 1.0 and 20231224 share the following native key bindings in
 
 In js2-mode 1.0, `` C-c C-` `` runs `js2-next-error` to move to the next js2
 warning/error. js2-mode 20231224 binds `` C-c C-` `` only in
-`js2-minor-mode`, not in `js2-mode`; both releases also install
+`js2-minor-mode`, not in `js2-mode`. Both releases also install
 `js2-next-error` as the buffer's `next-error-function`.
 
 The commands in the key table can also be invoked by name with `M-x`. Other
@@ -916,12 +916,12 @@ Inside the diagnostics buffer opened by `js2-display-error-list`:
 
 When the corresponding modes are available:
 
-- `.js` uses `js2-mode` with an indentation width of 4;
-- `.scss` uses `scss-mode`, with compile-on-save disabled;
-- `.sass` uses `sass-mode`, with compile-on-save disabled;
-- `.haml` uses `haml-mode` with spaces for indentation;
-- `.coffee` uses `coffee-mode`;
-- `.styl` uses `sws-mode`.
+- `.js` uses `js2-mode` with an indentation width of 4
+- `.scss` uses `scss-mode`, with compile-on-save disabled
+- `.sass` uses `sass-mode`, with compile-on-save disabled
+- `.haml` uses `haml-mode` with spaces for indentation
+- `.coffee` uses `coffee-mode`
+- `.styl` uses `sws-mode`
 
 Source: `emacs.d/elisp/init.el`, `emacs.d/elisp/lang-mode.el`
 
@@ -996,12 +996,13 @@ All selected releases also provide these representative key bindings:
 | `C-c C-c c` | `markdown-check-refs` | Check references in the current buffer |
 
 markdown-mode 2.1 and 2.3 bind the list-item key as `M-<return>`, which is
-what a graphical frame sends for Meta+Return; 2.5 and newer bind `M-RET`.
+what a graphical frame sends for Meta+Return. markdown-mode 2.5 and newer bind
+`M-RET`.
 
 The commands in these Markdown tables can also be invoked by name with
 `M-x`. `M-x markdown-mode` enters Markdown mode explicitly. `M-x gfm-mode` is
 also available, but the suffix associations above continue to use
-`markdown-mode`; DOT_EMACS does not make `gfm-mode` the default association.
+`markdown-mode`. DOT_EMACS does not make `gfm-mode` the default association.
 
 markdown-mode 2.3 and newer add the following capabilities:
 
@@ -1032,12 +1033,12 @@ Source: `emacs.d/elisp/init.el`, `emacs.d/elisp/lang-mode.el`
 
 DOT_EMACS adds or conditionally adds mode associations for:
 
-- `.rd` -> `rd-mode`;
-- `.php` and `php` interpreter scripts -> `php-mode`;
-- `.as` -> `actionscript-mode`;
-- `.pig` -> `pig-latin-mode`;
-- `.bat` and `.cmd` -> `bat-mode`;
-- `.erl` -> `erlang-mode` only on Emacs earlier than 27.
+- `.rd` -> `rd-mode`
+- `.php` and `php` interpreter scripts -> `php-mode`
+- `.as` -> `actionscript-mode`
+- `.pig` -> `pig-latin-mode`
+- `.bat` and `.cmd` -> `bat-mode`
+- `.erl` -> `erlang-mode` only on Emacs earlier than 27
 
 Source: `emacs.d/elisp/lang-mode.el`
 
@@ -1045,10 +1046,10 @@ Source: `emacs.d/elisp/lang-mode.el`
 
 `.tex` files use YaTeX. DOT_EMACS sets:
 
-- the LaTeX command to `/usr/local/sbin/platex2pdf`;
-- the viewer to `evince` on GNU/Linux;
-- the viewer to macOS Preview on macOS;
-- automatic filling off inside YaTeX buffers.
+- the LaTeX command to `/usr/local/sbin/platex2pdf`
+- the viewer to `evince` on GNU/Linux
+- the viewer to macOS Preview on macOS
+- automatic filling off inside YaTeX buffers
 
 Source: `emacs.d/elisp/yatex-mode.el`
 
@@ -1056,18 +1057,18 @@ Source: `emacs.d/elisp/yatex-mode.el`
 
 On Emacs 30 and later, the development capabilities a team development
 standard uses are available from Emacs. DOT_EMACS does not reproduce another
-editor's user interface or workflow; it provides each capability through an
+editor's user interface or workflow. It provides each capability through an
 Emacs-native entry point, such as a command or a key binding. DOT_EMACS adds
 no project rules of its own.
 
 - The built-in EditorConfig support is enabled globally. A file uses the
-  settings of an applicable `.editorconfig`; a file without one is not changed
+  settings of an applicable `.editorconfig`. A file without one is not changed
   by this integration.
 - Prettier is looked up as the nearest `node_modules/.bin/prettier` above the
   file, then on `PATH`. When Prettier resolves a configuration for the file,
   and the file is supported and not ignored, the buffer is formatted with
   Prettier before each save. `M-x development-standards-prettier-format-buffer`
-  formats on demand. Prettier options come only from the project; DOT_EMACS
+  formats on demand. Prettier options come only from the project. DOT_EMACS
   adds none.
 - When Prettier fails, the buffer is left unchanged, a warning is shown, and
   the file is saved as it is.
@@ -1077,7 +1078,7 @@ no project rules of its own.
   Existing Flymake backends are kept.
 - ESLint auto-fix is not performed.
 - A project or file without the corresponding configuration, or without the
-  Prettier or ESLint executable, keeps its existing behavior; that
+  Prettier or ESLint executable, keeps its existing behavior. That
   integration stays inactive.
 - SQL Formatter is available in local `.sql` and `.q` files through `C-c F`
   or `M-x development-standards-sql-format-buffer`. It is looked up as the
@@ -1091,7 +1092,7 @@ no project rules of its own.
   `C-c V` or `M-x development-standards-prisma-validate-file` validates it.
   Prisma is looked up as the nearest `node_modules/.bin/prisma` above the
   file, then on `PATH`. The buffer must be saved before formatting or
-  validation; DOT_EMACS does not save it automatically. After a successful
+  validation. DOT_EMACS does not save it automatically. After a successful
   format, the buffer is reloaded from the file. No save hook is added, and a
   failure shows a warning without fixing anything automatically. These Prisma
   CLI commands are independent of the Prisma language server below.
@@ -1099,7 +1100,7 @@ no project rules of its own.
   mode that gives Prisma schemas a language identity for Eglot. It adds no
   highlighting, indentation, parsing, completion, navigation or formatting of
   its own. Emacs file locking stays enabled. Existing user or project
-  `lock-file-name-transforms` take precedence; when none of them applies, the
+  `lock-file-name-transforms` take precedence. When none of them applies, the
   lock file of a Prisma schema buffer is placed under
   `temporary-file-directory` instead of next to the schema, so the Prisma
   language server does not scan a `.#*.prisma` lock link in the project as a
@@ -1109,25 +1110,25 @@ no project rules of its own.
   Commands run from the project root and show their output in a compilation
   buffer:
   - `C-c T` or `M-x development-standards-vitest-run-file` runs the tests in
-    the current file once;
+    the current file once.
   - `C-c t` or `M-x development-standards-vitest-run-test-at-point` runs the
-    test at the current line once;
+    test at the current line once.
   - `M-x development-standards-vitest-run-project` runs the whole project
-    once;
+    once.
   - `M-x development-standards-vitest-coverage-project` runs the whole
-    project once with coverage enabled;
+    project once with coverage enabled.
   - `M-x development-standards-vitest-watch-project` starts Vitest watch mode
     in an interactive terminal-backed buffer that accepts Vitest's own watch
-    keys; invoking it again while that watch is running shows the existing
+    keys. Invoking it again while that watch is running shows the existing
     buffer.
-  The file and current-line commands require the buffer to be saved;
+  The file and current-line commands require the buffer to be saved.
   DOT_EMACS does not save it automatically. Configuration, test selection and
   defaults are left to Vitest itself. Tests never run automatically: no save
   hook or Flymake integration is added, and no package is installed.
 - CSpell is available in local files whose project provides it, looked up as
   the nearest `node_modules/.bin/cspell` above the file, then on `PATH`.
   `C-c S` or `M-x development-standards-cspell-check-file` checks the current
-  file, which must be saved first; DOT_EMACS does not save it automatically.
+  file, which must be saved first. DOT_EMACS does not save it automatically.
   `M-x development-standards-cspell-check-project` checks the saved files of
   the whole project on disk and does not save a modified buffer. Issues are
   listed in a compilation buffer as `file:line:column:` lines that lead to
@@ -1135,8 +1136,8 @@ no project rules of its own.
   left to CSpell itself. Spelling is never checked or corrected
   automatically: no save hook or Flymake integration is added.
 - Language servers for XML, Tailwind CSS, and Prisma are available through the
-  built-in Eglot. A server starts only when its command is invoked explicitly;
-  opening or saving a file never starts one, and no server is installed
+  built-in Eglot. A server starts only when its command is invoked explicitly.
+  Opening or saving a file never starts one, and no server is installed
   automatically. The servers are provided by the user or the project. Once a
   server runs, Eglot provides its completion, diagnostics, hover
   documentation, definition navigation, rename, document symbols, and other
@@ -1154,7 +1155,7 @@ no project rules of its own.
     `tailwindcss-language-server --stdio`, looked up as the nearest
     `node_modules/.bin/tailwindcss-language-server` above the file, then on
     `PATH`. Eglot's normal HTML and CSS server associations are not replaced
-    globally; the Tailwind CSS server is chosen only by this command. It
+    globally. The Tailwind CSS server is chosen only by this command. It
     applies to these major modes:
 
     | Major mode | Language ID |
@@ -1192,14 +1193,14 @@ no project rules of its own.
 - No key binding is added for starting a language server. A buffer that Eglot
   already manages is left as it is: the language-server commands report an
   error instead of replacing its connection. A buffer uses one language
-  server; no multiplexer is added. Existing Flymake backends, such as the
+  server. No multiplexer is added. Existing Flymake backends, such as the
   ESLint backend, are kept when Eglot starts managing a buffer.
 - When the executable of an on-demand integration, including a language
-  server, is not found, invoking its command reports an error; opening files
+  server, is not found, invoking its command reports an error. Opening files
   is not affected.
 - Remote files are not handled by the Prettier, ESLint, SQL Formatter,
   Prisma, Vitest, and CSpell integrations or by the language-server commands.
-- Emacs 23.4 through 29.x keep their existing behavior; none of these
+- Emacs 23.4 through 29.x keep their existing behavior. None of these
   integrations, including the Prisma major mode and the language-server
   commands, is loaded there.
 
@@ -1212,11 +1213,11 @@ Sources: `emacs.d/elisp/development-standards-settings.el`,
 
 When TRAMP loads, DOT_EMACS sets:
 
-- default remote method: `scpx`;
-- remote shell prompt detection: `^.*[#$%>] *`;
-- TRAMP auto-save directory: `~/.emacs.d/tramp-auto-save`;
-- TRAMP verbosity: 3;
-- TRAMP debug buffer support on.
+- default remote method: `scpx`
+- remote shell prompt detection: `^.*[#$%>] *`
+- TRAMP auto-save directory: `~/.emacs.d/tramp-auto-save`
+- TRAMP verbosity: 3
+- TRAMP debug buffer support on
 
 DOT_EMACS also provides an explicit sudo entry point:
 
@@ -1225,7 +1226,7 @@ DOT_EMACS also provides an explicit sudo entry point:
 | `M-x th-find-file-sudo` | Open a local file through TRAMP's `/sudo::` method |
 
 Section 5.3 documents the automatic prompt offered when opening a root-owned,
-non-writable file; `M-x th-find-file-sudo` is the explicit, user-invoked path.
+non-writable file. `M-x th-find-file-sudo` is the explicit, user-invoked path.
 
 Sources: `emacs.d/elisp/tramp-settings.el`, `emacs.d/elisp/configs.el`
 
@@ -1299,9 +1300,12 @@ Sources: `emacs.d/elisp/init.el`,
 The main user-visible behavior documented above is defined by these
 project-owned configuration files:
 
-- `emacs.d/elisp/init.el` - startup paths, platform executable paths, native-compilation warning behavior.
-- `emacs.d/elisp/autoloads.el` - module loading, optional feature activation, completion-version split, history persistence.
-- `emacs.d/elisp/configs.el` - core defaults, file-opening behavior, UI, editing defaults, fullscreen, sudo/TRAMP integration.
+- `emacs.d/elisp/init.el` - startup paths, platform executable paths,
+  native-compilation warning behavior.
+- `emacs.d/elisp/autoloads.el` - module loading, optional feature activation,
+  completion-version split, history persistence.
+- `emacs.d/elisp/configs.el` - core defaults, file-opening behavior, UI, editing
+  defaults, fullscreen, sudo/TRAMP integration.
 - `emacs.d/elisp/global-set-key.el` - main global key map.
 - `emacs.d/elisp/key-chord-define-global.el` - global key chords.
 - `emacs.d/elisp/view-mode-key.el` - pager-like view-mode behavior.
@@ -1313,7 +1317,9 @@ project-owned configuration files:
 - `emacs.d/elisp/lang-mode.el` - language-mode associations, gtags, and per-language hooks.
 - `emacs.d/elisp/ruby-optional-load.el` - Ruby integration.
 - `emacs.d/elisp/yatex-mode.el` - YaTeX integration.
-- `emacs.d/elisp/development-standards-settings.el` - Emacs 30+ EditorConfig, Prettier, ESLint, SQL Formatter, Prisma, Vitest, and CSpell integration, and explicit Eglot language-server integration for XML, Tailwind CSS, and Prisma.
+- `emacs.d/elisp/development-standards-settings.el` - Emacs 30+ EditorConfig,
+  Prettier, ESLint, SQL Formatter, Prisma, Vitest, and CSpell integration, and
+  explicit Eglot language-server integration for XML, Tailwind CSS, and Prisma.
 - `emacs.d/elisp/emacs-w3m.el` - browser integration.
 - `emacs.d/elisp/mew-settings.el` - Mew integration.
 - `emacs.d/elisp/google-this-settings.el` - Google search integration.

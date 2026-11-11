@@ -5,7 +5,7 @@
 **Simplicity is robustness.**
 
 This is the governing principle for every rule below. It does not authorize
-dropping required behavior, compatibility, or safety; it requires meeting
+dropping required behavior, compatibility, or safety. It requires meeting
 them with the least complexity justified by the actual requirement.
 
 Complexity is itself a source of failure, compatibility risk, operational
@@ -44,7 +44,7 @@ compete, not an equally weighted checklist.
         on that evidence, not an inference from age or from a warning.
     -   Where intended behavior is unclear, history, the documented
         interface, and maintenance intent settle it together with the
-        implementation; the implementation alone, when it shows a
+        implementation. The implementation alone, when it shows a
         regression, is not treated as the new specification on that basis.
     -   Raising the GNU Emacs 23.4 floor, and any other decision to retire a
         support commitment outright, is for the maintainer to decide
@@ -63,9 +63,9 @@ compete, not an equally weighted checklist.
     remove a component, and neither is the existence of a built-in or
     native replacement. Code that is actually loaded must not be
     classified as unused, and a dependency must not be called orphaned
-    merely because its caller was removed first; check the full
+    merely because its caller was removed first. Check the full
     dependency graph before retiring anything. Before retiring a
-    component, enumerate its user-visible behavior; when replacing it,
+    component, enumerate its user-visible behavior. When replacing it,
     confirm the replacement is behaviorally equivalent, and keep any
     historical behavior whose equivalence cannot be confirmed. A
     cleanup or modernization that changes observable behavior is not a
@@ -81,7 +81,7 @@ compete, not an equally weighted checklist.
     supported range, or a project-owned function that load order already
     guarantees is defined, does not need a mechanical existence check merely
     for its own sake. Where capability detection is genuinely the more
-    appropriate tool, prefer it to a version number; where a loader is
+    appropriate tool, prefer it to a version number. Where a loader is
     switching between feature sets that one specific Emacs version
     introduced wholesale, a version check is the clearer tool there and is
     not itself a violation of this principle.
@@ -93,7 +93,7 @@ compete, not an equally weighted checklist.
     may be enabled only on that version and cleanly bypassed on older ones,
     and does not need to be reimplemented for versions that predate it.
     Using a new, version-specific capability is not a compatibility
-    violation by itself; breaking an existing workflow on a version that is
+    violation by itself. Breaking an existing workflow on a version that is
     still supported is.
 
 -   **Prefer compatibility layers over rewrites:**\
@@ -106,7 +106,7 @@ compete, not an equally weighted checklist.
     `--private` functions or undocumented variables. Existing internal
     API dependencies in historical bundled third-party code may be
     retained when they are required for compatibility with older GNU
-    Emacs versions; where a stable built-in replacement exists on newer
+    Emacs versions. Where a stable built-in replacement exists on newer
     versions, contain the historical path behind a compatibility or
     capability check instead of rewriting it unnecessarily.
 
@@ -125,7 +125,7 @@ compete, not an equally weighted checklist.
     against Compatibility, Safety, or Efficiency. Where a rule's wording
     and its purpose conflict, resolve it by the Core Principles above and
     the intended behavior, not by the literal wording alone. This does not
-    introduce a formal MUST/SHOULD/MAY taxonomy; it only asks that the
+    introduce a formal MUST/SHOULD/MAY taxonomy. It only asks that the
     wording already used here match its actual strength.
 
 ### 1.4 Change Discipline for Established Infrastructure
@@ -178,8 +178,8 @@ compete, not an equally weighted checklist.
     `global-proxy-use` later in a session changes that stored flag only unless
     a consumer explicitly implements reconfiguration. Do not infer a live
     reload contract merely from the existence of the toggle command. The
-    shared server, port, user, and password values still belong to `proxy.el`;
-    this lifecycle rule is not permission for consumers to invent independent
+    shared server, port, user, and password values still belong to `proxy.el`.
+    This lifecycle rule is not permission for consumers to invent independent
     configuration ownership.
 
 ------------------------------------------------------------------------
@@ -212,7 +212,7 @@ Design rules:
 ## 3. Feature Detection Patterns
 
 Detect capabilities rather than assuming version numbers wherever the
-underlying question is genuinely about capability; Section 1 covers where a
+underlying question is genuinely about capability. Section 1 covers where a
 version check is the more appropriate tool instead.
 
 ``` elisp
@@ -320,7 +320,7 @@ would otherwise take away functionality an older supported Emacs already
 has: there, the existing synchronous workflow must keep working. A purely
 new enhancement is different: it does not need to be reproduced on an Emacs
 version that predates the capability it relies on, and cleanly bypassing it
-there is enough. Preserving an existing workflow is required; reproducing
+there is enough. Preserving an existing workflow is required. Reproducing
 every future feature on old Emacs is not.
 
 ------------------------------------------------------------------------
@@ -334,7 +334,7 @@ Long-lived configurations must track upstream evolution.
 -   Introduce conditional branches when APIs become deprecated.
 
 A warning by itself is not sufficient reason to remove working legacy
-code; weigh its usefulness, maintenance cost, and dependencies instead,
+code. Weigh its usefulness, maintenance cost, and dependencies instead,
 as in section 1.
 
 A warning is a report, not a defect on its own. Rebuilding or upgrading
@@ -348,7 +348,7 @@ anything.
 
 Byte compilation is not applied to every active DOT_EMACS module as a
 blanket policy. Whether a file is loaded at startup is not the test for
-whether it should be byte-compiled; a file earns byte compilation by its
+whether it should be byte-compiled. A file earns byte compilation by its
 role, not by the fact that `autoloads.el` loads it.
 
 Classify each file before compiling it:
@@ -364,11 +364,11 @@ Classify each file before compiling it:
     modes through project-local compatibility or helper macros, or
     otherwise depend on load order. `configs.el`, `lang-mode.el`,
     `screen.el`, and `diminish-settings.el` depend on `defun-add-hook`
-    from `utils.el`; `anything-settings.el` depends on the
+    from `utils.el`. `anything-settings.el` depends on the
     `with-eval-after-load` compatibility macro from
     `core-compat-bridge.el` on older GNU Emacs versions. Load these
     specific files from source rather than extending the compile-time
-    load order only to make them compilable; configuration files without
+    load order only to make them compilable. Configuration files without
     such a dependency are byte-compiled like any other module.
 -   **Independent library / compatibility module** files, such as the
     compatibility bridges and self-contained helpers, have a clear,
@@ -397,7 +397,7 @@ exclude it, keep every path that can regenerate an `.elc` for it
 consistent: the installer's compile step and `auto-async-byte-compile`'s
 exclude list (`emacs.d/elisp/auto-async-settings.el`) must agree, so a
 file excluded by one is not silently recompiled by the other. Passing
-`batch-byte-compile` is not the bar to clear; the compiled code's
+`batch-byte-compile` is not the bar to clear. The compiled code's
 compile-time dependencies and its meaning at load time must match the
 source-loaded behavior. And weigh the tradeoff itself correctly: for a
 configuration meant to run across decades and many Emacs versions, a
@@ -484,7 +484,7 @@ What a bridge must not do:
     obsolescence mark applies to the names the bridge itself bridges,
     and an unrelated deprecation keeps warning.
 -   Do not change what a bundled file means. A bridge supplies the names
-    the file expects; it does not redefine the file's own macros to give
+    the file expects. It does not redefine the file's own macros to give
     its calls a different reading.
 -   Do not leave another package's definitions broken. Repair the least
     that achieves the result, so whatever that package alone provides
@@ -530,7 +530,7 @@ Installer command ownership:
 
 -   In `install_dotemacs.sh`, a helper owns the external-command prerequisites
     it directly uses. The standard header-extracting `usage()` calls
-    `check_commands awk` immediately before invoking `awk`; a usage-only `awk`
+    `check_commands awk` immediately before invoking `awk`. A usage-only `awk`
     dependency does not belong in the install or uninstall command lists.
 -   Moving a usage-only `awk` prerequisite into `usage()` is prerequisite
     ownership normalization. By maintainer decision, that normalization alone
@@ -554,7 +554,7 @@ Installer target contract:
     symlink to this `$TARGET/elisp`, the installer stops without destroying it.
 -   When `$TARGET` is `$HOME/.emacs.d`, `$TARGET/elisp` is the explicitly
     managed subtree and is replaced.
--   `--uninstall` intentionally ignores any custom target argument; custom
+-   `--uninstall` intentionally ignores any custom target argument. Custom
     installation targets are not tracked for later removal.
 -   The default uninstall removes only `/usr/local/etc/emacs.d/elisp` and a
     `~/.emacs.d/elisp` symlink confirmed to point to it, as target-side cleanup.
@@ -583,7 +583,7 @@ Executable script versions:
 -   Related maintenance or cleanup that belongs to one release unit remains one
     version even when it spans multiple days, commits, or pull requests. Follow-up
     work that completes, corrects, or hardens the same newest release unit is
-    consolidated into that entry; update the entry date to the date the unit
+    consolidated into that entry. Update the entry date to the date the unit
     reached its current form and summarize the completed whole.
 -   On a later date, a change that is independent of the newest entry starts a
     new version. If an independent version has intervened, a later fix to an
@@ -748,11 +748,11 @@ against the file.
 
 `doc/VERSIONS` is a version-level summary of what each release changed.
 It is not a place to transcribe the commit log. The commits record how
-the work happened; the version history records what it amounts to.
+the work happened. The version history records what it amounts to.
 
 The repository never carries more than one version for the same calendar
 date, whatever the independence of the changes released. A same-date
-change joins that day's single entry as its own bullet; independence
+change joins that day's single entry as its own bullet. Independence
 decides bullet grouping, never a second version number on the same date.
 
 One change per line:
@@ -780,7 +780,7 @@ One change per line:
     There a new bullet is wrapped to that width and balanced against the
     lines already standing, so that the version history stays of a piece.
     Wrapping to hold an established form does not overturn the two-line,
-    80-column limit above; where a version history has settled on no such
+    80-column limit above. Where a version history has settled on no such
     layout, that limit applies in full.
 
 Shortening a long entry:

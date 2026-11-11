@@ -1,6 +1,7 @@
 # DOT_EMACS
 
-A curated and modular Emacs configuration with selected bundled third-party libraries.
+A curated and modular Emacs configuration with selected bundled third-party
+libraries.
 
 ---
 
@@ -82,17 +83,19 @@ Options:
 ~/dot_emacs/install_dotemacs.sh
 ```
 
-This installs DOT_EMACS to the default location. Root privileges (via `sudo`) are required.
+This installs DOT_EMACS to the default location. Root privileges (via `sudo`)
+are required.
 
 Install and reinstall do not own `~/.emacs.d`. Only `~/.emacs`, `~/.mew.el` and
-`$TARGET/elisp` are replaced; `site-lisp`, `elpa`, `snippets`, run-time data and
-any other user-local content under `~/.emacs.d` are preserved. Because `~/.emacs`
-and `~/.mew.el` are managed by DOT_EMACS and overwritten on update, put
-user-specific Emacs configuration in `~/.emacs.d/site-lisp/loader.el`.
+`$TARGET/elisp` are replaced. `site-lisp`, `elpa`, `snippets`, run-time data and
+any other user-local content under `~/.emacs.d` are preserved. Because
+`~/.emacs` and `~/.mew.el` are managed by DOT_EMACS and overwritten on update,
+put user-specific Emacs configuration in `~/.emacs.d/site-lisp/loader.el`.
 
 `~/.emacs.d/elisp` is reserved for the symlink to `$TARGET/elisp`. When the
 target is not `~/.emacs.d`, the installer stops before changing anything if that
-path exists and is not already a symlink to `$TARGET/elisp`; it never deletes it.
+path exists and is not already a symlink to `$TARGET/elisp`. In that case, the
+installer never deletes the path.
 
 ### Custom Installation:
 
@@ -119,13 +122,13 @@ the installation target itself is outside the supported installation model.
 At install time, DOT_EMACS uses environment-specific files from
 `~/etc/config.local/` when they exist:
 
-- `dot_mew.el` replaces the installed `~/.mew.el`;
+- `dot_mew.el` replaces the installed `~/.mew.el`.
 - `proxy.el`, `emacs-w3m.el`, and `faces.el` replace their deployed files under
   the installation target's `elisp/` directory.
 
 `proxy.el` is the shared environment-level proxy configuration for environments
 such as corporate networks that require a proxy. Its values are expected to be
-set before the relevant network integrations are loaded; this is startup
+set before the relevant network integrations are loaded. This is startup
 configuration, not a live session reconfiguration interface.
 
 ### External Packages:
@@ -139,7 +142,7 @@ DOT_EMACS does not manage or replace `~/.emacs.d/elpa`, so packages installed
 there are preserved across install, reinstall, update, and uninstall. Keep
 package-specific user configuration in `~/.emacs.d/site-lisp/loader.el`
 instead of modifying DOT_EMACS-managed files. Do not add
-`~/.emacs.d/elpa` itself to `load-path`; `package.el` manages the installed
+`~/.emacs.d/elpa` itself to `load-path`. `package.el` manages the installed
 package directories.
 
 To use an installed package, `require` it from `loader.el` and write the
@@ -151,7 +154,7 @@ package-specific configuration after it:
 ;; Package-specific configuration follows here.
 ```
 
-`package-feature` is a placeholder; replace it with the feature name the
+`package-feature` is a placeholder. Replace it with the feature name the
 package provides. The package itself stays under `~/.emacs.d/elpa/` and is
 not copied into `site-lisp`.
 
@@ -176,16 +179,18 @@ The second command removes the installed configuration without using `sudo`.
 
 For safety, `--uninstall` removes only the following:
 
-- `~/.emacs` and `~/.mew.el`;
-- `/usr/local/etc/emacs.d/elisp`, the only part of the default target it removes;
-- `~/.emacs.d/elisp`, only when it is a symlink to `/usr/local/etc/emacs.d/elisp`.
+- `~/.emacs` and `~/.mew.el`
+- `/usr/local/etc/emacs.d/elisp`, the only part of the default target it removes
+- `~/.emacs.d/elisp`, only when it is a symlink to `/usr/local/etc/emacs.d/elisp`
 
 `site-lisp`, run-time data and all other user-local content under `~/.emacs.d`
 are preserved, as is any other content under `/usr/local/etc/emacs.d`.
 Custom installation targets are not tracked for later removal and are not
 removed automatically.
 
-`--uninstall` shares the environment setup with the installer, so it still requires a usable Emacs binary. Remove the configuration before removing Emacs itself.
+`--uninstall` shares the environment setup with the installer, so it still
+requires a usable Emacs binary. Remove the configuration before removing Emacs
+itself.
 
 ---
 
@@ -194,19 +199,24 @@ removed automatically.
 DOT_EMACS:
 
 - Configures Emacs with selected bundled third-party libraries.
-- Loads the installed DOT_EMACS configuration from ~/.emacs.d/elisp/, starting with init.el and its configured modules.
-- Persists minibuffer history and the kill ring across Emacs sessions using the built-in `savehist`, which autosaves every 300 seconds; `savekill` also saves the kill ring immediately on every update.
-- Language-specific packages not bundled with DOT_EMACS must be installed and configured separately.
+- Loads the installed DOT_EMACS configuration from ~/.emacs.d/elisp/, starting
+  with init.el and its configured modules.
+- Persists minibuffer history and the kill ring across Emacs sessions using the
+  built-in `savehist`, which autosaves every 300 seconds. The `savekill` library
+  also saves the kill ring immediately on every update.
+- Language-specific packages not bundled with DOT_EMACS must be installed and
+  configured separately.
 - Selects a bundled `markdown-mode` version by GNU Emacs generation so
   Markdown editing and preview remain available across the supported Emacs
-  range; preview and export still require a Markdown processor usable by the
+  range. Preview and export still require a Markdown processor usable by the
   selected `markdown-mode`.
 - On Emacs 30+, provides project development-standard capabilities through
   EditorConfig, Prettier, ESLint, SQL Formatter, Prisma, Vitest, and CSpell,
   with explicit Eglot language-server integration for XML, Tailwind CSS, and
   Prisma while preserving the existing behavior on older Emacs versions.
-- Uses `/dev/shm` as the temporary file directory on GNU/Linux only. Other platforms, including macOS, keep the Emacs default.
-- Does not define a separate DOT_EMACS `custom-file`; user-maintained local
+- Uses `/dev/shm` as the temporary file directory on GNU/Linux only. Other
+  platforms, including macOS, keep the Emacs default.
+- Does not define a separate DOT_EMACS `custom-file`. User-maintained local
   overrides belong in `~/.emacs.d/site-lisp/loader.el`.
 - Loads `~/.emacs.d/site-lisp/loader.el` after the bundled configuration when
   that file exists, and stays quiet when it is absent.
@@ -227,7 +237,7 @@ are not evaluated unless `loader.el` loads them explicitly. For example, with:
 (load "local-faces")
 ```
 
-`local-faces` is only an example name; `loader.el` can load any file under
+`local-faces` is only an example name. `loader.el` can load any file under
 `site-lisp` this way, such as `(load "my-keybindings")`.
 
 For guidance on organizing and troubleshooting user-local configuration,
@@ -275,13 +285,13 @@ Only `emacs.d/elisp/` is deployed to the installation target (by default
 `/usr/local/etc/emacs.d/elisp`, symlinked as `~/.emacs.d/elisp`). The installer
 creates the other directories in the user's home directory when they are missing
 and preserves their existing content on reinstall. `site-lisp` is the
-user-local extension tree; `loader.el`, when present, is loaded after the bundled
-configuration. The other directories hold writable run-time state such as
+user-local extension tree. `loader.el`, when present, is loaded after the
+bundled configuration. The other directories hold writable run-time state such as
 backups, temporary files and history, while the system-wide configuration tree
 stays read-only.
 
 Within `emacs.d/elisp/`, the bundled loading order is `init.el` →
-`autoloads.el` → each module → `configs.el`; the optional user-local
+`autoloads.el` → each module → `configs.el`. The optional user-local
 `~/.emacs.d/site-lisp/loader.el` is loaded after that sequence. A new bundled
 setting normally becomes a new `<name>-settings.el` file plus one `load` line in
 `autoloads.el`. Bundled settings that must win over earlier bundled modules
@@ -326,15 +336,24 @@ see the [GUIDELINES](doc/GUIDELINES) document.
 
 This repository uses `master` as its primary branch name.
 
-The name is used solely as a technical identifier, following the long-standing convention historically used by Git. It does not express or imply any association with racism, slavery, discrimination, or any political or social ideology.
+The name is used solely as a technical identifier, following the long-standing
+convention historically used by Git. It does not express or imply any
+association with racism, slavery, discrimination, or any political or social
+ideology.
 
 ---
 
 ## 9. License
 
-The parts of this repository copyrighted by id774 are dual licensed under the [GPL version 3](https://www.gnu.org/licenses/gpl-3.0.html) or the [LGPL version 3](https://www.gnu.org/licenses/lgpl-3.0.html), at your option.
-The third-party software bundled under `emacs.d/elisp/3rd-party/` is excluded from this dual license and follows the license conditions of each third-party software.
+The parts of this repository copyrighted by id774 are dual licensed under the
+[GPL version 3](https://www.gnu.org/licenses/gpl-3.0.html) or the
+[LGPL version 3](https://www.gnu.org/licenses/lgpl-3.0.html), at your option.
+The third-party software bundled under `emacs.d/elisp/3rd-party/` is excluded
+from this dual license and follows the license conditions of each third-party
+software.
 The same exclusion applies to the individual files that contain third-party derived code.
-For full details, please refer to the [LICENSE](doc/LICENSE) file.  See also [COPYING](doc/COPYING) and [COPYING.LESSER](doc/COPYING.LESSER) for the complete license texts.
+For full details, please refer to the [LICENSE](doc/LICENSE) file. See also
+[COPYING](doc/COPYING) and [COPYING.LESSER](doc/COPYING.LESSER) for the complete
+license texts.
 
 Thank you for using and contributing to this repository!

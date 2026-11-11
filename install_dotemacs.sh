@@ -6,8 +6,9 @@
 #  Description:
 #  This script installs the dot_emacs configuration files to the specified
 #  target directory. It compiles Emacs Lisp scripts and sets the appropriate
-#  permissions. Only DOT_EMACS-managed paths are changed; user-local content
-#  under ~/.emacs.d is preserved.
+#  permissions.
+#  Only DOT_EMACS-managed paths are changed.
+#  User-local content under ~/.emacs.d is preserved.
 #  If the emacs command is not found, the script falls back to
 #  /Applications/Emacs.app/Contents/MacOS/Emacs when executable on macOS.
 #
@@ -25,12 +26,14 @@
 #      ./install_dotemacs.sh /Applications/Emacs.app/Contents/MacOS/Emacs
 #
 #      # macOS: Use Emacs.app binary directly.
-#      # If 'emacs' is missing, macOS Emacs.app binary is used automatically when available.
+#      # If 'emacs' is missing, macOS Emacs.app binary is used
+#      # automatically when available.
 #
 #  Options:
 #      -h, --help        Show this help message and exit.
 #      -v, --version     Show this script header and exit.
-#      -u, --uninstall   Remove DOT_EMACS-managed files and the default target's elisp.
+#      -u, --uninstall   Remove DOT_EMACS-managed files and the default
+#                        target's elisp.
 #      -n, --no-sudo     Run without sudo.
 #
 #  Notes:
@@ -58,7 +61,8 @@
 #    fixed default target, and ~/.emacs.d/elisp only when it is a symlink to
 #    that tree. User-local ~/.emacs.d content and the other content of the
 #    default target are preserved.
-#  - Keep the uninstall target fixed at /usr/local/etc/emacs.d to prevent accidental deletion.
+#  - Keep the uninstall target fixed at /usr/local/etc/emacs.d to prevent
+#    accidental deletion.
 #  - Custom installation targets are not tracked for later removal and are not
 #    removed automatically.
 #  - The --uninstall option shares the environment setup with install, so it still
@@ -153,7 +157,8 @@ check_sudo() {
     fi
 }
 
-# Set LINK_DEST to the link text of the symbolic link $1; fail if it is not one
+# Set LINK_DEST to the link text of the symbolic link $1.
+# Fail if it is not one.
 read_symlink() {
     LINK_DEST=""
     [ -L "$1" ] || return 1
@@ -163,8 +168,8 @@ read_symlink() {
 }
 
 # Stop before any change when ~/.emacs.d/elisp cannot be safely managed.
-# ~/.emacs.d/elisp is reserved for the symlink to $TARGET/elisp; anything else
-# there is user data and is never removed.
+# ~/.emacs.d/elisp is reserved for the symlink to $TARGET/elisp.
+# Anything else there is user data and is never removed.
 check_elisp_link_collision() {
     [ "$TARGET" = "$HOME/.emacs.d" ] && return 0
 
@@ -203,7 +208,8 @@ setup_dotemacs() {
         exit 1
     }
 
-    # Only $TARGET/elisp is managed by DOT_EMACS; the rest of $TARGET is kept.
+    # Only $TARGET/elisp is managed by DOT_EMACS.
+    # The rest of $TARGET is kept.
     if { [ -e "$TARGET/elisp" ] || [ -L "$TARGET/elisp" ]; } && ! $SUDO rm -rf "$TARGET/elisp"; then
         echo "[ERROR] Failed to remove existing $TARGET/elisp." >&2
         exit 1
