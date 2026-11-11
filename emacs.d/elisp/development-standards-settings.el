@@ -397,7 +397,7 @@ It adds no editing behavior of its own.  Its Emacs lock file is kept outside
 the schema directory by default so Prisma language servers do not scan it."
   :syntax-table nil
   :abbrev-table nil
-  ;; Existing transforms come first; unmatched lock files go to the temp dir.
+  ;; Existing transforms come first. Unmatched lock files go to the temp dir.
   (when buffer-file-name
     (setq-local lock-file-name-transforms
                 (append lock-file-name-transforms
@@ -665,7 +665,7 @@ Eglot already serves is left as it is."
      (let ((command (list (development-standards--require-executable
                            "tailwindcss-language-server")
                           "--stdio")))
-       ;; GNU Emacs 30.x only; newer Eglot handles Tailwind's watcher globs.
+       ;; GNU Emacs 30.x only. Newer Eglot handles Tailwind's watcher globs.
        (if (= emacs-major-version 30)
            (cons 'development-standards-tailwind-eglot-server command)
          command)))))

@@ -34,7 +34,7 @@
 
   ;; Apply the proxy-use flag as startup configuration.
   ;; `global-proxy-use' is defined by proxy.el before this file is loaded.
-  ;; This block is evaluated at load time; changing the flag later does not
+  ;; This block is evaluated at load time. Changing the flag later does not
   ;; rebuild `w3m-command-arguments-alist' or imply live reconfiguration.
   (if global-proxy-use
       (setq w3m-command-arguments-alist
