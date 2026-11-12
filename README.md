@@ -13,9 +13,8 @@ libraries.
 4. [Default Behavior](#4-default-behavior)
 5. [Directory Structure](#5-directory-structure)
 6. [Versioning](#6-versioning)
-7. [Contribution](#7-contribution)
-8. [Primary Branch](#8-primary-branch)
-9. [License](#9-license)
+7. [Primary Branch](#7-primary-branch)
+8. [License](#8-license)
 
 ---
 
@@ -318,21 +317,7 @@ For detailed version history, please refer to the [VERSIONS](doc/VERSIONS) file.
 
 ---
 
-## 7. Contribution
-
-We welcome contributions! Here's how you can help:
-1. Fork the repository.
-2. Add or improve a feature, or fix an issue.
-3. Submit a pull request with clear documentation and changes.
-
-Please ensure your code is well-structured and documented.
-
-For coding style and long-term Emacs Lisp compatibility policy,
-see the [GUIDELINES](doc/GUIDELINES) document.
-
----
-
-## 8. Primary Branch
+## 7. Primary Branch
 
 This repository uses `master` as its primary branch name.
 
@@ -343,7 +328,7 @@ ideology.
 
 ---
 
-## 9. License
+## 8. License
 
 The parts of this repository copyrighted by id774 are dual licensed under the
 [GPL version 3](https://www.gnu.org/licenses/gpl-3.0.html) or the
@@ -351,9 +336,9 @@ The parts of this repository copyrighted by id774 are dual licensed under the
 The third-party software bundled under `emacs.d/elisp/3rd-party/` is excluded
 from this dual license and follows the license conditions of each third-party
 software.
-The same exclusion applies to the individual files that contain third-party derived code.
+The same exclusion applies to the individual files that contain third-party
+derived code.
+
 For full details, please refer to the [LICENSE](doc/LICENSE) file. See also
 [COPYING](doc/COPYING) and [COPYING.LESSER](doc/COPYING.LESSER) for the complete
 license texts.
-
-Thank you for using and contributing to this repository!
